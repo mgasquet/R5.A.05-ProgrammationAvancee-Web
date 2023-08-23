@@ -349,7 +349,7 @@ Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates 
 {% endraw %}
 ```
 
-* La structure conditionnelle `for` permet de parcourir une structure itérative (par exemple, un tableau) :
+* La structure répétitive `for` permet de parcourir une structure itérative (par exemple, un tableau) :
 
 ```twig
 {% raw %}
@@ -401,7 +401,7 @@ Pour vérifier que vous avez bien compris le fonctionnement basique de twig et c
 
 <div class="exercise">
 
-1. Supprimez les templates `base.html.twig` et `demo/index.html.twig` créées par défaut par Symfony.
+1. Supprimez les templates `base.html.twig` et `demo/index.html.twig` créés par défaut par Symfony.
  
 2. Créez trois templates `demo1.html.twig`, `demo2.html.twig` et `demo3.html.twig` dans le sous-dossier `demo`.
 
@@ -428,6 +428,7 @@ Pour vérifier que vous avez bien compris le fonctionnement basique de twig et c
 Ajouter une nouvelle route `courses` dans votre `DemoController` (en GET, avec le chemin de votre choix) qui initialise simplement (en dur) un tableau de chaînes de caractères contenant différents produits (par exemple, lait, pain, oeufs...). Cette route doit renvoyer une page générée avec le template `demo3`. Vérifiez que votre liste de courses s'affiche correctement en résultat, sur votre site.
 
 6. Modifiez le template `demo3` pour faire en sorte que si une chaîne de caractères du tableau `listeCourses` est égale à `"Livre sur Symfony"`, celle-ci s'affiche en gras. Vous pouvez faire cela en ajoutant une balise `<strong></strong>` autour du texte affiché. 
+
 </div>
 
 ### Messages flash
