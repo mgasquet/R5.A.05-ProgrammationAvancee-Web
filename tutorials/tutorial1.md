@@ -248,7 +248,7 @@ public function methodeExempleGet($id): Response
 }
 ```
 
-Dans l'exemple ci-dessus, si l'utilisateur accède à la route `/exemple/5`, alors la variable `$id` vaudra "5". Il faut que le paramètre de la méthode ai le même nom que celui de la route (ici `id` => `$id`)
+Dans l'exemple ci-dessus, si l'utilisateur accède à la route `/exemple/5`, alors la variable `$id` vaudra "5". Il faut que le paramètre de la méthode ait le même nom que celui de la route (ici `id` => `$id`)
 
 Il est possible de placer des paramètres n'importe où dans le chemin :
 
@@ -262,7 +262,7 @@ public function methodeExempleGet($id, $nom): Response
 
 Je peux par exemple déclencher cette route/méthode avec le chemin `/exemple/2/coucou/test`, ce qui affectera `$id` à "2" et `$nom` à "test".
 
-Dans un premier temps, vous allez tester de faire un controller simple ne renvoyant pas encore de pages HTML, seulement du texte brut. Pour cela, il vous suffira de renvoyer un objet ainsi :
+Dans un premier temps, vous allez faire un controller simple ne renvoyant pas encore de pages HTML, seulement du texte brut. Pour cela, il vous suffira de renvoyer un objet Response :
 
 ```php
  #[Route('/exemple', name: 'route_exemple_get', methods: ["GET"])]
@@ -282,7 +282,7 @@ public function methodeExempleGet(): Response
 
 3. Créez une méthode ayant une route visant le chemin `/hello`, nommée `hello_get` et autorisant seulement la méthode `GET`. Cette méthode doit renvoyer "Hello world" à l'utilisateur. Testez votre route sur votre site.
 
-4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site.
+4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site (`https://localhost:8000/hello/Malo`).
 
 </div>
 
