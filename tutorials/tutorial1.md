@@ -424,7 +424,6 @@ Pour vérifier que vous avez bien compris le fonctionnement basique de twig et c
 4. Le template `demo2` doit afficher (dans son body) une variable `nom` passé en paramètre du template. Modifiez votre route `hello_get2` pour qu'elle affiche une page HTML générée avec ce template, en passant le nom récupéré dans l'URL au template via la méthode `render`.
 
 5. Le template `demo3` doit afficher (dans son body) une liste non ordonnée (`<ul></ul>`) contenant des éléments (`<li></li>`) correspondant aux éléments d'un tableau `listeCourses` passé en paramètre du template. 
-
 Ajouter une nouvelle route `courses` dans votre `DemoController` (en GET, avec le chemin de votre choix) qui initialise simplement (en dur) un tableau de chaînes de caractères contenant différents produits (par exemple, lait, pain, oeufs...). Cette route doit renvoyer une page générée avec le template `demo3`. Vérifiez que votre liste de courses s'affiche correctement en résultat, sur votre site.
 
 6. Modifiez le template `demo3` pour faire en sorte que si une chaîne de caractères du tableau `listeCourses` est égale à `"Livre sur Symfony"`, celle-ci s'affiche en gras. Vous pouvez faire cela en ajoutant une balise `<strong></strong>` autour du texte affiché. 
