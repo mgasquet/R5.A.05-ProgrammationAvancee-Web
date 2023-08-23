@@ -19,7 +19,7 @@ Avant tout, les frameworks sont surtout faits pour faciliter la vie du développ
 
 L'année dernière, le framework que vous avez développé était fonctionnel, mais encore incomplet. Il est donc temps de passer à l'apprentissage d'un outil professionnel concret !
 
-Dans le cadre de ces quatre premiers TFs, nous allons donc étudier le framework PHP `Symfony`.
+Dans le cadre de ces quatre premiers TDs, nous allons donc étudier le framework PHP `Symfony`.
 
 Symfony est un framework web PHP **français** créé en 2005. Assez tôt, il a connu une forte popularité dans le pays. Aujourd'hui, nous en sommes à la version 6, et Symfony est devenu le framework web (PHP) le plus utilisé en France, comme nous pouvons le voir avec le graphique ci-dessous :
 
@@ -61,7 +61,7 @@ Pour cette première séance, recréons donc The Feed en utilisant ce nouvel out
 
 ## Installation et mise en route
 
-Tour d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons faire cela simplement en utilisant l'outil **composer** (installateur de librairies PHP que vous avez déjà utilisé l'an dernier).
+Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons faire cela simplement en utilisant l'outil **composer** (installateur de librairies PHP que vous avez déjà utilisé l'an dernier).
 
 <div class="exercise">
 
@@ -91,7 +91,7 @@ Tour d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
    Si vous êtes sur votre machine, il faudra bien entendu avoir installé **composer** : [téléchargement sur le site](https://getcomposer.org/download/).
 
-   Cette ensemble de commande créée les fichiers de base de votre projet et télécharge les briques logicielles essentielles pour le développement d'un site web.
+   Cet ensemble de commandes crée les fichiers de base de votre projet et télécharge les briques logicielles essentielles pour le développement d'un site web.
 
 3. Aussi, **si vous travaillez sur le serveur web de l'iut**, assurez-vous qu'il dispose de tous les droits nécessaires par rapport à votre dossier `public_html` :
 
@@ -106,7 +106,7 @@ Tour d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
 5. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
 
-6. Si vous travaillez sur le serveur de l'iut, téléchargez aussi un [deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2), renommez-le `.htaccess` et placez-le à la racine de votre projet. Le rôle de ce fichier est capital, car il permet de protéger vos fichiers de configuration pour qu'ils ne soient pas lisibles par tout le monde ! (par exemple, éviter d'exposer le mot de passe BDD...). Cela est du au fait que votre projet soit hébergé dans une sous-partie du serveur web de l'iut, ce qui n'arrivera donc pas dans un hébergeur normal, avec un nom de domaine qui pointera directement sur votre dossier `public`.
+6. Si vous travaillez sur le serveur de l'iut, téléchargez aussi un [deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2), renommez-le `.htaccess` et placez-le à la racine de votre projet. Le rôle de ce fichier est capital, car il permet de protéger vos fichiers de configuration pour qu'ils ne soient pas lisibles par tout le monde ! (par exemple, éviter d'exposer le mot de passe BDD...). Cela est dû au fait que votre projet soit hébergé dans une sous-partie du serveur web de l'iut, ce qui n'arrivera donc pas dans un hébergeur normal, avec un nom de domaine qui pointera directement sur votre dossier `public`.
 
 7. Testez que votre projet a bien été initialisé en vous rendant à l'adresse correspondant à votre situation :
 
