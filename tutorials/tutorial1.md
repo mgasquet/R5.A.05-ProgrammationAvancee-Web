@@ -454,6 +454,8 @@ Côté `twig`, il n'y a pas besoin de passer explicitement les messages en param
 
 ```twig
 {% raw %}
+{# utile pour espionner les variables #}
+{{dump(app.flashes() }}
 {% for flashMsg in app.flashes(type) %}
     ...
     {{ flashMsg }}
