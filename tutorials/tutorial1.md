@@ -733,7 +733,7 @@ Il est temps de faire un point sur les méthodes essentielles disponibles (par d
 
 * `findBy($criteres, $tri)` : renvoie toutes les entrées de l'entités sous la forme d'un tableau d'objets (du type de l'entité) respectant tous les critères passés en paramètres et ordonnés selon les attributs précisés.
 
-    * `$criteres` correspond à un tableau associatif qui associe des attributs de l'entité à une valeur souhaitée. En fait, cela correspond à un `WHERE column1 = ... ANS column2 = ...`.
+    * `$criteres` correspond à un tableau associatif qui associe des attributs de l'entité à une valeur souhaitée. En fait, cela correspond à un `WHERE column1 = ... AND column2 = ...`.
 
     * `$tri` (optionnel) correspond aussi à un tableau associatif qui liste les attributs selon lesquels on veut que les résultats soient triés, associés au sens (`DESC` ou `ASC`).
 
