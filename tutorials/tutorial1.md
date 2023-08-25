@@ -47,7 +47,7 @@ Symfony permet de créer des sites web classiques en mode "server-rendering" (o�
 
 Ce framework utilise (par défaut) l'ORM `Doctrine` (syntaxe assez similaire à Hibernate, en JAVA). Concernant les templates (génération de pages HTML), il utilise `Twig` que vous avez déjà utilisé l'année dernière dans le cadre du cours de complément web.
 
-Concernant le thème de l'application que nous allons construire au fil des cours, nous allons rependre le concept du réseau social **The Feed** en l'améliorant. Concernant la partie sur twig, vous allez donc *un peu* refaire certaines choses que vous aviez faites en complément web, mais pas avec le même framework et nous allons aussi aller plus loin.
+Concernant le thème de l'application que nous allons construire au fil des cours, nous allons reprendre le concept du réseau social **The Feed** en l'améliorant. Concernant la partie sur twig, vous allez donc *un peu* refaire certaines choses que vous aviez faites en complément web, mais pas avec le même framework et nous allons aussi aller plus loin.
 
 Nous allons suivre la progression suivante :
 
@@ -132,13 +132,13 @@ Composer va notamment utiliser les dépendances listées dans le fichier `compos
 
 ## Premiers pas
 
-Dans cette première section, nous allons voir comment créer des controllers, des routes et générer puis renvoyer la page HTML désirée. Nous parlerons aussi de la gestion des **messages flash** avec Symfony.
+Dans cette première section, nous allons voir comment créer des contrôleurs, des routes et générer puis renvoyer la page HTML désirée. Nous parlerons aussi de la gestion des **messages flash** avec Symfony.
 
-### Controller et Routing
+### Contrôleur et Routing
 
-Symfony propose diverses commandes qui permettent d'initialiser (voir de créer en quasi-totalité) des classes de certaines catégories (entités, controllers, formulaires...) et de la placer au bon endroit dans l'architecture de l'application. Ces commandes doivent s'éxécuter **à la racine du projet**;
+Symfony propose diverses commandes qui permettent d'initialiser (voir de créer en quasi-totalité) des classes de certaines catégories (entités, contrôleurs, formulaires...) et de la placer au bon endroit dans l'architecture de l'application. Ces commandes doivent s'éxécuter **à la racine du projet**;
 
-Afin de créer un nouveau controller, nous pouvons notamment utiliser la commande suivante :
+Afin de créer un nouveau contrôleur, nous pouvons notamment utiliser la commande suivante :
 
 ```bash
 php bin/console make:controller ExempleController
@@ -167,11 +167,11 @@ class ExempleController extends AbstractController
 
 Une route et une fonction d'exemple sont créés par défaut, mais nous la supprimerons pour placer nos propres fonctions.
 
-Bien entendu, vous pouvez aussi créer un controller à la main, mais la commande a aussi l'avantage d'inclure les premiers imports nécessaires.
+Bien entendu, vous pouvez aussi créer un contrôleur à la main, mais la commande a aussi l'avantage d'inclure les premiers imports nécessaires.
 
-Pour rappel, le **routing** est le fait d'associer un chemin du site (par exemple `/coucou`) et une méthode HTTP (GET, POST, PUT, PATCH ou DELETE) à une fonction (du controller) qui va traiter la requête puis renvoyer la réponse (page `HTML` ou des données sous un format comme du `JSON` pour une API...)
+Pour rappel, le **routing** est le fait d'associer un chemin du site (par exemple `/coucou`) et une méthode HTTP (GET, POST, PUT, PATCH ou DELETE) à une fonction (du contrôleur) qui va traiter la requête puis renvoyer la réponse (page `HTML` ou des données sous un format comme du `JSON` pour une API...)
 
-Pour créer une route avec Symfony, nous utilisons une fonctionnalité introduite depuis PHP 8 : les **attributs** (on retrouvera parfois le terme d'annotations pour designer les attributs, qui était l'ancienne façon de faire...)
+Pour créer une route avec Symfony, nous utilisons une fonctionnalité introduite depuis PHP 8 : les **attributs** (on retrouvera parfois le terme d'annotations pour désigner les attributs, qui était l'ancienne façon de faire...)
 
 Les **attributs** sont des informations que nous allons ajouter à un élément de l'application : une fonction, une classe entière, une propriété de la classe... Ce sont des méta-données et des règles qui vont pouvoir être lues (ici par le Framework) interprétées et utilisées pour configurer notre application. Ces attributs sont aussi paramétrables.
 
@@ -181,7 +181,7 @@ Un attribut se présente ainsi :
 #[NomAttribut(param1: ..., param2: ...)]
 ```
 
-Afin de relier une route à une méthode d'un controller avec Symfony, il suffit donc d'ajouter l'annotation suivante, au-dessus de la méthode désirée :
+Afin de relier une route à une méthode d'un contrôleur avec Symfony, il suffit donc d'ajouter l'annotation suivante, au-dessus de la méthode désirée :
 
 ```php
  #[Route('/exemple', name: 'route_exemple', methods: ["GET", "POST", ...])]
@@ -262,7 +262,7 @@ public function methodeExempleGet($id, $nom): Response
 
 Je peux par exemple déclencher cette route/méthode avec le chemin `/exemple/2/coucou/test`, ce qui affectera `$id` à "2" et `$nom` à "test".
 
-Dans un premier temps, vous allez faire un controller simple ne renvoyant pas encore de pages HTML, seulement du texte brut. Pour cela, il vous suffira de renvoyer un objet Response :
+Dans un premier temps, vous allez faire un contrôleur simple ne renvoyant pas encore de pages HTML, seulement du texte brut. Pour cela, il vous suffira de renvoyer un objet Response :
 
 ```php
  #[Route('/exemple', name: 'route_exemple_get', methods: ["GET"])]
@@ -276,9 +276,9 @@ public function methodeExempleGet(): Response
 
 <div class="exercise">
 
-1. En utilisant la commande `make:controller`, créez un controller nommé `DemoController`.
+1. En utilisant la commande `make:controller`, créez un contrôleur nommé `DemoController`.
 
-2. Supprimez la méthode d'exemple générée par défaut dans votre nouveau controller.
+2. Supprimez la méthode d'exemple générée par défaut dans votre nouveau contrôleur.
 
 3. Créez une méthode ayant une route visant le chemin `/hello`, nommée `hello_get` et autorisant seulement la méthode `GET`. Cette méthode doit renvoyer "Hello world" à l'utilisateur. Testez votre route sur votre site.
 
@@ -288,13 +288,13 @@ public function methodeExempleGet(): Response
 
 ### Twig
 
-Comme vous l'avez constaté dans la section précédente, les différentes méthodes des controllers doivent retourner un objet de type `Response`. Ces réponses peuvent être variées selon le type d'application, mais dans notre cas, nous souhaitons renvoyer une page HTML à l'utilisateur.
+Comme vous l'avez constaté dans la section précédente, les différentes méthodes des contrôleurs doivent retourner un objet de type `Response`. Ces réponses peuvent être variées selon le type d'application, mais dans notre cas, nous souhaitons renvoyer une page HTML à l'utilisateur.
 
 Pour faciliter le développement de la partie `front-end`, Symfony utilise le moteur de template `twig` que vous avez déjà utilisé l'année dernière.
 
 Les fichiers `twig` sont appelés `templates` et on les nomme généralement ainsi : `nom.format_genere.twig` (en effet, twig ne sert pas seulement à générer du HTML!). Dans notre cas, comme nous allons générer du `HTML`, nous les nommerons donc `nom.html.twig`. Ces templates sont rangés dans le sous-dossier `templates` à partir de la racine du projet.
 
-Afin de demander à Symfony de générer une réponse contenant une page HTML générée avec un template `twig`, on utilise la méthode `render` disponible dans tous les controllers :
+Afin de demander à Symfony de générer une réponse contenant une page HTML générée avec un template `twig`, on utilise la méthode `render` disponible dans tous les contrôleurs :
 
 ```php
  #[Route('/exemple', name: 'route_exemple_get', methods: ["GET"])]
@@ -405,7 +405,7 @@ Pour vérifier que vous avez bien compris le fonctionnement basique de twig et c
  
 2. Créez trois templates `demo1.html.twig`, `demo2.html.twig` et `demo3.html.twig` dans le sous-dossier `demo`.
 
-    Ces templates auront le quelette suivant :
+    Ces templates auront le squelette suivant :
 
     ```html
     <html>
@@ -434,7 +434,7 @@ Ajouter une nouvelle route `courses` dans votre `DemoController` (en GET, avec l
 
 Vous souvenez-vous du mécanisme des **messages flash** ? Pour rappels, il s'agit de messages informatifs stockés dans la session de l'utilisateur et affichés après chargement de la page. On peut s'en servir, par exemple, pour afficher un message d'erreur lié à un formulaire. Ou pour notifier l'utilisateur que son inscription est complète.
 
-De ce côté, Symfony a tout prévu ! Il vous suffit d'appeler cette méthode dans une de vos méthodes dans votre controller :
+De ce côté, Symfony a tout prévu ! Il vous suffit d'appeler cette méthode dans une de vos méthodes dans votre contrôleur :
 
 ```php
  #[Route('/exemple', name: 'route_exemple_get', methods: ["GET"])]
@@ -480,7 +480,7 @@ Maintenant que vous maîtrisez les bases, il est temps de commencer à développ
 
 ### Création d'une entité
 
-Comme pour les controllers, Symfony propose une commande permettant de créer une entité de manière interactive. Elle va générer les propriétés de la classe, ainsi que les getters/setters. De plus, la commande va aussi configurer les **attributs** PHP de chaque propriété afin de préparer la synchronisation avec la base de données, via Doctrine :
+Comme pour les contrôleurs, Symfony propose une commande permettant de créer une entité de manière interactive. Elle va générer les propriétés de la classe, ainsi que les getters/setters. De plus, la commande va aussi configurer les **attributs** PHP de chaque propriété afin de préparer la synchronisation avec la base de données, via Doctrine :
 
 ```bash
 php bin/console make:entity Nom
@@ -504,17 +504,17 @@ En plus de générer la classe de l'entité, un fichier de **repository** est é
 
 </div>
 
-Dans votre nouvelle classe `Publication`, vous remarquerez les fameux `attributs` PHP au-dessus de la classe et de chaque propriété. Ces annotations de type `ORM` fixe les règles relatives à la base de données. C'est ces informations que `Doctrine` va lire pour créer et maintenir les différentes tables de votre base de données. Il est aussi indiqué quel repository est lié à cette entité.
+Dans votre nouvelle classe `Publication`, vous remarquerez les fameux `attributs` PHP au-dessus de la classe et de chaque propriété. Ces annotations de type `ORM` fixent les règles relatives à la base de données. C'est ces informations que `Doctrine` va lire pour créer et maintenir les différentes tables de votre base de données. Il est aussi indiqué quel repository est lié à cette entité.
 
 De manière globale :
 
-* L'attribut `#[ORM\Column]` indique que le champ doit être lié à une colonne dans la table lié à l'entité. Différents paramètres sont configurables. Ici, "nullable" (définissant si la colonne peut être nulle ou non) n'est pas précisé, car il vaut `false` par défaut, et nous avons justement demandé que ces colonnes ne puissent pas être nulles.
+* L'attribut `#[ORM\Column]` indique que le champ doit être lié à une colonne dans la table correspondante. Différents paramètres sont configurables. Ici, "nullable" (définissant si la colonne peut être nulle ou non) n'est pas précisé, car il vaut `false` par défaut, et nous avons justement demandé que ces colonnes ne puissent pas être nulles.
 
 * L'attribut `#[ORM\Id]` permet d'indiquer une propriété faisant partie de la clé primaire.
 
 * L'attribut `#[ORM\GeneratedValue]` permet de demander à la base de données de générer automatiquement la valeur ce cette colonne, par exemple, pour un entier en mode `AUTO_INCREMENT`.
 
-Concernant la classe `PublicationRepository`, vous remarquerez que celle-ci est plutôt vide pour le moment, hormis quelques exemples commentés. En fait, toutes les opérations génériques du `CRUD` sont déjà prises en charge par la classe mère `ServiceEntityRepository` et un autre service appelées `EntityManager`. On peut néanmoins ajouter des méthodes plus spécifiques si besoin. Néanmoins, dans ce cas, nous ne codons pas les requêtes avec du `SQL`, mais avec un langage dérivé appelé le `DQL` (doctrine query langage). Cependant, les outils de base doctrine permettent déjà de faire des requêtes assez précises avec très peu de lignes de code.
+Concernant la classe `PublicationRepository`, vous remarquerez que celle-ci est plutôt vide pour le moment, hormis quelques exemples commentés. En fait, toutes les opérations génériques du `CRUD` sont déjà prises en charge par la classe mère `ServiceEntityRepository` et un autre service appelé `EntityManager`. On peut néanmoins ajouter des méthodes plus spécifiques si besoin. Dans ce cas, nous ne codons pas les requêtes avec du `SQL`, mais avec un langage dérivé appelé le `DQL` (doctrine query langage). Cependant, les outils de base doctrine permettent déjà de faire des requêtes assez précises avec très peu de lignes de code.
 
 Doctrine impose son propre langage pour assurer la compatibilité entre tous les SGBD et les autres sources de données possibles, ainsi nous ne dépendons jamais d'un SGBD ou d'une manière de stockage précise et il devient alors très facile d'en changer.
 
@@ -524,7 +524,7 @@ Si dans le futur vous avez besoin d'ajouter de nouveaux champs, il suffit de ré
 
 ### Mise en place de la base de données
 
-Nous allons maintenant nous intéresser au fichier `.env` situé à la racine de votre projet. Ce fichier est un fichier de configuration contenement des variables d'environnement, notamment pour utiliser des services externes, comme une base de données.
+Nous allons maintenant nous intéresser au fichier `.env` situé à la racine de votre projet. Ce fichier est un fichier de configuration contenant des variables d'environnement, notamment pour utiliser des services externes, comme une base de données.
 
 Chaque variable est définie ainsi : `valeur="donnee"`
 
@@ -532,12 +532,13 @@ Il est aussi possible de créer un fichier `.env.local` où vous pouvez définir
 
 Nous nous intéressons au paramètre `DATABASE_URL`. Globalement, il se configure comme suit :
 
-`DATABASE_URL=sgbd://username:password@ip:port/nom_base`
+```
+DATABASE_URL=sgbd://username:password@ip:port/nom_base
+```
 
-* La partie `sgbd` correspond au sgbd utilisé : `mysql`, `postgres`, `sqlite`, `oracle`, etc...
+La partie `sgbd` correspond au sgbd utilisé : `mysql`, `postgres`, `sqlite`, `oracle`, etc...
 
-Si vous utilisez la base `MySQL` de l'iut, la configuration sera donc :
-
+Si vous utilisez la base `MySQL` de l'iut, la configuration sera donc
 `DATABASE_URL=mysql://login_iut:password@webinfo.iutmontp.univ-montp2.fr:3306/login_iut` en remplaçant `login_iut` et `password` avec vos identifiants (ceux utilisés sur `phpMyAdmin`), bien entendu.
 
 Si vous êtes sur votre machine et que vous souhaitez utiliser une base de données locale (ip `localhost` ou `127.0.0.1`), il faut entrer vos identifiants lié à votre gestionnaire de serveur (par exemple XAMPP) et vous pouvez nommer la base comme bon vous semble. Notez qu'il est bien sûr possible d'utiliser la base de données de l'IUT, même si vous êtes sur votre machine locale (à condition d'être connecté à internet).
@@ -575,13 +576,13 @@ On doit effectuer une migration dès que l'ont créé ou que l'on modifie une en
 
 </div>
 
-### Controller et template de base
+### Contrôleur et template de base
 
 Nous allons maintenant créer la route (et la page) qui se chargera d'afficher la liste des publications. Il s'agira en fait de la page d'accueil du site. 
 
-Dans le prochain exercice, vous allez utiliser de fausses publications générées à la main, dans le controller, puis vous adapterez un template `twig` afin d'afficher ces publications. Il n'y a pas encore de `CSS`, mais cela viendra juste après.
+Dans le prochain exercice, vous allez utiliser de fausses publications générées à la main, dans le contrôleur, puis vous adapterez un template `twig` afin d'afficher ces publications. Il n'y a pas encore de `CSS`, mais cela viendra juste après.
 
-Vous allez aussi être amené à utiliser des **fitlres** de `twig`. Les **filtres** permettent de convertir une donnée en autre chose. On les utilise ainsi : `donnee|filtre(param1, param2, ...)`.
+Vous allez aussi être amené à utiliser des **filtres** de `twig`. Les **filtres** permettent de convertir une donnée en autre chose. On les utilise ainsi : `donnee|filtre(param1, param2, ...)`.
 
 * Par exemple, le filtre `lower` permet de convertir une chaîne de caractères en minuscules.
 
@@ -589,11 +590,11 @@ Vous allez aussi être amené à utiliser des **fitlres** de `twig`. Les **filtr
 
 * Le filtre `date(format)` permet d'afficher une date selon un format désiré. Par exemple `Y-m-d`, si on souhaite un affichage du style "2023-09-01".
 
-Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https://twig.symfony.com/doc/3.x/filters/index.html)
+Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https://twig.symfony.com/doc/3.x/filters/index.html).
 
 <div class="exercise">
 
-1. Créez un nouveau controller `PublicationController`. Ajoutez une nouvelle route nommée `feed`, pointant sur le chemin `/` (racine du site) et accessible en `GET` seulement (pour le moment). Pour le moment, n'ajoutez rien dans le corps de la méthode, nous le ferons juste après.
+1. Créez un nouveau contrôleur `PublicationController`. Ajoutez une nouvelle route nommée `feed`, pointant sur le chemin `/` (racine du site) et accessible en `GET` seulement (pour le moment). Pour le moment, n'ajoutez rien dans le corps de la méthode, nous le ferons juste après.
 
 2. Dans le dossier `templates`, créez un dossier `publication` (s'il n'existe pas déjà), puis, à l'intérieur de ce nouveau dossier, créez un template `feed.html.twig` contenant le squelette suivant :
 
@@ -649,16 +650,16 @@ Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https:
     use App\Entity\Publication;
 
     // Dans une méthode, création d'une publication...
-    $publication1 = new Publication()
+    $publication1 = new Publication();
     $publication1->setMessage("Coucou");
     $publication1->setDatePublication(new \DateTime());
     ```
 
-    Il faudra importer la classe `Publication` dans le controller (comme montré ci-dessus). Normalement, PHPStorm vous propose de vous le faire, en surlignant le nom de la classe en jaune.
+    Il faudra importer la classe `Publication` dans le contrôleur (comme montré ci-dessus). Normalement, PHPStorm vous propose de vous le faire, en surlignant le nom de la classe en jaune.
 
     Il ne faut surtout pas modifier les paramètres du constructeur de la classe `Publication`. Votre ORM a besoin que ce constructeur ne prenne aucun paramètre.
 
-4. Dans ce template, remplacez toutes les sections commentées afin d'afficher correctement la liste des publications, passée depuis le controller.
+4. Dans ce template, remplacez toutes les sections commentées afin d'afficher correctement la liste des publications, passée depuis le contrôleur.
 
     Concernant la **date de publication**, il faut la convertir une chaîne de caractères en appliquant un filtre. Le format souhaité est `d/m/Y` (jour, mois, année).
 
@@ -666,9 +667,9 @@ Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https:
 
 </div>
 
-Tout cela manque un peu de style ! Et d'image de profil pour les publications ! Comme nous n'avons aps encore d'utilisateurs, nous allons utiliser une image "anonyme".
+Tout cela manque un peu de style ! Et d'image de profil pour les publications ! Comme nous n'avons pas encore d'utilisateurs, nous allons utiliser une image "anonyme".
 
-Avec Symfony, tous les "assets" (images, fichiers css, js, etc...) doivent être placés dans le dossier `public`, à la racine du projet. Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction {% raw %}`{{ assets(chemin) }}`{% endraw %} (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on insique donc un sous-chemin à partir de ce dossier.
+Avec Symfony, tous les "assets" (images, fichiers css, js, etc...) doivent être placés dans le dossier `public`, à la racine du projet. Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction {% raw %}`{{ assets(chemin) }}`{% endraw %} (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier.
 
 Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : {% raw %}`{{ asset("exemple/coucou.jpg") }}`{% endraw %} dans mon template (typiquement, dans la partie `src`).
 
@@ -691,7 +692,7 @@ Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je
 
 </div>
 
-Enfin, il reste un problème auquel nous allons faire face : construire les liens vers nos autres pages (notamment pour pour le menu de navigation).
+Enfin, il reste un problème auquel nous allons faire face : construire les liens vers nos autres pages (notamment pour le menu de navigation).
 
 Pour gérer cela, symfony propose d'utiliser la fonction `path('nomRoute')` dans twig. Cette fonction permet de générer le chemin de la route passée en paramètre.
 
@@ -703,7 +704,7 @@ Par exemple, si j'ai une route nommée `exemple` ayant pour chemin `/exemple/tes
 {% endraw %}
 ```
 
-Cela générera la balise `<a></a>` suivante :
+Cela générera la balise `<a>` suivante :
 
 ```html
 <a href="/exemple/test/bonjour">Mon lien</a>
@@ -723,7 +724,7 @@ De manière générale, chaque fois que vous aurez besoin de créer un lien inte
 
 ### Affichage de la liste des publications contenues dans la base
 
-Au lieu de nous contenter de nos "fausses" publications, nous allons directement charger les publications depuis notre base de données ! Pour cela, nous devons utiliser la classe `UtilisateurRepository`.
+Au lieu de nous contenter de nos "fausses" publications, nous allons directement charger les publications depuis notre base de données ! Pour cela, nous devons utiliser la classe `PublicationRepository`.
 
 Il est temps de faire un point sur les méthodes essentielles disponibles (par défaut) avec un repository lié à une entité :
 
@@ -749,9 +750,9 @@ Il est temps de faire un point sur les méthodes essentielles disponibles (par d
 
 Ces repositories fournissent seulement des opérations de **lecture**. Les opérations de création, de modification et de suppression sont confiées à un **service** appelé `EntityManager` (dont nous reparlerons plus tard).
 
-Mais, comment utiliser ce repoistory dans votre controller ? Avec de l'injection de dépendances bien sûr ! Et avec Symfony, cela fonctionne très simplement grâce à un système appelé **autowiring**.
+Mais, comment utiliser ce repository dans votre contrôleur ? Avec de l'injection de dépendances bien sûr ! Et avec Symfony, cela fonctionne très simplement grâce à un système appelé **autowiring**.
 
-Globalement, dans votre controller, dès que vous avez besoin d'un service (repositories ou autre) dans une de vos méthodes, vous avez juste à l'ajouter comme paramètre (en précisant son type) de la méthode et... c'est tout !
+Globalement, dans votre contrôleur, dès que vous avez besoin d'un service (repositories ou autre) dans une de vos méthodes, vous avez juste à l'ajouter comme paramètre (en précisant son type) de la méthode et... c'est tout !
 
 Par exemple, si je veux accéder à l'instance de `PublicationRepository` et également un autre service, par exemple, `EntityManagerInterface`, j'ai juste à faire :
 
@@ -766,11 +767,11 @@ public function methodeExempleGet(PublicationRepository $repository, EntityManag
 }
 ```
 
-Tout cela fonctionne sur la base d'un **conteneur IoC** que vous aviez déjà utilisé l'année, configuré et géré par Symfony. L'autowiring est un système permettant de détecter et d'injecter automatiquement les dépendances. Et cela ne se limite pas qu'aux controllers ! Il est possible d'injecter des services dans d'autres classes (généralement via le constructeur) et il est aussi très facile de construire ses propres services et de les utiliser de la même façon, comme vous le ferez un peu plus tard.
+Tout cela fonctionne sur la base d'un **conteneur IoC** que vous aviez déjà utilisé l'année, configuré et géré par Symfony. L'autowiring est un système permettant de détecter et d'injecter automatiquement les dépendances. Et cela ne se limite pas qu'aux contrôleurs ! Il est possible d'injecter des services dans d'autres classes (généralement via le constructeur) et il est aussi très facile de construire ses propres services et de les utiliser de la même façon, comme vous le ferez un peu plus tard.
 
 <div class="exercise">
 
-1. Accèdez à l'espace d'administration de votre base de données (phpMyAdmin par exemple) et ajoutez quelques publications avec des dates différentes.
+1. Accédez à l'espace d'administration de votre base de données (phpMyAdmin par exemple) et ajoutez quelques publications avec des dates différentes.
 
 2. Modifiez votre route `feed` : supprimez vos "fausses" publications de tests et à la place, récupérez le tableau de publications directement depuis la base de données, en utilisant `PublicationRepository`.
 
@@ -780,7 +781,7 @@ Tout cela fonctionne sur la base d'un **conteneur IoC** que vous aviez déjà ut
 
 Tout fonctionne ? Très bien ! Mais il y a un petit souci : dans un réseau social, les publications sont généralement affichées de la plus récente à la plus ancienne. Hors, ici, c'est l'inverse.
 
-Dans votre controller, vous avez sans doute utilisé la méthode `findAll`, hors, celle-ci ne permet pas trier les résultats. Il serait alors peut-être plus judicieux d'utiliser `findBy`. Il est possible d'utiliser cette méthode en précisant un tableau vide pour les critères. Cela aura pour effet de renvoyer tous les résultats, mais comme nous l'avons vu plus tôt, le deuxième paramètre vous permet de préciser l'attribut de tri.
+Dans votre contrôleur, vous avez sans doute utilisé la méthode `findAll`, hors, celle-ci ne permet pas trier les résultats. Il serait alors peut-être plus judicieux d'utiliser `findBy`. Il est possible d'utiliser cette méthode en précisant un tableau vide pour les critères. Cela aura pour effet de renvoyer tous les résultats, mais comme nous l'avons vu plus tôt, le deuxième paramètre vous permet de préciser l'attribut de tri.
 
 <div class="exercise">
 
@@ -896,7 +897,7 @@ $builder
 
 Votre formulaire est prêt à être utilisé ! Nous allons d'abord commencer par l'afficher sur notre page web.
 
-Comme d'habitude, tout se passe au niveau du controller. Pour créer le formulaire et le passer à notre template, on procède comme suit, dans la méthode liée à la route dont la page affichera le formulaire :
+Comme d'habitude, tout se passe au niveau du contrôleur. Pour créer le formulaire et le passer à notre template, on procède comme suit, dans la méthode liée à la route dont la page affichera le formulaire :
 
 ```php
 use App\Form\ExempleType;
@@ -963,7 +964,7 @@ Voici une petite démonstration, avec l'exemple de formulaire précédent (conte
 {% endraw %}
 ```
 
-Concernant l'attribut **method** et **action** du formulaire, ils sont définis dans le controller, lors de l'appel de la méthode `createForm`, comme montré dans un précédent exemple.
+Concernant l'attribut **method** et **action** du formulaire, ils sont définis dans le contrôleur, lors de l'appel de la méthode `createForm`, comme montré dans un précédent exemple.
 
 <div class="exercise">
 
@@ -993,7 +994,7 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
     {% endraw %}
     ```
 
-    Pour rappel, le nom de votre formulaire correspond à celui que vous avez passé en paramètre du template dans votre controller.
+    Pour rappel, le nom de votre formulaire correspond à celui que vous avez passé en paramètre du template dans votre contrôleur.
 
 2. Rechargez votre page, le formulaire devrait maintenant s'afficher !
 
@@ -1003,7 +1004,7 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 
 Maintenant que vous savez générer et afficher un formulaire, vous allez pouvoir le traiter et le valider côté `back-end`.
 
-Pour cela, on regroupe généralement la route/action qui affiche (GET) et traire (POST) le formulaire sur la même méthode, dans le controller :
+Pour cela, on regroupe généralement la route/action qui affiche (GET) et traire (POST) le formulaire sur la même méthode, dans le contrôleur :
 
 ```php
 use Symfony\Component\HttpFoundation\Request;
@@ -1115,9 +1116,9 @@ public function methodeExemple(Request $request, EntityManagerInterface $entityM
 
 Vous savez maintenant comment créer des publications via un formulaire, mais pour l'instant, vous ne vérifiez pas vraiment les données qui sont soumises. Par exemple, inspectez la page, enlevez le "required" du formulaire et tentez d'envoyer une publication vide. Vous obtenez une belle erreur liée à la base de données (vu que notre message ne peut pas ête null) ! L'utilisateur n'a pas à voir ça.
 
-Aussi, comment faire, par exemple, pour limiter la taille du message ? Est-ce que cela se fait avec le controller ? Pas du tout, pour cela, Symfony a prévu un système appelé **assertions**.
+Aussi, comment faire, par exemple, pour limiter la taille du message ? Est-ce que cela se fait avec le contrôleur ? Pas du tout, pour cela, Symfony a prévu un système appelé **assertions**.
 
-Une **assertion** est une contrainte liée à un champ du formulaire ou une propriété de l'entité. Quand un formulaire est soumis, Symfony va vérifier que toutes les contraintes sont respectées. Si une ou plusieurs annotations ne sont pas validées, des erreurs sont générées (dans le controller, on vérifie cela avec `$form->isValid()`).
+Une **assertion** est une contrainte liée à un champ du formulaire ou une propriété de l'entité. Quand un formulaire est soumis, Symfony va vérifier que toutes les contraintes sont respectées. Si une ou plusieurs annotations ne sont pas validées, des erreurs sont générées (dans le contrôleur, on vérifie cela avec `$form->isValid()`).
 
 Du côté de l'entité, on peut directement placer des assertions au niveau de champ propriété de la classe, en utilisant des **attributs PHP**.
 
@@ -1254,7 +1255,7 @@ On peut notamment utiliser ce bout de code après avoir vérifié qu'un formulai
 
 Le bout de code que vous avez ajouté à votre route `feed` va potentiellement être réutilisé à chaque fois que nous aurons à formulaire. Il serait donc judicieux de centraliser cela dans un `service` dédié !
 
-Pour créer un service, il suffit de créer une classe dans (par convention, dans `src/Service`). Nous pourrons ensuite l'injecter dans une des méthodes du controller comme nous le faisons pour les autres services. Il est d'ailleurs tout à fait possible d'injecter et d'utiliser d'autres services dans notre service (par exemple, nous allons avoir besoin d'accéder à la structure de données contenant les messages flashs).
+Pour créer un service, il suffit de créer une classe dans (par convention, dans `src/Service`). Nous pourrons ensuite l'injecter dans une des méthodes du contrôleur comme nous le faisons pour les autres services. Il est d'ailleurs tout à fait possible d'injecter et d'utiliser d'autres services dans notre service (par exemple, nous allons avoir besoin d'accéder à la structure de données contenant les messages flashs).
 
 Par exemple, imaginons un service qui utilisera le service `EntityManagerInterface` et `ExempleRepository`. Je peux le créer simplement ainsi :
 
@@ -1293,7 +1294,7 @@ class Exemple {
 
 J'ai accès à un attribut `$this->attr` dans ma classe (qui sera affecté lors de la construction de l'objet). On peut bien entendu mettre d'autres niveaux de visibilité, comme `public` ou bien `protected`.
 
-Concernant le service, une fois votre classe construite, vous pouvez l'injecter où vous le souhaiter (dans un controller, ou bien dans un autre service) et vous en servir :
+Concernant le service, une fois votre classe construite, vous pouvez l'injecter où vous le souhaiter (dans un contrôleur, ou bien dans un autre service) et vous en servir :
 
 ```php
  #[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
@@ -1340,7 +1341,7 @@ $flashBag->add(categorie, message);
 4. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
 </div>
 
-Comme vous l'aurez peut-être constaté, certains services comme `EntityManagerInterface` s'utilisent au travers d'une interface, et non pas d'une classe concrète. Pour permettre une meilleure modularité et substituions des services de votre application (si vous décidez de changer la classe qui assure tel ou tel service), il est plus judicieux de définir vos services en les accompagnant d'une interface puis d'injecter et utiliser l'interface (dans les controllers et autres) plutôt que la classe concrète.
+Comme vous l'aurez peut-être constaté, certains services comme `EntityManagerInterface` s'utilisent au travers d'une interface, et non pas d'une classe concrète. Pour permettre une meilleure modularité et substituions des services de votre application (si vous décidez de changer la classe qui assure tel ou tel service), il est plus judicieux de définir vos services en les accompagnant d'une interface puis d'injecter et utiliser l'interface (dans les contrôleurs et autres) plutôt que la classe concrète.
 
 Dans ce cas, il faut éditer le fichier `config/services.yaml` afin de préciser quelle est la classe concrète actuellement liée à cette interface. Ce fichier permet de configurer différents aspects des services de notre application (par exemple, quand on a besoin d'injecter des paramètres de notre application dans certains services...).
 
@@ -1462,7 +1463,7 @@ Dans un template, on peut **étendre** un autre template. Il suffit d'ajouter da
 {% endraw %}
 ```
 
-Le chemin à spécifier pour le template étendu est le même que quand on génère la page HTML à renvoyer depuis le controller : on se base par rapport à la racine du dossier `templates`.
+Le chemin à spécifier pour le template étendu est le même que quand on génère la page HTML à renvoyer depuis le contrôleur : on se base par rapport à la racine du dossier `templates`.
 
 Par exemple, imaginons le template suivant, `test.html.twig` :
 
