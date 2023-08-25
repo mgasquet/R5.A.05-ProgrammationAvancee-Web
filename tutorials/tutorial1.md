@@ -891,7 +891,7 @@ $builder
 
     ```php
     use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-
+    ```
 </div>
 
 Votre formulaire est prêt à être utilisé ! Nous allons d'abord commencer par l'afficher sur notre page web.
