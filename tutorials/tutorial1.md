@@ -32,7 +32,9 @@ Symfony est un framework web PHP **français** créé en 2005. Assez tôt, il a 
  </script>
 
 <div style="margin:auto;width:50%">
- ![pas mal non]({{site.baseurl}}/assets/TD1/pas-mal-fr.PNG)
+{% endraw %}
+![pas mal non]({{site.baseurl}}/assets/TD1/pas-mal-fr.PNG)
+{% raw %}
 </div>
 
 Cependant, si nous élargissons ce graphique au niveau mondial, le framework `Laravel` est beaucoup plus utilisé. En fait, Symfony est majoritairement utilisé en France.
@@ -500,7 +502,7 @@ De manière globale :
 
 * L'attribut `#[ORM\GeneratedValue]` permet de demander à la base de données de générer automatiquement la valeur ce cette colonne, par exemple, pour un entier en mode `AUTO_INCREMENT`.
 
-Concernant la classe `PublicationRepository`, vous remarquerez que celle-ci est plutôt vide pour le moment, hormis quelques exemples commentés. En fait, toutes les opérations génériques du `CRUD` sont déjà prises en charge par la classe mère `ServiceEntityRepository` et un autre service appelé `EntityManager`. On peut néanmoins ajouter des méthodes plus spécifiques si besoin. Dans ce cas, nous ne codons pas les requêtes avec du `SQL`, mais avec un langage dérivé appelé le `DQL` (doctrine query langage). Cependant, les outils de base doctrine permettent déjà de faire des requêtes assez précises avec très peu de lignes de code.
+Concernant la classe `PublicationRepository`, vous remarquerez que celle-ci est plutôt vide pour le moment, hormis quelques exemples commentés. En fait, toutes les opérations génériques du `CRUD` sont déjà prises en charge par la classe mère `ServiceEntityRepository` et un autre service appelé `EntityManagerInterface`. On peut néanmoins ajouter des méthodes plus spécifiques si besoin. Dans ce cas, nous ne codons pas les requêtes avec du `SQL`, mais avec un langage dérivé appelé le `DQL` (doctrine query langage). Cependant, les outils de base doctrine permettent déjà de faire des requêtes assez précises avec très peu de lignes de code.
 
 Doctrine impose son propre langage pour assurer la compatibilité entre tous les SGBD et les autres sources de données possibles, ainsi nous ne dépendons jamais d'un SGBD ou d'une manière de stockage précise et il devient alors très facile d'en changer.
 
@@ -518,7 +520,7 @@ Il est aussi possible de créer un fichier `.env.local` où vous pouvez définir
 
 Nous nous intéressons au paramètre `DATABASE_URL`. Globalement, il se configure comme suit :
 
-```
+```yaml
 DATABASE_URL=sgbd://username:password@ip:port/nom_base
 ```
 
@@ -716,7 +718,7 @@ Il est temps de faire un point sur les méthodes essentielles disponibles (par d
 
 * `find($id)` : renvoie l'entrée de l'entité dont l'id passé en paramètre correspond à la valeur de sa clé primaire. L'objet renvoyé correspond au type de l'entité.
 
-* `findBy($criteres, $tri)` : renvoie toutes les entrées de l'entités sous la forme d'un tableau d'objets (du type de l'entité) respectant tous les critères passés en paramètres et ordonnés selon les attributs précisés.
+* `findBy($criteres, $tri)` : renvoie toutes les entrées de l'entité sous la forme d'un tableau d'objets (du type de l'entité) respectant tous les critères passés en paramètres et ordonnés selon les attributs précisés.
 
     * `$criteres` correspond à un tableau associatif qui associe des attributs de l'entité à une valeur souhaitée. En fait, cela correspond à un `WHERE column1 = ... AND column2 = ...`.
 
@@ -732,7 +734,7 @@ Il est temps de faire un point sur les méthodes essentielles disponibles (par d
 
 * `findOneBy($criteres)` : même chose que `findBy` sauf qu'elle renvoie le premier objet correspond aux critères (et non pas un tableau de plusieurs entités). Utile si on est sûr d'obtenir une entité précise selon les critères recherchés.
 
-Ces repositories fournissent seulement des opérations de **lecture**. Les opérations de création, de modification et de suppression sont confiées à un **service** appelé `EntityManager` (dont nous reparlerons plus tard).
+Ces repositories fournissent seulement des opérations de **lecture**. Les opérations de création, de modification et de suppression sont confiées à un **service** appelé `EntityManagerInterface` (dont nous reparlerons plus tard).
 
 Mais, comment utiliser ce repository dans votre contrôleur ? Avec de l'injection de dépendances bien sûr ! Et avec Symfony, cela fonctionne très simplement grâce à un système appelé **autowiring**.
 
@@ -745,7 +747,7 @@ use App\Repository\PublicationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
  #[Route('/exemple', name: 'route_exemple_get', methods: ["GET"])]
-public function methodeExempleGet(PublicationRepository $repository, EntityManager $entityManager): Response
+public function methodeExempleGet(PublicationRepository $repository, EntityManagerInterface $entityManager): Response
 {
     //Je peux utiliser $repository et $entityManager, Symfony se charge de les injecter pour moi...
 }
@@ -773,7 +775,7 @@ Dans votre contrôleur, vous avez sans doute utilisé la méthode `findAll`, hor
 
 2. Testez et vérifié que l'ordre est respecté.
 
-3. Comme ce bout de code pourrait resservir, créez plutôt une méthode `findAllOrderedByDate` dans la classe `src/Repository/PublicationRespository` qui renvoie les publications triées, comme vous l'avez fait dans l'étape 1. Utilisez cette méthode dans votre route `feed` et vérifiez que tout fonctionne toujours.
+3. Comme ce bout de code pourrait resservir, créez plutôt une méthode `findAllOrderedByDate` dans la classe `src/Repository/PublicationRepository` qui renvoie les publications triées, comme vous l'avez fait dans l'étape 1. Utilisez cette méthode dans votre route `feed` et vérifiez que tout fonctionne toujours.
 
     Ci-dessous, le squelette de cette méthode : 
 
@@ -792,6 +794,8 @@ Maintenant que nous pouvons afficher les publications, il est temps de pouvoir e
 Comme vous le savez, qui dit création d'une entité, dit formulaire et validation des données transmisses au serveur. Ici aussi, Symfony nous propose des outils permettant de simplifier plusieurs étapes de ce processus avec un type d'objet permettant de générer, gérer et valider les formulaires de notre site.
 
 De manière générale, on va créer des formulaires liés à une entité (dans notre cas, Publication), mais si besoin, il est aussi possible de créer des formulaires indépendants.
+
+#### Formulaire de validation -- Côté PHP
 
 Pour créer un formulaire lié à une entité, on utilise la commande `make:form` :
 
@@ -879,6 +883,8 @@ $builder
     ```
 </div>
 
+#### Formulaire de validation -- Côté Twig
+
 Votre formulaire est prêt à être utilisé ! Nous allons d'abord commencer par l'afficher sur notre page web.
 
 Comme d'habitude, tout se passe au niveau du contrôleur. Pour créer le formulaire et le passer à notre template, on procède comme suit, dans la méthode liée à la route dont la page affichera le formulaire :
@@ -926,12 +932,6 @@ Attention, dans le cas du bouton d'envoi du formulaire, on l'affiche aussi avec 
 {{ form_widget(nomFormulaire.nomChampSubmit, {'label' : "Envoyer"}) }}
 ```
 
-Il y a [d'autres méthodes utiles](https://symfony.com/doc/current/form/form_customization.html#form-field-helpers) que vous pourriez utiliser. En fait, l'intégralité du formulaire peut être généré sans écrire de HTML (on peut même utiliser une boucle) même les attributs liés aux balises html (id, class...). Néanmoins, Symfony nous permet de garder la main sur certains aspects, et ainsi, choisir ci qui est généré automatiquement ou non, si on souhaite customiser certaines parties. 
-
-Afin de garder une séparation entre les données du formulaire, sa validation et son affichage, nous allons choisir de ne pas coder les aspects liés au "style" (classes, id) dans les classes définissant les formulaires, et de plutôt les définir (si besoin) nous-même dans le template twig, à l'aide du paramètre `attr`.
-
-Si on utilise des frameworks `css` (comme bootstrap), il est facile de demander à Symfony de générer tous les formulaires en utilisant les classes de bootstrap, pour le style des inputs. Ainsi, dans certains cas, on peut générer tout le formulaire (avec `form(nomFormulaire)`) sans avoir besoin de le customiser. On peut également définir nos propres styles.
-
 Voici une petite démonstration, avec l'exemple de formulaire précédent (contenant un champ `motDePasse` et un champ `valider`, correspondant au bouton d'envoi) :
 
 ```twig
@@ -977,6 +977,12 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 2. Rechargez votre page, le formulaire devrait maintenant s'afficher !
 
 </div>
+
+Il y a [d'autres méthodes utiles](https://symfony.com/doc/current/form/form_customization.html#form-field-helpers) que vous pourriez utiliser. En fait, l'intégralité du formulaire peut être généré sans écrire de HTML (on peut même utiliser une boucle), même pour les attributs liés aux balises html (id, class...). Néanmoins, Symfony nous permet de garder la main sur certains aspects, et ainsi, choisir ci qui est généré automatiquement ou non, si on souhaite customiser certaines parties. 
+
+Afin de garder une séparation entre les données du formulaire, sa validation et son affichage, nous allons choisir de ne pas coder les aspects liés au "style" (classes, id) dans les classes définissant les formulaires, et de plutôt les définir (si besoin) nous-même dans le template twig, à l'aide du paramètre `attr`.
+
+Si on utilise des frameworks `css` (comme bootstrap), il est facile de demander à Symfony de générer tous les formulaires en utilisant les classes de bootstrap, pour le style des inputs. Ainsi, dans certains cas, on peut générer tout le formulaire (avec `form(nomFormulaire)`) sans avoir besoin de le customiser. On peut également définir nos propres styles.
 
 ### Création d'une publication
 
@@ -1231,6 +1237,8 @@ On peut notamment utiliser ce bout de code après avoir vérifié qu'un formulai
 
 </div>
 
+#### Gestion des erreurs - Création d'un service
+
 Le bout de code que vous avez ajouté à votre route `feed` va potentiellement être réutilisé à chaque fois que nous aurons à formulaire. Il serait donc judicieux de centraliser cela dans un `service` dédié !
 
 Pour créer un service, il suffit de créer une classe dans `src/Service` (par convention). Nous pourrons ensuite l'injecter dans une des méthodes du contrôleur comme nous le faisons pour les autres services. Il est d'ailleurs tout à fait possible d'injecter et d'utiliser d'autres services dans notre service (par exemple, nous allons avoir besoin d'accéder à la structure de données contenant les messages flash).
@@ -1319,6 +1327,8 @@ $flashBag->add(categorie, message);
 4. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
 </div>
 
+#### Gestion des erreurs - Interfaçage du service
+
 Comme vous l'aurez peut-être constaté, certains services comme `EntityManagerInterface` s'utilisent au travers d'une interface, et non pas d'une classe concrète. Pour permettre une meilleure modularité et substitutions des services de votre application (si vous décidez de changer la classe qui assure tel ou tel service), il est plus judicieux de définir vos services en les accompagnant d'une interface puis d'injecter et utiliser l'interface (dans les contrôleurs et autres) plutôt que la classe concrète.
 
 Dans ce cas, il faut éditer le fichier `config/services.yaml` afin de préciser quelle est la classe concrète actuellement liée à cette interface. Ce fichier permet de configurer différents aspects des services de notre application (par exemple, quand on a besoin d'injecter des paramètres de notre application dans certains services...).
@@ -1377,6 +1387,8 @@ Si jamais je souhaite changer de classe concrète, j'ai juste à créer une nouv
 <!-- 5. À l'aide des attributs HTML `minlength` et `maxlength` de `textarea`, ajoutez également une vérification des données côté client (min 4 caractères, max 200). Pour rappel, même si ces attributs permettent de vérifier le formulaire avant envoi, tout cela peut être très facilement désactivé ou le client peut faire une requête POST sans nécessairement utiliser le formulaire. Il ne faut donc jamais faire confiance aux données envoyées par le client et toujours re-vérifier côté serveur (ce que nous faisons avec nos assertions). -->
 
 </div>
+
+#### Gestion des erreurs - Validation côté client
 
 Il serait bien de détecter les erreurs de saisies avec des contraintes côté "client" (au niveau du HTML) pour ne pas envoyer la requête inutilement. Par exemple, avec les attributs `minlength` et `maxlength`, pour la longueur du champ.
 
