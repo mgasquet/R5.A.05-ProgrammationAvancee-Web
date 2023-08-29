@@ -11,7 +11,7 @@ L'année dernière, dans le cadre du cours de **complément web**, vous avez ét
 
 Mais concrètement, qu'est-ce qu'un **framework** ? Un framework est un "cadre de développement" fournissant une architecture et des outils permettant de créer une application (dans notre cas une application web, mais il en existe aussi pour d'autres types de logiciels). Un framework est composé de différentes briques logicielles et est généralement construit de manière à favoriser les bonnes pratiques de conception (utilisation de patterns, architecture organisée en couche, faible couplage, principes SOLID...). La sécurité (basique) de l'application est généralement assurée sans action du développeur (par exemple, pour le web, protection par défaut contre l'injection SQL, le CSRF, la faille XSS...).
 
-La plupart des frameworks utilisent généralement un `ORM` permettant de gérer simplement la couche "stockage" d'une application. Nous avions notamment utilisé cette technologie avec `JAVA` dans le cours de programmation des bases de données l'année dernière, au semestre 3. 
+La plupart des frameworks utilisent généralement un `ORM` permettant de gérer simplement la couche "stockage" d'une application. Nous avions notamment utilisé l'`ORM` *Hibernate* basé sur `Java` dans le cours de programmation des bases de données du semestre 3. 
 
 On parle de "cadre" car afin de coder son application, le développeur va devoir respecter le fonctionnement imposé par le framework et utiliser ses outils, ce qui l'empêche de dériver en proposant une conception et une manière de développer hors du "cadre" imposé. Et c'est une bonne chose car, sans s'en rendre compte, le développeur utilise de bonnes pratiques, ce qui augmente la maintenabilité et la lisibilité de son programme. De plus, le code d'un programme développé sous un framework précis sera rapidement compréhensible par un autre développeur connaissant aussi cette même technologie.
 
@@ -69,15 +69,15 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
     * Si vous souhaitez utiliser le serveur de l'IUT : rendez-vous dans le dossier `public_html` pour que votre projet soit accessible publiquement au travers du serveur `webinfo`.
 
-    * Si vous êtes sur votre machine et que **PHP est installé**, vous pourrez créer le dossier n'importe où et utiliser le **serveur local de Symfony** à télécharger ici :
+    * Si vous êtes sur votre machine avec un serveur Web local (`XAMPP`, `apache`, `Wamp`, `UwAmp`, `Mamp`). Il faudra simplement créer le projet dans un dossier accessible par votre serveur.
+
+    * Si vous êtes sur votre machine sans serveur local mais avec **PHP installé**, vous pourrez créer le dossier n'importe où et utiliser le **serveur local de Symfony** à télécharger ici :
 
         * [Windows](https://github.com/symfony-cli/symfony-cli/releases/download/v5.5.8/symfony-cli_windows_386.zip)
         * [macOS](https://github.com/symfony-cli/symfony-cli/releases/download/v5.5.8/symfony-cli_darwin_all.tar.gz)
         * [Linux](https://github.com/symfony-cli/symfony-cli/releases/download/v5.5.8/symfony-cli_linux_386.tar.gz)
 
-    Vous placerez le fichier `symfony` dans le dossier du projet une fois créé, nous verrons comment l'utiliser. Vous pouvez aussi utiliser ce serveur Symfony local sur les machines l'IUT.
-
-    * Si vous êtes sur votre machine, vous pouvez aussi utiliser un programme de serveur local (`XAMPP`, `apache`, `Wamp`, `UwAmp`, `Mamp`). Il faudra simplement créer le projet dans un dossier accessible par votre serveur.
+      Vous placerez le fichier `symfony` dans le dossier du projet une fois créé, nous verrons comment l'utiliser. Vous pouvez aussi utiliser ce serveur Symfony local sur les machines l'IUT.
 
 2. Dans le répertoire où vous souhaitez placer le dossier du projet, exécutez les commandes suivantes :
 
@@ -93,11 +93,11 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
    Cet ensemble de commandes crée les fichiers de base de votre projet et télécharge les briques logicielles essentielles pour le développement d'un site web.
 
-3. Aussi, **si vous travaillez sur le serveur web de l'iut**, assurez-vous qu'il dispose de tous les droits nécessaires par rapport à votre dossier `public_html` :
+3. Aussi, **si vous travaillez sur le serveur web de l'IUT**, assurez-vous qu'il dispose de tous les droits nécessaires par rapport à votre dossier `public_html` :
 
    ```bash
-   setfacl -R -m u:www-data:r-w-x ~/public_html
-   setfacl -R -m d:u:www-data:r-w-x ~/public_html
+   setfacl -R -m u:www-data:rwx ~/public_html
+   setfacl -R -m d:u:www-data:rwx ~/public_html
    ```
 
    Il peut y avoir quelques permissions non accordées, ce n'est pas grave.
@@ -318,68 +318,60 @@ Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates 
   un attribut avec {% raw %}`{{ donnee.attribut }}`{% endraw %}. *Twig* essayera d'abord de trouver
   un attribut public `$donnes->attribut`, puis appellera sinon
   `$donnes->getAttribut()`, `$donnes->isAttribut()` et `$donnes->hasAttribut()`
-  (*cf.* [documentation de Twig](https://twig.symfony.com/doc/3.x/templates.html#variables))..
+  (*cf.* [documentation de Twig](https://twig.symfony.com/doc/3.x/templates.html#variables)).
 
 * On peut définir des variables locales : 
 
-```twig
-{% raw %}
-{% set exemple = "coucou" %}
-<p>{{exemple}}</p>
-{% endraw %}
-```
+    ```twig
+    {% raw %}{% set exemple = "coucou" %}
+    <p>{{exemple}}</p>{% endraw %}
+    ```
 
 * La structure conditionnelle `if` permet de ne générer une partie du document que si une condition est remplie :
 
-```twig
-{% raw %}
-{% if test %}
-   Code HTML....
-{% endif %}
-{% endraw %}
-```
+    ```twig
+    {% raw %}{% if test %}
+    Code HTML....
+    {% endif %}{% endraw %}
+    ```
 
 * Il est bien sûr possible de construire des conditions complexes avec les opérateurs : `not`, `and`, `or`, `==`, `<`, `>`, `<=`, `>=`, etc... par exemple :
 
-```twig
-{% raw %}
-{% if test and (not (user.getName() == 'Smith') or user.getAge() <= 20) %}
-   Code HTML....
-{% endif %}
-{% endraw %}
-```
+    ```twig
+    {% raw %}{% if test and (not (user.getName() == 'Smith') or user.getAge() <= 20) %}
+    Code HTML....
+    {% endif %}{% endraw %}
+    ```
 
 * La structure répétitive `for` permet de parcourir une structure itérative (par exemple, un tableau) :
 
-```twig
-{% raw %}
-{% for data in tab %}
-   <p>{{ data }}</p>
-{% endfor %}
-{% endraw %}
-```
+    ```twig
+    {% raw %}{% for data in tab %}
+    <p>{{ data }}</p>
+    {% endfor %}{% endraw %}
+    ```
 
 * Si c'est un tableau associatif et qu'on veut accéder aux clés et aux valeurs en même temps :
 
-```twig
-{% raw %}
-<ul>
-{% for key, value in tab %}
-   <li>{{ key }} = {{ value }}</li>
-{% endfor %}
-<ul>
-{% endraw %}
-```
+    ```twig
+    {% raw %}
+    <ul>
+    {% for key, value in tab %}
+    <li>{{ key }} = {{ value }}</li>
+    {% endfor %}
+    <ul>
+    {% endraw %}
+    ```
 
 * On peut aussi faire une boucle variant entre deux bornes : 
 
-```twig
-{% raw %}
-{% for i in 0..10 %}
-    <p>{{ i }}ème valeur</p>
-{% endfor %}
-{% endraw %}
-```
+    ```twig
+    {% raw %}
+    {% for i in 0..10 %}
+        <p>{{ i }}ème valeur</p>
+    {% endfor %}
+    {% endraw %}
+    ```
 
 * Une syntaxe {% raw %}`{% else %}`{% endraw %} permet de traiter le cas particulier d'un tableau vide :  
 
@@ -462,13 +454,13 @@ Côté `twig`, il n'y a pas besoin de passer explicitement les messages en param
 {% endraw %}
 ```
 
-L'instruction `app.flashes(type)` permet d'obtenir un tableau de tous les messages flashs d'un type donné. On peut donc parcourir ce tableau avec `twig` et afficher les messages de la manière qu'on souhaite. Si on a plusieurs catégories de messages à afficher, il faut répéter l'opération en changeant de `type`.
+L'instruction `app.flashes(type)` permet d'obtenir un tableau de tous les messages flash d'un type donné. On peut donc parcourir ce tableau avec `twig` et afficher les messages de la manière qu'on souhaite. Si on a plusieurs catégories de messages à afficher, il faut répéter l'opération en changeant de `type`.
 
 <div class="exercise">
 
-1. Modifiez simplement une de vos routes pour ajouter des messages flashs de la catégorie de votre choix.
+1. Modifiez simplement une de vos routes pour ajouter des messages flash de la catégorie de votre choix.
 
-2. Modifiez le template lié à la route modifié à l'étape précédente pour afficher ces messages flashs.
+2. Modifiez le template lié à la route modifié à l'étape précédente pour afficher ces messages flash.
 
 3. Vérifiez que tout fonctionne.
 
@@ -920,7 +912,7 @@ public function methodeExemple(): Response
     ...
 
     //On passe le formulaire comme paramètre du template.
-    return $this->createView(..., ["formulaireExemple" => $form, ...]);
+    return $this->render(..., ["formulaireExemple" => $form, ...]);
 }
 ```
 
@@ -974,7 +966,7 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 
     ```twig
     {% raw %}
-    <!-- Génération de la balise <form>, possédant un id (HTML) 'feedyNew' -->
+    <!-- Génération de la balise <form>, possédant un id (HTML) "feedy-new" -->
     {{ form_start(...) }}
         <fieldset>
             <legend>Nouveau feedy</legend>
@@ -983,7 +975,7 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
                 {{ form_widget(...) }}
             </div>
             <div>
-                <!-- Le bouton de validation, possédant l'id `feedy-new-submit` et le label `Feeder!` -->
+                <!-- Le bouton de validation, possédant l'id "feedy-new-submit" et le label "Feeder!" -->
                 {{ form_widget(...) }}
             </div>
         </fieldset>
@@ -1004,7 +996,7 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 
 Maintenant que vous savez générer et afficher un formulaire, vous allez pouvoir le traiter et le valider côté `back-end`.
 
-Pour cela, on regroupe généralement la route/action qui affiche (GET) et traire (POST) le formulaire sur la même méthode, dans le contrôleur :
+Pour cela, on regroupe généralement la route/action qui affiche (GET) et traite (POST) le formulaire sur la même méthode, dans le contrôleur :
 
 ```php
 use Symfony\Component\HttpFoundation\Request;
@@ -1023,7 +1015,7 @@ public function methodeExemple(Request $request, EntityManagerInterface $entityM
     //Traitement du formulaire
     $form->handleRequest($request);
     if($form->isSubmitted() && $form->isValid()) {
-        //A ce stade, le formulaire et ses données sont valides
+        // À ce stade, le formulaire et ses données sont valides
         // L'objet "Exemple" a été mis à jour avec les données, il ne reste plus qu'à le sauvegarder
         $entityManager->persist($exemple);
         $entityManager->flush();
@@ -1032,7 +1024,7 @@ public function methodeExemple(Request $request, EntityManagerInterface $entityM
         return $this->redirectToRoute('maRoute');
     }
 
-    return $this->createView(..., ["formulaireExemple" => $form, ...]);
+    return $this->render(..., ["formulaireExemple" => $form, ...]);
 }
 ```
 
@@ -1042,15 +1034,15 @@ public function methodeExemple(Request $request, EntityManagerInterface $entityM
 
 * La méthode `handleRequest` permet de remplir le formulaire avec les données envoyées par le client et également affecter les champs correspondants à l'objet traité par le formulaire s'il y en a un.
 
-* La méthode `isSubmitted` vérifie que le formulaire a bien été soumis **et que sa méthode correspond bien à la méthode de l'objet formulaire** qui est `POST` par défaut. En d'autres termes, par défaut, si on soumet un formulaire sans méthode `POST`, si l'objet correspondant au formulaire n'a pas d'options particulières, `isSubmitted` renverra `false`.
+* La méthode `isSubmitted` vérifie que le formulaire a bien été soumis **et que sa méthode correspond bien à la méthode de l'objet formulaire** qui est `POST` par défaut. En d'autres termes, par défaut, si on soumet un formulaire sans méthode `POST`, et si l'objet correspondant au formulaire n'a pas d'options particulières, `isSubmitted` renverra `false`.
 
-* La méthode `isValid` permet de vérifier que les données soumisses sont valides, au niveau des contraintes placées par le développeur (nous y reviendrons juste après).
+* La méthode `isValid` permet de vérifier que les données soumises sont valides, au niveau des contraintes placées par le développeur (nous y reviendrons juste après).
 
 * L'objet `EntityManagerInterface $entityManager` permet de sauvegarder l'objet dans la base de données. La méthode `persist` prépare la sauvegarde de l'objet et `flush` l'exécute. Vous noterez qu'on utilise ici aussi l'injection de dépendances par autowiring!
 
 * Il est possible de séparer l'affichage et le traitement du formulaire en deux méthodes distinctes, mais tout regrouper dans une seule méthode permet de conserver les données du formulaire et ainsi pré-remplir les champs si le formulaire doit être ré-affiché, en cas d'erreur.
 
-* Après enregistrement, on redirige vers une autre route en utilisant la méthode `redirectToRoute`. Cela peut éventuellement être la même route
+* Après enregistrement, on redirige vers une autre route en utilisant la méthode `redirectToRoute`. Cela peut éventuellement être la même route.
 
 Cependant, dans notre cas, il reste un problème : quand et comment la date de publication va être générée si l'utilisateur ne la transmet pas dans le formulaire ?
 
@@ -1094,7 +1086,7 @@ public function methodeExempleGet(): Response
         'method' => '...',
         'action' => $this->generateURL('nomRoute')
     ]);
-    return $this->createView(..., ["formulaireExemple" => $form, ...]);
+    return $this->render(..., ["formulaireExemple" => $form, ...]);
 }
 
 #[Route('/exemple', name: 'route_exemple_post', methods: ["POST"])]
@@ -1114,7 +1106,7 @@ public function methodeExemple(Request $request, EntityManagerInterface $entityM
 
 ### Assertions (contraintes)
 
-Vous savez maintenant comment créer des publications via un formulaire, mais pour l'instant, vous ne vérifiez pas vraiment les données qui sont soumises. Par exemple, inspectez la page, enlevez le "required" du formulaire et tentez d'envoyer une publication vide. Vous obtenez une belle erreur liée à la base de données (vu que notre message ne peut pas ête null) ! L'utilisateur n'a pas à voir ça.
+Vous savez maintenant comment créer des publications via un formulaire, mais pour l'instant, vous ne vérifiez pas vraiment les données qui sont soumises. Par exemple, inspectez la page, enlevez le "required" du formulaire et tentez d'envoyer une publication vide. Vous obtenez une belle erreur liée à la base de données (vu que notre message ne peut pas être `null`) ! L'utilisateur n'a pas à voir ça.
 
 Aussi, comment faire, par exemple, pour limiter la taille du message ? Est-ce que cela se fait avec le contrôleur ? Pas du tout, pour cela, Symfony a prévu un système appelé **assertions**.
 
@@ -1136,9 +1128,9 @@ Quelques exemples :
 
 * `#[Assert\NotBlank]` : vérifie que la propriété a bien été transmise par le formulaire et possède une valeur.
 
-* `#[Assert\NotNull]` : vérifie que la propriété n'est pas nulle (du côté de l'application). Cela signifie que la propriété est présente (transmisse par le formulaire), et n'a pas la valeur `null`. Cela peut paraître redondant avec le fait que la propriété ne peu pas être nulle dans la base, mais avec cette assertion la vérification est faite au niveau de l'application et non pas d côté de la base.
+* `#[Assert\NotNull]` : vérifie que la propriété n'est pas nulle (du côté de l'application). Cela signifie que la propriété est présente (transmise par le formulaire), et n'a pas la valeur `null`. Cela peut paraître redondant avec le fait que la propriété ne peut pas être nulle dans la base, mais avec cette assertion la vérification est faite au niveau de l'application et non pas du côté de la base.
 
-Bref, il en existe des tas. Sur la plupart des assertions, on peut aussi ajouter un paramètre `message` pour préciser un message d'erreur customisé en cas d'échec de validation. Il est bien sûr possible d'apposer plusieurs attruvyts d'assertions au-dessus d'une propriété. Vous pouvez retrouver la liste des types d'assertions disponibles [ici](https://symfony.com/doc/current/reference/constraints.html).
+Bref, il en existe des tas. Sur la plupart des assertions, on peut aussi ajouter un paramètre `message` pour préciser un message d'erreur personnalisé en cas d'échec de validation. Il est bien sûr possible d'apposer plusieurs attributs d'assertions au-dessus d'une propriété. Vous pouvez retrouver la liste des types d'assertions disponibles [ici](https://symfony.com/doc/current/reference/constraints.html).
 
 Au niveau `PHP`, il faut importer les assertions ainsi :
 
@@ -1169,11 +1161,11 @@ class ExempleType extends AbstractType {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            //Champ lié à ma classe Exemple -> l'assertion est dans la classe Exemple
+            // Champ lié à ma classe Exemple -> l'assertion est dans la classe Exemple
             ->add('champ1', TextType::class)
 
-            //Champ qui n'est pas lié à mon entité Exemple
-            //On rajoute l'otpion "mapped => false" pour dire que ce champ n'appartient pas à la classe "Exemple"
+            // Champ qui n'est pas lié à mon entité Exemple
+            // On rajoute l'otpion "mapped => false" pour dire que ce champ n'appartient pas à la classe "Exemple"
             ->add('champ2', TextType::class, [
                 "mapped" => false,
                 "constraints" => [
@@ -1214,13 +1206,13 @@ Les erreurs du formulaire sont générées et stockées dans l'objet lié au for
 
 Néanmoins, dans notre cas, nous allons plutôt utiliser ces messages comme des messages flash.
 
-De manière générale, nous allons définir deux types de messages flashs :
+De manière générale, nous allons définir deux types de messages flash :
 
 * `success` : quand l'utilisateur a terminé un processus avec succès (par exemple, inscription/connexion...)
 
 * `error` : pour tout type de messages d'erreurs (notamment, ceux liés aux formulaires...)
 
-Dans notre template `twig`, on utilisera le design suivant pour nos messages flashs :
+Dans notre template `twig`, on utilisera le design suivant pour nos messages flash :
 
 ```html
 <div id="flashes-container">
@@ -1241,13 +1233,13 @@ foreach ($errors as $error) {
 }
 ```
 
-On peut notamment utiliser ce bout de code après avoir vérifié qu'un formulaire n'est pas valide, pour ajouter les erreurs sous la forme de messages flashs.
+On peut notamment utiliser ce bout de code après avoir vérifié qu'un formulaire n'est pas valide, pour ajouter les erreurs sous la forme de messages flash.
 
 <div class="exercise">
 
-1. Dans votre template `feed.html.twig`, prenez en charge l'affichage des messages flashs en ajoutant (et en, adaptant) la div `flashes-container` présenté précédemment. Placez cette div dans le `body`, juste après le `header`. Il faut que les messages des types `error` et `success` puissent être affichés.
+1. Dans votre template `feed.html.twig`, prenez en charge l'affichage des messages flash en ajoutant (et en adaptant) la div `flashes-container` présenté précédemment. Placez cette div dans le `body`, juste après le `header`. Il faut que les messages des types `error` et `success` puissent être affichés.
 
-2. Dans votre route `feed`, faites en sorte d'enregistrer les messages d'erreurs du formulaire comme messages flashs du type `error` si le formulaire n'est pas valide.
+2. Dans votre route `feed`, faites en sorte d'enregistrer les messages d'erreurs du formulaire comme messages flash du type `error` si le formulaire n'est pas valide.
 
 3. Rechargez la page puis essayer à nouveau de créer une publication avec moins de 4 caractères ou plus de 200. Vérifiez que le message d'erreur que vous aviez configuré plus tôt avec les assertions apparaît bien.
 
@@ -1255,7 +1247,7 @@ On peut notamment utiliser ce bout de code après avoir vérifié qu'un formulai
 
 Le bout de code que vous avez ajouté à votre route `feed` va potentiellement être réutilisé à chaque fois que nous aurons à formulaire. Il serait donc judicieux de centraliser cela dans un `service` dédié !
 
-Pour créer un service, il suffit de créer une classe dans (par convention, dans `src/Service`). Nous pourrons ensuite l'injecter dans une des méthodes du contrôleur comme nous le faisons pour les autres services. Il est d'ailleurs tout à fait possible d'injecter et d'utiliser d'autres services dans notre service (par exemple, nous allons avoir besoin d'accéder à la structure de données contenant les messages flashs).
+Pour créer un service, il suffit de créer une classe dans `src/Service` (par convention). Nous pourrons ensuite l'injecter dans une des méthodes du contrôleur comme nous le faisons pour les autres services. Il est d'ailleurs tout à fait possible d'injecter et d'utiliser d'autres services dans notre service (par exemple, nous allons avoir besoin d'accéder à la structure de données contenant les messages flash).
 
 Par exemple, imaginons un service qui utilisera le service `EntityManagerInterface` et `ExempleRepository`. Je peux le créer simplement ainsi :
 
@@ -1270,11 +1262,11 @@ class ExempleService {
     ) {}
 
     public function maFonction() : void {
-        ...
+        // ...
         $ex = $this->exempleRepository->findAll();
-        ...
+        // ...
         $this->entityManager->persist(...)
-        ...
+        // ...
     }
 }
 ```
@@ -1304,7 +1296,7 @@ public function methodeExemple(ExempleService $exempleService): Response
 }
 ```
 
-Dans le service que vous allez créer, vous aurez besoin du service `RequestStack` qui permet d'ajouter des messages flashs dans la session de l'utilisateur :
+Dans le service que vous allez créer, vous aurez besoin du service `RequestStack` qui permet d'ajouter des messages flash dans la session de l'utilisateur :
 
 ```php
 $flashBag = $this->requestStack->getSession()->getFlashBag();
@@ -1328,10 +1320,10 @@ $flashBag->add(categorie, message);
 
         public function __construct(/* Injection de RequestStack */){}
 
-        function addFormErrorsAsFlash(FormInterface $form) : void
+        public function addFormErrorsAsFlash(FormInterface $form) : void
         {
             $errors = $form->getErrors(true);
-            //Ajouts des erreurs du formulaire comme messages flahs de la catégorie "error".
+            //Ajouts des erreurs du formulaire comme messages flash de la catégorie "error".
         }
     }
     ```
@@ -1341,7 +1333,7 @@ $flashBag->add(categorie, message);
 4. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
 </div>
 
-Comme vous l'aurez peut-être constaté, certains services comme `EntityManagerInterface` s'utilisent au travers d'une interface, et non pas d'une classe concrète. Pour permettre une meilleure modularité et substituions des services de votre application (si vous décidez de changer la classe qui assure tel ou tel service), il est plus judicieux de définir vos services en les accompagnant d'une interface puis d'injecter et utiliser l'interface (dans les contrôleurs et autres) plutôt que la classe concrète.
+Comme vous l'aurez peut-être constaté, certains services comme `EntityManagerInterface` s'utilisent au travers d'une interface, et non pas d'une classe concrète. Pour permettre une meilleure modularité et substitutions des services de votre application (si vous décidez de changer la classe qui assure tel ou tel service), il est plus judicieux de définir vos services en les accompagnant d'une interface puis d'injecter et utiliser l'interface (dans les contrôleurs et autres) plutôt que la classe concrète.
 
 Dans ce cas, il faut éditer le fichier `config/services.yaml` afin de préciser quelle est la classe concrète actuellement liée à cette interface. Ce fichier permet de configurer différents aspects des services de notre application (par exemple, quand on a besoin d'injecter des paramètres de notre application dans certains services...).
 
@@ -1396,7 +1388,7 @@ Si jamais je souhaite changer de classe concrète, j'ai juste à créer une nouv
 
 4. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
 
-5. À l'aide des attributs HTML `minlength` et `maxlength` de `textarea`, ajoutez également une vérification des données côté client (min 4 caractères, max 200). Pour rappel, même si ces attributs permettent de vérifier le formulaire avant envoi, tout cela peut être très facilement désactivé ou le client peut faire une requête POST sans nécessairement utiliser le formulaire. Il ne faut donc jamais faire confiance aux données envoyées par le client et toujours re-vérifier côté serveur (ce que nous faisons avec nos assertions).
+<!-- 5. À l'aide des attributs HTML `minlength` et `maxlength` de `textarea`, ajoutez également une vérification des données côté client (min 4 caractères, max 200). Pour rappel, même si ces attributs permettent de vérifier le formulaire avant envoi, tout cela peut être très facilement désactivé ou le client peut faire une requête POST sans nécessairement utiliser le formulaire. Il ne faut donc jamais faire confiance aux données envoyées par le client et toujours re-vérifier côté serveur (ce que nous faisons avec nos assertions). -->
 
 </div>
 
@@ -1404,9 +1396,11 @@ Il serait bien de détecter les erreurs de saisies avec des contraintes côté "
 
 Il serait possible de paramétrer ces contraintes sur le template, en utilisant le paramètre `attr` de `form_widget` :
 
+```
 {% raw %}
 {{ form_widget(form.champ1, {attr : {'minlength' : 4, 'maxlength' : 10}}) }}
 {% endraw %}
+```
 
 Mais on peut faire encore mieux et les ajouter dans la classe du formulaire, au niveau du champ associé :
 
@@ -1429,9 +1423,11 @@ class ExempleType extends AbstractType {
 
 Ainsi, quand j'utiliserai `form_widget`, ces contraintes seront automatiquement générées :
 
+```
 {% raw %}
 {{ form_widget(form.champ1) }}
 {% endraw %}
+```
 
 <div class="exercise">
 
@@ -1508,7 +1504,7 @@ Pour notre site, nous allons donc adopter la stratégie suivante :
 
 1. Créez un template `base.html.twig` à la racine du dossier `templates`. À l'intérieur, déplacez globalement tout ce qui se trouve dans le template `feed.html.twig` sauf le `main` (en gros, tout ce qui sera a priori commun à toutes les pages de notre site...).
 
-2. Dans le `body` de ce template, juste après la zone affichant les messages flashs, créez un block `page_content`.
+2. Dans le `body` de ce template, juste après la zone affichant les messages flash, créez un block `page_content`.
 
 3. Dans `feed.html.twig`, faites en sorte d'étendre `base.html.twig` puis de récrire le block `page_content` de manière adéquate, en ne gardant que le contenu propre à cette page. Si ce n'est pas déjà fait, supprimez tout le reste (qui est redondant avec ce qui est déjà contenu `base.html.twig`).
 
