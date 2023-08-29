@@ -5,6 +5,8 @@ layout: tutorial
 lang: fr
 ---
 
+{% raw %}
+
 ## Introduction
 
 L'année dernière, dans le cadre du cours de **complément web**, vous avez étudié et mis en pratique les notions essentielles afin de construire un **framework** web. Nous nous sommes notamment intéressé aux notions de conteneur à injection de dépendances (conteneur IoC), aux design patterns et globalement aux outils utiles permettant de rendre notre framework simple d'utilisation et hautement paramétrable.
@@ -311,11 +313,11 @@ public function methodeExempleGet(): Response
 
 Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates (vous pouvez aller rapidement sur cette partie si vous vous souvenez bien des cours de l'année dernière)
 
-* L'instruction {% raw %}`{{ donnee }}`{% endraw %} permet d'afficher une donnée. Elle sera
+* L'instruction `{{ donnee }}` permet d'afficher une donnée. Elle sera
   automatiquement échappée pour le *HTML*.
 
-  On peut accéder à une méthode d'un objet avec {% raw %}`{{ donnee.methode() }}`{% endraw %}, et à
-  un attribut avec {% raw %}`{{ donnee.attribut }}`{% endraw %}. *Twig* essayera d'abord de trouver
+  On peut accéder à une méthode d'un objet avec `{{ donnee.methode() }}`, et à
+  un attribut avec `{{ donnee.attribut }}`. *Twig* essayera d'abord de trouver
   un attribut public `$donnes->attribut`, puis appellera sinon
   `$donnes->getAttribut()`, `$donnes->isAttribut()` et `$donnes->hasAttribut()`
   (*cf.* [documentation de Twig](https://twig.symfony.com/doc/3.x/templates.html#variables)).
@@ -323,66 +325,60 @@ Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates 
 * On peut définir des variables locales : 
 
     ```twig
-    {% raw %}{% set exemple = "coucou" %}
-    <p>{{exemple}}</p>{% endraw %}
+    {% set exemple = "coucou" %}
+    <p>{{exemple}}</p>
     ```
 
 * La structure conditionnelle `if` permet de ne générer une partie du document que si une condition est remplie :
 
     ```twig
-    {% raw %}{% if test %}
+    {% if test %}
     Code HTML....
-    {% endif %}{% endraw %}
+    {% endif %}
     ```
 
 * Il est bien sûr possible de construire des conditions complexes avec les opérateurs : `not`, `and`, `or`, `==`, `<`, `>`, `<=`, `>=`, etc... par exemple :
 
     ```twig
-    {% raw %}{% if test and (not (user.getName() == 'Smith') or user.getAge() <= 20) %}
+    {% if test and (not (user.getName() == 'Smith') or user.getAge() <= 20) %}
     Code HTML....
-    {% endif %}{% endraw %}
+    {% endif %}
     ```
 
 * La structure répétitive `for` permet de parcourir une structure itérative (par exemple, un tableau) :
 
     ```twig
-    {% raw %}{% for data in tab %}
+    {% for data in tab %}
     <p>{{ data }}</p>
-    {% endfor %}{% endraw %}
+    {% endfor %}
     ```
 
 * Si c'est un tableau associatif et qu'on veut accéder aux clés et aux valeurs en même temps :
 
     ```twig
-    {% raw %}
     <ul>
     {% for key, value in tab %}
     <li>{{ key }} = {{ value }}</li>
     {% endfor %}
     <ul>
-    {% endraw %}
     ```
 
 * On peut aussi faire une boucle variant entre deux bornes : 
 
     ```twig
-    {% raw %}
     {% for i in 0..10 %}
         <p>{{ i }}ème valeur</p>
     {% endfor %}
-    {% endraw %}
     ```
 
-* Une syntaxe {% raw %}`{% else %}`{% endraw %} permet de traiter le cas particulier d'un tableau vide :  
+* Une syntaxe `{% else %}` permet de traiter le cas particulier d'un tableau vide :  
 
    ```twig
-   {% raw %}
    {% for data in tab %}
       <p>{{ data }}</p>
    {% else %}
    Pas de données dans le tableau
    {% endfor %}
-   {% endraw %}
    ```
 
 Dans l'exemple donné plus tôt avec la méthode `render` de symfony, j'ai accès à deux paramètres `param1` et `param2`, que je peux directement utiliser dans le template.
@@ -445,13 +441,11 @@ public function methodeExempleGet(): Response
 Côté `twig`, il n'y a pas besoin de passer explicitement les messages en paramètres template. Ils sont directement accessibles de la manière suivante :
 
 ```twig
-{% raw %}
 {% for flashMsg in app.flashes(type) %}
     ...
     {{ flashMsg }}
     ...
 {% endfor %}
-{% endraw %}
 ```
 
 L'instruction `app.flashes(type)` permet d'obtenir un tableau de tous les messages flash d'un type donné. On peut donc parcourir ce tableau avec `twig` et afficher les messages de la manière qu'on souhaite. Si on a plusieurs catégories de messages à afficher, il faut répéter l'opération en changeant de `type`.
@@ -546,8 +540,8 @@ Ensuite, il faut générer et exécuter une **migration**. Une migration est un 
 Pour générer puis exécuter une migration, on utilise les deux commandes suivantes :
 
 ```bash
-    php bin/console make:migration
-    php bin/console doctrine:migrations:migrate
+php bin/console make:migration
+php bin/console doctrine:migrations:migrate
 ```
 
 On doit effectuer une migration dès que l'ont créé ou que l'on modifie une entité existante (nom des attributs, assertions de type `ORM` modifiés...) afin de garder la structure de la base de données à jour.
@@ -661,9 +655,9 @@ Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https:
 
 Tout cela manque un peu de style ! Et d'image de profil pour les publications ! Comme nous n'avons pas encore d'utilisateurs, nous allons utiliser une image "anonyme".
 
-Avec Symfony, tous les "assets" (images, fichiers css, js, etc...) doivent être placés dans le dossier `public`, à la racine du projet. Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction {% raw %}`{{ assets(chemin) }}`{% endraw %} (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier.
+Avec Symfony, tous les "assets" (images, fichiers css, js, etc...) doivent être placés dans le dossier `public`, à la racine du projet. Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ assets(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier.
 
-Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : {% raw %}`{{ asset("exemple/coucou.jpg") }}`{% endraw %} dans mon template (typiquement, dans la partie `src`).
+Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : `{{ asset("exemple/coucou.jpg") }}` dans mon template (typiquement, dans la partie `src`).
 
 <div class="exercise">
 
@@ -691,9 +685,7 @@ Pour gérer cela, symfony propose d'utiliser la fonction `path('nomRoute')` dans
 Par exemple, si j'ai une route nommée `exemple` ayant pour chemin `/exemple/test/bonjour`, alors, si dans un template twig j'écris :
 
 ```twig
-{% raw %}
 <a href="{{ path('exemple') }}">Mon lien</a>
-{% endraw %}
 ```
 
 Cela générera la balise `<a>` suivante :
@@ -931,9 +923,7 @@ Vous noterez que dans le cas de `form_widget`, l'identifiant ne se place pas dan
 Attention, dans le cas du bouton d'envoi du formulaire, on l'affiche aussi avec `form_widget`, et on configure le message contenu dans le bouton avec le paramètre `label` : 
 
 ```twig
-{% raw %}
 {{ form_widget(nomFormulaire.nomChampSubmit, {'label' : "Envoyer"}) }}
-{% endraw %}
 ```
 
 Il y a [d'autres méthodes utiles](https://symfony.com/doc/current/form/form_customization.html#form-field-helpers) que vous pourriez utiliser. En fait, l'intégralité du formulaire peut être généré sans écrire de HTML (on peut même utiliser une boucle) même les attributs liés aux balises html (id, class...). Néanmoins, Symfony nous permet de garder la main sur certains aspects, et ainsi, choisir ci qui est généré automatiquement ou non, si on souhaite customiser certaines parties. 
@@ -945,7 +935,6 @@ Si on utilise des frameworks `css` (comme bootstrap), il est facile de demander 
 Voici une petite démonstration, avec l'exemple de formulaire précédent (contenant un champ `motDePasse` et un champ `valider`, correspondant au bouton d'envoi) :
 
 ```twig
-{% raw %}
 {{ form_start(formulaireExemple, {'attr': {'id' : 'monForm'}}) }}
     <div class="form-elt">
         {{ form_widget(formulaireExemple.motDePasse, {'id': "mdp", 'attr' : {"placeholder": "Trouvez un mot de passe sécurisé!"}}) }}
@@ -953,7 +942,6 @@ Voici une petite démonstration, avec l'exemple de formulaire précédent (conte
         {{ form_widget(formulaireExemple.valider, {'id': "exemple-submit", 'label' : "Valider le formulaire"}) }}
     {{ form_rest(formulaireExemple) }}
 {{ form_end(formulaireExemple) }}
-{% endraw %}
 ```
 
 Concernant l'attribut **method** et **action** du formulaire, ils sont définis dans le contrôleur, lors de l'appel de la méthode `createForm`, comme montré dans un précédent exemple.
@@ -965,7 +953,6 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 2. Dans votre template `feed.html.twig`, au tout début du `div` d'identifiant `feed` insérez et complétez le template suivant :
 
     ```twig
-    {% raw %}
     <!-- Génération de la balise <form>, possédant un id (HTML) "feedy-new" -->
     {{ form_start(...) }}
         <fieldset>
@@ -983,7 +970,6 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
     {{ form_rest(...) }}
     <!-- Génération de la balise fermante </form> -->
     {{ form_end(...) }}
-    {% endraw %}
     ```
 
     Pour rappel, le nom de votre formulaire correspond à celui que vous avez passé en paramètre du template dans votre contrôleur.
@@ -1397,9 +1383,7 @@ Il serait bien de détecter les erreurs de saisies avec des contraintes côté "
 Il serait possible de paramétrer ces contraintes sur le template, en utilisant le paramètre `attr` de `form_widget` :
 
 ```
-{% raw %}
 {{ form_widget(form.champ1, {attr : {'minlength' : 4, 'maxlength' : 10}}) }}
-{% endraw %}
 ```
 
 Mais on peut faire encore mieux et les ajouter dans la classe du formulaire, au niveau du champ associé :
@@ -1424,9 +1408,7 @@ class ExempleType extends AbstractType {
 Ainsi, quand j'utiliserai `form_widget`, ces contraintes seront automatiquement générées :
 
 ```
-{% raw %}
 {{ form_widget(form.champ1) }}
-{% endraw %}
 ```
 
 <div class="exercise">
@@ -1441,22 +1423,18 @@ Ainsi, quand j'utiliserai `form_widget`, ces contraintes seront automatiquement 
 
 Bientôt, nous allons ajouter de nouvelles pages à notre site. Mais il serait assez peu concevable que nous devions répéter le code HTML de certaines parties de nos pages, comme le bandeau, le head, le menu de navigation, le footer... Heureusement, pour palier à ce problème, `twig` possède une fonctionnalité appelée **blocks**.
 
-Un `block` est une zone d'un template qui pourra être **redéfini** dans un sous-template. On délimite la zone du block simplement en utilisant {% raw %}`{% block nom_block %}` et `{% endblock %}`{% endraw %} :
+Un `block` est une zone d'un template qui pourra être **redéfini** dans un sous-template. On délimite la zone du block simplement en utilisant `{% block nom_block %}` et `{% endblock %}` :
 
 ```twig
-{% raw %}
 {% block nom_block %}
    Contenu du bloc...
 {% endblock %}
-{% endraw %}
 ```
 
 Dans un template, on peut **étendre** un autre template. Il suffit d'ajouter dans notre template l'instruction suivante :
 
 ```twig
-{% raw %}
 {% extends "nomFichier.html.twig" %}
-{% endraw %}
 ```
 
 Le chemin à spécifier pour le template étendu est le même que quand on génère la page HTML à renvoyer depuis le contrôleur : on se base par rapport à la racine du dossier `templates`.
@@ -1464,7 +1442,6 @@ Le chemin à spécifier pour le template étendu est le même que quand on gén�
 Par exemple, imaginons le template suivant, `test.html.twig` :
 
 ```twig
-{% raw %}
 <html>
    <head>
       <title>{% block titre %}Test {% endblock %}</title>
@@ -1475,17 +1452,14 @@ Par exemple, imaginons le template suivant, `test.html.twig` :
       <footer>...</footer>
    </body>
 </html>
-{% endraw %}
 ```
 
 Vous pouvez alors créer le sous-template suivant qui copiera exactement le contenu de `test.html.twig` et modifiera seulement le titre et le contenu du main : 
 
 ```twig
-{% raw %}
 {% extends "test.html.twig" %}
 {% block titre %}Mon titre custom{% endblock %}
 {% block main %} <p>Coucou!</p> {% endblock %}
-{% endraw %}
 ```
 
 Il n'est pas obligatoire de redéfinir tous les blocks quand on étend un template. Dans l'exemple ci-dessus, on aurait pu seulement redéfinir le bloc `main` sans changer le titre de la page, par exemple.
@@ -1517,3 +1491,5 @@ Pour notre site, nous allons donc adopter la stratégie suivante :
 ## Conclusion
 
 Vous maîtrisez maintenant les fondamentaux du framework Symfony : son système de routing, ses commandes, le moteur de template **twig**, les services et l'utilisation de l'ORM **Doctrine**. Vous pouvez déjà construire un petit site assez facilement. Il reste cependant un aspect majeur à aborder : la gestion des utilisateurs. L'objectif du second TD sera donc de mettre en place tout ce qu'il faut pour inscrire, connecter, déconnecter et gérer les permissions (basiques) d'un utilisateur.
+
+{% endraw %}
