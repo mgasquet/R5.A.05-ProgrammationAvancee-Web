@@ -126,7 +126,7 @@ Vous devriez maintenant voir la page par défaut de Symfony, signe que tout est 
 
 Comme vous pouvez le constater, il y a **beaucoup** de fichiers qui ont été générés. Au lieu de tous vous les présenter dans une section dédiée, nous parlerons plutôt de chaque fichier/dossier utile individuellement quand nous aurons besoin de l'utiliser.
 
-Quand vous uploaderez votre projet sur git, certains dossiers comme `vendor` (contenant les libreairies importées) ou bien le cache du site seront ignorés. Pour installer un projet déjà existant (chez vous, sur une autre machine) il suffit d'exécuter la commande suivante à la racine du projet :
+Quand vous uploaderez votre projet sur git, certains dossiers comme `vendor` (contenant les librairies importées) ou bien le cache du site seront ignorés. Pour installer un projet déjà existant (chez vous, sur une autre machine) il suffit d'exécuter la commande suivante à la racine du projet :
 
 ```bash
 composer install
@@ -140,7 +140,7 @@ Dans cette première section, nous allons voir comment créer des contrôleurs, 
 
 ### Contrôleur et Routing
 
-Symfony propose diverses commandes qui permettent d'initialiser (voir de créer en quasi-totalité) des classes de certaines catégories (entités, contrôleurs, formulaires...) et de la placer au bon endroit dans l'architecture de l'application. Ces commandes doivent s'éxécuter **à la racine du projet**;
+Symfony propose diverses commandes qui permettent d'initialiser (voir de créer en quasi-totalité) des classes de certaines catégories (entités, contrôleurs, formulaires...) et de la placer au bon endroit dans l'architecture de l'application. Ces commandes doivent s'exécuter **à la racine du projet**;
 
 Afin de créer un nouveau contrôleur, nous pouvons notamment utiliser la commande suivante :
 
@@ -197,7 +197,7 @@ public function methodeExemple(): Response
 
 * Le premier paramètre correspond au sous-chemin à partir de la racine de votre site web. Dans l'exemple ci-dessus, si par exemple votre projet est hébergé sur `https://monsite.com`, alors cela correspond à l'url `https://monsite.com/public/exemple` (dans un cas réel, on pointerait directement le nom de domaine sur le sous-dossier "public" du projet, et pas à sa racine, ce qui donnerait alors directement `https://monsite.com/exemple`. C'est aussi le cas si vous utilisez le serveur local de symfony).
 
-* Le second paramètre `name` correspond au nom de la route. Celui-ci doit être **unique** dans toutes l'application (pas deux routes avec le même nom). Ce nom de route est très important, car on pourra l'utiliser au lieu du chemin pour rediriger l'utilisateur, ou bien générer des URLs dans nos pages HTML.
+* Le second paramètre `name` correspond au nom de la route. Celui-ci doit être **unique** dans toute l'application (pas deux routes avec le même nom). Ce nom de route est très important, car on pourra l'utiliser au lieu du chemin pour rediriger l'utilisateur, ou bien générer des URLs dans nos pages HTML.
 
 * Le dernier paramètre correspond aux **méthodes HTTP** autorisées sur cette route. Par exemple, on peut autoriser seulement la méthode `GET` à être appelée sur cette route, ou bien seulement `GET` ou `POST`.
 
@@ -298,7 +298,7 @@ Pour faciliter le développement de la partie `front-end`, Symfony utilise le mo
 
 Les fichiers `twig` sont appelés `templates` et on les nomme généralement ainsi : `nom.format_genere.twig` (en effet, twig ne sert pas seulement à générer du HTML!). Dans notre cas, comme nous allons générer du `HTML`, nous les nommerons donc `nom.html.twig`. Ces templates sont rangés dans le sous-dossier `templates` à partir de la racine du projet.
 
-Afin de demander à Symfony de générer une réponse contenant une page HTML générée avec un template `twig`, on utilise la méthode `render` disponible dans tous les contrôleurs :
+Afin de demander à Symfony de générer une page HTML à partir d'un template `twig`, on utilise la méthode `render` disponible dans tous les contrôleurs :
 
 ```php
  #[Route('/exemple', name: 'route_exemple_get', methods: ["GET"])]
@@ -414,7 +414,7 @@ Pour vérifier que vous avez bien compris le fonctionnement basique de twig et c
 4. Le template `demo2` doit afficher (dans son body) une variable `nom` passé en paramètre du template. Modifiez votre route `hello_get2` pour qu'elle affiche une page HTML générée avec ce template, en passant le nom récupéré dans l'URL au template via la méthode `render`.
 
 5. Le template `demo3` doit afficher (dans son body) une liste non ordonnée (`<ul></ul>`) contenant des éléments (`<li></li>`) correspondant aux éléments d'un tableau `listeCourses` passé en paramètre du template. 
-Ajouter une nouvelle route `courses` dans votre `DemoController` (en GET, avec le chemin de votre choix) qui initialise simplement (en dur) un tableau de chaînes de caractères contenant différents produits (par exemple, lait, pain, oeufs...). Cette route doit renvoyer une page générée avec le template `demo3`. Vérifiez que votre liste de courses s'affiche correctement en résultat, sur votre site.
+Ajouter une nouvelle route `courses` dans votre `DemoController` (en GET, avec le chemin de votre choix) qui initialise simplement (en dur) un tableau de chaînes de caractères contenant différents produits (par exemple, lait, pain, œufs...). Cette route doit renvoyer une page générée avec le template `demo3`. Vérifiez que votre liste de courses s'affiche correctement en résultat, sur votre site.
 
 6. Modifiez le template `demo3` pour faire en sorte que si une chaîne de caractères du tableau `listeCourses` est égale à `"Livre sur Symfony"`, celle-ci s'affiche en gras. Vous pouvez faire cela en ajoutant une balise `<strong></strong>` autour du texte affiché. 
 
@@ -676,7 +676,7 @@ Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je
     ```
     * Faites en sorte d'afficher l'image anonyme sur chaque publication (il faut ajouter un attribut `src` sur la balise `img` de chaque publication).
 
-4. Testez. C'est un peu mieux, non?
+4. Testez. C'est un peu mieux, non ?
 
 </div>
 
@@ -1032,7 +1032,7 @@ public function methodeExemple(Request $request, EntityManagerInterface $entityM
 
 * L'objet `EntityManagerInterface $entityManager` permet de sauvegarder l'objet dans la base de données. La méthode `persist` prépare la sauvegarde de l'objet et `flush` l'exécute. Vous noterez qu'on utilise ici aussi l'injection de dépendances par autowiring!
 
-* Il est possible de séparer l'affichage et le traitement du formulaire en deux méthodes distinctes, mais tout regrouper dans une seule méthode permet de conserver les données du formulaire et ainsi pré-remplir les champs si le formulaire doit être ré-affiché, en cas d'erreur.
+* Il est possible de séparer l'affichage et le traitement du formulaire en deux méthodes distinctes, mais tout regrouper dans une seule méthode permet de conserver les données du formulaire et ainsi préremplir les champs si le formulaire doit être ré-affiché, en cas d'erreur.
 
 * Après enregistrement, on redirige vers une autre route en utilisant la méthode `redirectToRoute`. Cela peut éventuellement être la même route.
 
@@ -1067,7 +1067,7 @@ class Exemple {
 
 </div>
 
-Comme expliqué plus haut, nous aurions aussi pu diviser ce traitement en deux méthodes, mais sans pouvoir pré-remplir le formulaire en cas de données invalides :
+Comme expliqué plus haut, nous aurions aussi pu diviser ce traitement en deux méthodes, mais sans pouvoir préremplir le formulaire en cas de données invalides :
 
 ```php
 #[Route('/exemple', name: 'route_exemple_get', methods: ["GET"])]
