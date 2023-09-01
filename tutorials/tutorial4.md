@@ -188,7 +188,7 @@ Tout est en place pour faire nos premières requêtes ! Nous pouvons manipuler
 
 <div class="exercise">
 
-1. Rechargez la page web de présentation de l'API : [https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/](https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/)
+1. Rechargez la page web de présentation de l'API : [https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/](https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/) (à adapter selon votre situation).
 
 2. Explorez la documentation des différentes méthodes proposées. Vous pouvez même envoyer des requêtes avec le bouton `Try it out`.
 
