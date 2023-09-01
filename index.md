@@ -13,9 +13,12 @@ Cours *R5.A.05 -- Programmation avancée* en
 
 ## TDs
 
-1. ??? -- [TD 1](tutorials/tutorial1) -- Découverte du framework Symfony 1/2
-2. ??? -- [TD 2](tutorials/tutorial2) -- Découverte du framework Symfony 2/2
-3. ??? -- [TD 3](tutorials/tutorial3) -- Amélioration du site
-4. ??? -- [TD 4](tutorials/tutorial4) -- Création d'une API REST avec API Platform
+1. Semaine du 4 septembre 2023 -- [TD 1](tutorials/tutorial1) -- Découverte du framework Symfony 1/2
+2. Semaine du 11 septembre 2023 -- Fin du [TD 1](tutorials/tutorial1) puis [TD 2](tutorials/tutorial2) -- Découverte du framework Symfony 2/2
+3. Semaine du 18 septembre 2023 -- Fin du [TD 2](tutorials/tutorial2) -- Découverte du framework Symfony 2/2
+4. Semaine du 9 octobre 2023 -- [TD 3](tutorials/tutorial3) -- Amélioration du site
+5. Semaine du 16 octobre 2023 -- [TD 4](tutorials/tutorial4) -- Création d'une API REST avec API Platform
 
 ## Projet
+
+A venir

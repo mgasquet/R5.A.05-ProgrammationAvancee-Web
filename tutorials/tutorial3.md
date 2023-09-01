@@ -696,7 +696,7 @@ On doit utiliser la fonction `%env(...)%` et préciser le type du paramètre (pa
      #[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
     public function methodeExemple(): Response
     {
-        return $this->redirect("https://coucou.com");
+        return $this->redirect("http://coucou.com");
     }
     ```
 

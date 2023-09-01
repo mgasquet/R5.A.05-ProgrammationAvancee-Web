@@ -47,7 +47,7 @@ Nous avons donc fait le choix de plutôt vous apprendre à utiliser Symfony par 
 
 Cependant, pas de panique, il y a beaucoup de similitudes entre Symfony et Laravel (même certaines choses identiques !). Une fois un framework maîtrisé, il vous sera facile de passer à l'autre.
 
-Symfony permet de créer des sites web classiques en mode "server-rendering" (où le serveur s'occupe à la fois des parties back-end et front-end), des API REST et même des briques logicielles (appelées `bundles`) à intégrer à Symfony, pour lui ajouter de nouvelles fonctionnalités.
+Symfony permet de créer des sites web classiques en mode "server-rendering" (génération de la page web du côté du serveur, comme ce que vous faisiez jusqu'ici), des API REST et même des briques logicielles (appelées `bundles`) à intégrer à Symfony, pour lui ajouter de nouvelles fonctionnalités.
 
 Ce framework utilise (par défaut) l'ORM `Doctrine` (syntaxe assez similaire à Hibernate, en JAVA). Concernant les templates (génération de pages HTML), il utilise `Twig` que vous avez déjà utilisé l'année dernière dans le cadre du cours de complément web.
 
@@ -69,7 +69,9 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
 <div class="exercise">
 
-1. Pour le placement du dossier du projet, vous avez **trois choix**, selon votre situation :
+1. Si vous êtes sur **votre machine personnelle**, il faudra bien entendu avoir installé **composer** : [téléchargement sur le site](https://getcomposer.org/download/). Il est possible que vous l'ayez déjà installé l'année dernière.
+
+2. Pour le placement du dossier du projet, vous avez **trois choix**, selon votre situation :
 
     * Si vous souhaitez utiliser le serveur de l'IUT : rendez-vous dans le dossier `public_html` pour que votre projet soit accessible publiquement au travers du serveur `webinfo`.
 
@@ -83,7 +85,7 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
       Vous placerez le fichier `symfony` dans le dossier du projet une fois créé, nous verrons comment l'utiliser. Vous pouvez aussi utiliser ce serveur Symfony local sur les machines l'IUT.
 
-2. Dans le répertoire où vous souhaitez placer le dossier du projet, exécutez les commandes suivantes :
+3. Dans le répertoire où vous souhaitez placer le dossier du projet, exécutez les commandes suivantes :
 
     ```bash
     composer create-project symfony/skeleton:"6.3.*" nom_projet
@@ -93,11 +95,9 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
    Remplacez `nom_projet` par ce que vous souhaitez (par exemple, `the_feed`). Il se peut que composer vous demande de faire un choix concernant Docker, tapez simplement "n".
 
-   Si vous êtes sur votre machine, il faudra bien entendu avoir installé **composer** : [téléchargement sur le site](https://getcomposer.org/download/).
-
    Cet ensemble de commandes crée les fichiers de base de votre projet et télécharge les briques logicielles essentielles pour le développement d'un site web.
 
-3. Aussi, **si vous travaillez sur le serveur web de l'IUT**, assurez-vous qu'il dispose de tous les droits nécessaires par rapport à votre dossier `public_html` :
+4. Aussi, **si vous travaillez sur le serveur web de l'IUT**, assurez-vous qu'il dispose de tous les droits nécessaires par rapport à votre dossier `public_html` :
 
    ```bash
    setfacl -R -m u:www-data:rwx ~/public_html
@@ -106,19 +106,27 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
    Il peut y avoir quelques permissions non accordées, ce n'est pas grave.
 
-4. Ouvrez le répertoire du projet (`the_feed`) avec votre **IDE** favori (de préférence, `PHPStorm`).
+5. Ouvrez le répertoire du projet (`the_feed`) avec votre **IDE** favori (de préférence, `PHPStorm`).
 
-5. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
+6. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
 
-6. Si vous travaillez sur le serveur de l'iut, téléchargez aussi un [deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2), renommez-le `.htaccess` et placez-le à la racine de votre projet. Le rôle de ce fichier est capital, car il permet de protéger vos fichiers de configuration pour qu'ils ne soient pas lisibles par tout le monde ! (par exemple, éviter d'exposer le mot de passe BDD...). Cela est dû au fait que votre projet soit hébergé dans une sous-partie du serveur web de l'iut, ce qui n'arrivera donc pas dans un hébergeur normal, avec un nom de domaine qui pointera directement sur votre dossier `public`.
+7. Si vous travaillez sur le serveur de l'iut, téléchargez aussi un [deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2), renommez-le `.htaccess` et placez-le à la racine de votre projet. Le rôle de ce fichier est capital, car il permet de protéger vos fichiers de configuration pour qu'ils ne soient pas lisibles par tout le monde ! (par exemple, éviter d'exposer le mot de passe BDD...). Cela est dû au fait que votre projet soit hébergé dans une sous-partie du serveur web de l'iut, ce qui n'arrivera donc pas dans un hébergeur normal, avec un nom de domaine qui pointera directement sur votre dossier `public`.
 
-7. Testez que votre projet a bien été initialisé en vous rendant à l'adresse correspondant à votre situation :
+8. Testez que votre projet a bien été initialisé en vous rendant à l'adresse correspondant à votre situation :
 
     * Sur le serveur de l'IUT : [https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/](https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/)
 
-    * Ou bien sur votre serveur local : [https://localhost/chemin_dossier_projet/public/](https://localhost/chemin_dossier_projet/public/)
+    * Ou bien sur votre serveur local : [http://localhost/chemin_dossier_projet/public/](http://localhost/chemin_dossier_projet/public/)
 
-    * Ou bien en utilisant le serveur de `Symfony` : placez le fichier `symfony` issu de l'archive téléchargé précédemment dans le dossier du projet puis exécutez la commande `./symfony serve`. Le serveur est alors accessible à cette adresse : [https://localhost:8000/](https://localhost:8000/)
+    * Ou bien en utilisant le serveur de `Symfony` : placez le fichier `symfony` issu de l'archive téléchargé précédemment dans le dossier du projet puis exécutez la commande `./symfony serve`. Le serveur est alors accessible à cette adresse : [http://localhost:8000/](http://localhost:8000/). Si vous souhaitez utiliser `https` à la place de `http`, il faut d'abord exécuter (une seule fois) la commande `./symfony serve:ca:install`.
+    
+    Pour la dernière option, sous `macOS`, il est possible que vous ayez le message d'erreur suivant : "impossible d'ouvrir Symfony car le développeur ne peut pas être vérifié". 
+    
+    Dans ce cas :
+
+    1. Allez dans "préférences système" / "sécurité et confidentialité" / "général".
+    2. Cliquez sur le cadenas pour déverrouiller la fenêtre.
+    3. Dans "Autoriser les applications téléchargées de App Store et développeurs identifiés" cliquez sur le bouton "Autoriser quand même" pour débloquer l'utilisation de Symfony.
 
 </div>
 
@@ -142,7 +150,13 @@ Dans cette première section, nous allons voir comment créer des contrôleurs, 
 
 Symfony propose diverses commandes qui permettent d'initialiser (voir de créer en quasi-totalité) des classes de certaines catégories (entités, contrôleurs, formulaires...) et de la placer au bon endroit dans l'architecture de l'application. Ces commandes doivent s'exécuter **à la racine du projet**;
 
-Afin de créer un nouveau contrôleur, nous pouvons notamment utiliser la commande suivante :
+Toutes les commandes de Symfony s'exécutent via un script `PHP` nommé **command** se trouvant dans le sous-dossier **bin**. On utilise donc le programme `php` (généralement à partir de la racine du projet) pour exécuter ce script. Il suffit ensuite de préciser le nom de la commande (de Symfony) souhaitée et d'éventuels paramètres et/ou options.
+
+```bash
+php bin/console mcommande param1 param2 --option1 --option2
+```
+
+Afin de créer un nouveau contrôleur, nous pouvons notamment utiliser la commande suivante (à partir de la racine du projet) :
 
 ```bash
 php bin/console make:controller ExempleController
@@ -195,7 +209,7 @@ public function methodeExemple(): Response
 }
 ```
 
-* Le premier paramètre correspond au sous-chemin à partir de la racine de votre site web. Dans l'exemple ci-dessus, si par exemple votre projet est hébergé sur `https://monsite.com`, alors cela correspond à l'url `https://monsite.com/public/exemple` (dans un cas réel, on pointerait directement le nom de domaine sur le sous-dossier "public" du projet, et pas à sa racine, ce qui donnerait alors directement `https://monsite.com/exemple`. C'est aussi le cas si vous utilisez le serveur local de symfony).
+* Le premier paramètre correspond au sous-chemin à partir de la racine de votre site web. Dans l'exemple ci-dessus, si par exemple votre projet est hébergé sur `http://monsite.com`, alors cela correspond à l'url `http://monsite.com/public/exemple` (dans un cas réel, on pointerait directement le nom de domaine sur le sous-dossier "public" du projet, et pas à sa racine, ce qui donnerait alors directement `http://monsite.com/exemple`. C'est aussi le cas si vous utilisez le serveur local de symfony).
 
 * Le second paramètre `name` correspond au nom de la route. Celui-ci doit être **unique** dans toute l'application (pas deux routes avec le même nom). Ce nom de route est très important, car on pourra l'utiliser au lieu du chemin pour rediriger l'utilisateur, ou bien générer des URLs dans nos pages HTML.
 
@@ -280,13 +294,13 @@ public function methodeExempleGet(): Response
 
 <div class="exercise">
 
-1. En utilisant la commande `make:controller`, créez un contrôleur nommé `DemoController`.
+1. En utilisant la commande `make:controller` (à la racine du projet), créez un contrôleur nommé `DemoController`.
 
 2. Supprimez la méthode d'exemple générée par défaut dans votre nouveau contrôleur.
 
 3. Créez une méthode ayant une route visant le chemin `/hello`, nommée `hello_get` et autorisant seulement la méthode `GET`. Cette méthode doit renvoyer "Hello world" à l'utilisateur. Testez votre route sur votre site.
 
-4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site (`https://localhost:8000/hello/Malo`).
+4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site (`http://adressedusite/hello/Paul`).
 
 </div>
 
@@ -422,7 +436,7 @@ Ajouter une nouvelle route `courses` dans votre `DemoController` (en GET, avec l
 
 ### Messages flash
 
-Vous souvenez-vous du mécanisme des **messages flash** ? Pour rappels, il s'agit de messages informatifs stockés dans la session de l'utilisateur et affichés après chargement de la page. On peut s'en servir, par exemple, pour afficher un message d'erreur lié à un formulaire. Ou pour notifier l'utilisateur que son inscription est complète.
+Vous souvenez-vous du mécanisme des **messages flash** ? Pour rappels, il s'agit de messages informatifs stockés dans la session de l'utilisateur et affichés après chargement de la page. On peut s'en servir, par exemple, pour afficher un message d'erreur lié à un formulaire. Ou pour notifier l'utilisateur que son inscription est complète. Ces messages sont effacés une fois qu'ils ont été lus (ils ne seront donc pas ré-affichés).
 
 De ce côté, Symfony a tout prévu ! Il vous suffit d'appeler cette méthode dans une de vos méthodes dans votre contrôleur :
 
@@ -524,20 +538,30 @@ Nous nous intéressons au paramètre `DATABASE_URL`. Globalement, il se configur
 DATABASE_URL=sgbd://username:password@ip:port/nom_base
 ```
 
-La partie `sgbd` correspond au sgbd utilisé : `mysql`, `postgres`, `sqlite`, `oracle`, etc...
+La partie `sgbd` correspond au SGBD utilisé : `mysql`, `postgres`, `sqlite`, `oracle`, etc...
 
-Si vous utilisez la base `MySQL` de l'iut, la configuration sera donc
+Si vous utilisez la base `MySQL` de l'IUT, la configuration sera donc
 `DATABASE_URL=mysql://login_iut:password@webinfo.iutmontp.univ-montp2.fr:3306/login_iut` en remplaçant `login_iut` et `password` avec vos identifiants (ceux utilisés sur `phpMyAdmin`), bien entendu.
 
-Si vous êtes sur votre machine et que vous souhaitez utiliser une base de données locale (ip `localhost` ou `127.0.0.1`), il faut entrer vos identifiants lié à votre gestionnaire de serveur (par exemple XAMPP) et vous pouvez nommer la base comme bon vous semble. Notez qu'il est bien sûr possible d'utiliser la base de données de l'IUT, même si vous êtes sur votre machine locale (à condition d'être connecté à internet).
+Si vous êtes sur votre machine et que vous souhaitez utiliser une base de données locale (ip `localhost` ou `127.0.0.1`), il faut entrer vos identifiants liés à votre gestionnaire de serveur (par exemple XAMPP) et vous pouvez nommer la base comme bon vous semble. Notez qu'il est bien sûr possible d'utiliser la base de données de l'IUT, même si vous êtes sur votre machine locale (à condition d'être connecté à internet).
 
-Une fois ce paramètre correctement configuré, il faut éventuellement créer la base de données si celle-ci n'existe pas déjà (ce qui n'est pas le cas à l'iut, mais peut-être sur votre machine personnelle, en local). Pour cela, on exécute cette commande :
+**Attention** : si votre mot de passe contient des **caractères spéciaux** (voir cadre en rouge [ici](https://symfony.com/doc/current/doctrine.html#configuring-the-database)), il faut changer la configuration du fichier `config/packages/doctrine.yaml` ainsi :
+
+```diff
+#config/packages/doctrine.yaml
+- url: '%env(resolve:DATABASE_URL)%'
++ url: '%env(DATABASE_URL)%' 
+```
+
+Une fois ce paramètre correctement configuré, il faut éventuellement créer la base de données si celle-ci n'existe pas déjà (ce qui n'est pas le cas à l'IUT, mais peut-être sur votre machine personnelle, en local). Pour cela, on exécute cette commande :
 
 ```bash
 php bin/console doctrine:database:create
 ```
 
-Ensuite, il faut générer et exécuter une **migration**. Une migration est un fichier généré par doctrine contenant les requêtes nécessaires pour mettre à jour la structure de la base de données et aussi annuler ces modifications, si besoin ! Chaque migration est stockée dans un dossier dédié, ce qui permet de conserver un historique.
+Ensuite, il faut générer et exécuter une **migration**. Une migration est un fichier généré par doctrine contenant les requêtes nécessaires pour mettre à jour la structure de la base de données et aussi annuler ces modifications, si besoin ! Chaque migration est stockée dans un dossier dédié, ce qui permet de conserver un historique. Globalement, on peut dire que les migrations fournissent un gestionnaire de version de la structure de la base de données (comme un `git` pour la BD). 
+
+**ATTENTION** : si vous effectuez votre première migration (par exemple, sur un nouveau projet) sur une base de données déjà existante (contenant des anciennes tables/données) cela va **écraser toutes les données** !. Si vous travaillez en local, pas de problème, il suffit de créer une nouvelle base et de travailler sur celle-ci. Cependant, si vous travaillez sur votre unique base MySQL de l'IUT, pensez à **exporter vos données** (s'il en reste de l'année dernière et qu'elles sont importantes) et à vider votre base. Il est possible de paramétrer `doctrine` afin d'ignorer certaines tables selon une expression régulière, mais nous ne verront pas cela dans le cadre de ce TD.
 
 Pour générer puis exécuter une migration, on utilise les deux commandes suivantes :
 
@@ -556,7 +580,7 @@ On doit effectuer une migration dès que l'ont créé ou que l'on modifie une en
 
     * Si (et seulement si) vous utilisez une base de données en local (sur votre machine), exécutez la commande `doctrine:database:create` afin de créer la base de données.
 
-    * Si vous utilisez votre base de données de l'IUT, videz-la complétement s'il reste des tables et/ou données de l'année dernière. Exportez-les avant, si besoin.
+    * Si vous utilisez votre base de données de l'IUT, **videz-la complétement** s'il reste des tables et/ou données de l'année dernière. Exportez-les avant, si besoin.
 
 3. Utilisez les commandes nécessaires afin de créer et d'exécuter votre première migration.
 
@@ -773,7 +797,7 @@ Dans votre contrôleur, vous avez sans doute utilisé la méthode `findAll`, hor
 
 1. Modifiez votre route `feed` afin que la base de données renvoie les publications triées par ordre décroissant de la date de publication.
 
-2. Testez et vérifié que l'ordre est respecté.
+2. Testez et vérifiez que l'ordre est respecté.
 
 3. Comme ce bout de code pourrait resservir, créez plutôt une méthode `findAllOrderedByDate` dans la classe `src/Repository/PublicationRepository` qui renvoie les publications triées, comme vous l'avez fait dans l'étape 1. Utilisez cette méthode dans votre route `feed` et vérifiez que tout fonctionne toujours.
 
@@ -1092,15 +1116,15 @@ public function methodeExemple(Request $request, EntityManagerInterface $entityM
         $entityManager->flush();
     }
 
-    return $this->redirectToRoute('maRoute');
+    return $this->redirectToRoute('route_exemple_get');
 }
 ```
 
+Nous aurions pu afficher la même vue que dans `route_exemple_get` (au lieu de rediriger) pour résoudre ce problème, en passant le formulaire à la vue. Cependant, notre route `route_exemple_get` exécute potentiellement d'autres actions qui sont nécessaires à l'affichage de notre vue (dans notre cas, récupérer toutes les publications) et il faudrait alors recopier toutes ces actions dans `route_exemple_post`. On obtiendrait alors plus ou moins un copié/collé de `route_exemple_get` et on sortirait du cadre logique de l'action `POST`. C'est pour cela que nous préférons plutôt rediriger vers la route (en `GET`) affichant la page. Mais dans ce cas, les données formulaire sont "perdues" et les champs ne seront pas préremplis en cas d'erreur.
+
 ### Assertions (contraintes)
 
-Vous savez maintenant comment créer des publications via un formulaire, mais pour l'instant, vous ne vérifiez pas vraiment les données qui sont soumises. Par exemple, inspectez la page, enlevez le "required" du formulaire et tentez d'envoyer une publication vide. Vous obtenez une belle erreur liée à la base de données (vu que notre message ne peut pas être `null`) ! L'utilisateur n'a pas à voir ça.
-
-Aussi, comment faire, par exemple, pour limiter la taille du message ? Est-ce que cela se fait avec le contrôleur ? Pas du tout, pour cela, Symfony a prévu un système appelé **assertions**.
+Vous savez maintenant comment créer des publications via un formulaire, mais pour l'instant, vous ne vérifiez pas vraiment les données qui sont soumises. Par exemple, comment faire, par exemple, pour limiter la taille du message ? Est-ce que cela se fait avec le contrôleur ? Pas du tout, pour cela, Symfony a prévu un système appelé **assertions**.
 
 Une **assertion** est une contrainte liée à un champ du formulaire ou une propriété de l'entité. Quand un formulaire est soumis, Symfony va vérifier que toutes les contraintes sont respectées. Si une ou plusieurs annotations ne sont pas validées, des erreurs sont générées (dans le contrôleur, on vérifie cela avec `$form->isValid()`).
 
@@ -1376,7 +1400,7 @@ Si jamais je souhaite changer de classe concrète, j'ai juste à créer une nouv
 
 <div class="exercise">
 
-1. Créez une interface `FlashMessageHelperInterface` (toujours dans le dossier `Service`) contentant la signature de la méthode `addFormErrorsAsFlash` puis faites-la implémenter à `FlashMessageHelper`.
+1. Créez une interface `FlashMessageHelperInterface` (toujours dans le dossier `Service`) contentant la signature de la méthode `addFormErrorsAsFlash` puis faites-la implémenter à `FlashMessageHelper`. Pour rappel, dans **PHPStorm**, vous pouvez faire cela automatiquement : clic droit sur le nom de classe `FlashMessageHelper` > `Refactor` >` Extract Interface`.
 
 2. Éditez le fichier `services.yaml` afin de faire pointer le service `FlashMessageHelperInterface` vers `FlashMessageHelper`.
 
