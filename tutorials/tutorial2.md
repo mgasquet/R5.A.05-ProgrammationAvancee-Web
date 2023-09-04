@@ -11,6 +11,19 @@ La seconde partie de la découverte de ce framework va se concentrer sur la gest
 
 Enfin, dans une seconde partie, nous effectuerons quelques finitions sur le site comme ajouter des auteurs pour les publications et des pages personnelles pour les utilisateurs. Nous verrons aussi comment **inclure** d'autres templates dans un template Twig et enfin, nous personnaliserons nos pages d'erreur.
 
+## Barre de débogage
+
+Vous avez sans doute remarqué une barre d'outil s'affichant sur chaque page de votre application (si elle ne s'affiche pas, il faut cliquer sur le logo Symfony, en bas à droite). Cette barre s'affiche car nous sommes dans un environnement de développement (nous en reparlerons plus tard). Cette barre est très utile car elle nous fournit beaucoup d'informations :
+
+* Temps d'exécution de la requête.
+* Trace : on peut mesurer le temps passé dans chaque fichier, dans chaque fonction, dans la base de données.
+* Requêtes SQL exécutées : code, temps d'exécution, nombre de requêtes
+* Les données de l'utilisateur connecté.
+* Les erreurs, les warnings...
+* Code de réponse HTTP.
+
+Bref, cet outil nous permet de connaître en détail l'état de notre application. Prenez le temps de l'explorer !
+
 ## Les utilisateurs
 
 Il est temps d'ajouter des utilisateurs à notre site. Avec un framework, cette étape est généralement assez simplifiée et partiellement automatisée.
@@ -127,6 +140,8 @@ L'exemple d'assertion `File` donné plus tôt se transformerait ainsi dans le ta
 new File(maxSize : '2M', extensions : ['mp3', 'wav', 'ogg'])
 ```
 
+Vous l'aurez remarqué, nous utilisons la syntaxe des [arguments nommés](https://www.php.net/manual/fr/functions.arguments.php#functions.named-arguments) que nous avions évoqués lors du premier TD lors de l'introduction des attributs.
+
 Ensuite, au niveau de la classe `Utilisateur`, nous pouvons utiliser un attribut 
 ```php
 #[UniqueEntity(propriete)]
@@ -151,6 +166,8 @@ class Exemple {
 
 }
 ```
+
+Pour bien que vous compreniez la différence, le paramètre `unique` de l'attribut `#[ORM\Column(..., unique : true)]` va créer une contrainte **UNIQUE INDEX** au niveau de la base de données tandis que `#[UniqueEntity]` est similaire aux autres **assertions** et est vérifié lors de l'appel à la méthode `isValid` du formulaire. Avec `#[UniqueEntity]`, la vérification est faite avant tout enregistrement et on est ainsi sûr de ne pas exécuter une requête d'insertion qui produira une erreur (pour cause de doublons).
 
 Concernant notre formulaire, contrairement à celui de la page principale,
 celui-ci va contenir des balises `<label>`. Pour rappel, une balise `<label>`
@@ -379,7 +396,7 @@ $valeurChamp = $form["monChamp"]->getData();
 
     }
     ```
-3. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `proccessNewUtilisateur`. Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface puis mettez à jour le fichier `services.yaml` pour qu'on puisse injecter et utiliser le service `UtilisateurManager` directement avec `UtilisateurManagerInterface`.
+3. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `proccessNewUtilisateur` (on rappel qu'il est très facile d'extraire une interface depuis une classe concrète avec **PHPStorm** !). Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface puis mettez à jour le fichier `services.yaml` pour qu'on puisse injecter et utiliser le service `UtilisateurManager` directement avec `UtilisateurManagerInterface`.
 
 4. Dans votre route `inscription`, faites en sorte de gérer la soumission du formulaire et de sauvegarder l'utilisateur construit à partir du formulaire dans la base de données. Cependant, **avant de sauvegarder l'utilisateur**, il faudra extraire `plainPassword` puis `fichierPhotoProfil` et enfin utiliser votre nouveau service avec sa méthode `proccessNewUtilisateur`.
 
@@ -405,7 +422,7 @@ $valeurChamp = $form["monChamp"]->getData();
 
     * `minlength` et `maxlength` sur le login et le mot de passe.
 
-    * `pattern` sur le mot de passe avec pour valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,30}$` (on utilise `\\d` au lieu de `\d` car autrement, Twig interprète le `\` comme un caractère spécial)
+    * `pattern` sur le mot de passe avec pour valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,30}$` (on utilise `\\d` au lieu de `\d`, car autrement, `\` est interprété comme un caractère spécial)
 
     * Vous pouvez également déplacer les contraintes déjà présentes dans le code HTML correspondant au champ `fichierPhotoProfil` dans le champ dédié dans classe `UtilisateurType`. Attention, pour `required`, il se place en dehors de `attr` :
 
@@ -436,7 +453,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 #[Route('/exempleConnexion', name: 'exempleConnexion', methods: ['GET', 'POST'])]
 public function connexion(AuthenticationUtils $authenticationUtils) : Response {
     $lastUsername = $authenticationUtils->getLastUsername();
-    return $this->render('monFormulaireDeConnexion.html.twig', ['last_username' => $lastUsername]);
+    return $this->render('monFormulaireDeConnexion.html.twig');
 }
 ```
 
@@ -447,7 +464,7 @@ Ensuite, on crée le template `Twig` correspondant, contenant un formulaire de c
 ```twig
 {% raw %}
 <form action="{{ path('exempleConnexion') }}" method="post">
-    <input type="text" name="_username" value="{{ last_username }}" required/>
+    <input type="text" name="_username" required/>
     <input type="password" name="_password" required/>
     <button type="submit">Connexion</button>
     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
@@ -502,7 +519,7 @@ security:
                 <legend>Connexion</legend>
                 <div class="access-container">
                     <label for="login">Login</label>
-                    <input id="login" type="text" name="...A compléter..." value="...A compléter..." required/>
+                    <input id="login" type="text" name="...A compléter..." required/>
                 </div>
                 <div class="access-container">
                     <label for="password">Mot de passe</label>
@@ -518,7 +535,70 @@ security:
 
 5. Mettez à jour le template `base.html.twig` afin d'inclure un lien vers votre page de connexion dans le menu de navigation.
 
-6. Accédez à votre page de connexion et tentez de vous connecter avec un compte existant, mais avec un mauvais mot de passe. Normalement, vous devriez rester sur le formulaire. Essayez ensuite avec un bon mot de passe, vous devriez alors être redirigé vers la page principale. Nous allons gérer les différents messages informatifs plus tard.
+6. Accédez à votre page de connexion et tentez de vous connecter avec un compte existant, mais avec un mauvais mot de passe. Normalement, vous devriez rester sur le formulaire. Essayez ensuite avec un bon mot de passe, vous devriez alors être redirigé vers la page principale (et votre pseudonyme devrait apparaître dans la barre de débbogage). Nous allons gérer les différents messages informatifs plus tard.
+
+7. Actuellement, si l'utilisateur se trompe dans son mot de passe, quand le formulaire est rechargé, le champ du login n'est pas pré-rempli. Il est possible d'améliorer cet aspect en récupérant le **dernier login avec lequel l'utilisateur a tenté de se connecter**. Pour cela, on utilise le service `AuthenticationUtils` :
+
+    ```php
+    use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+
+    $lastUsername = $authenticationUtils->getLastUsername();
+    ```
+
+    Il est alors possible de simplement passer cette donnée au template et de l'utiliser pour préciser l'attribut `value` du champ correspondant au login. Ce champ sera donc tout le temps pré-remplit, ce qui est pratique en cas d'erreur de mot de passe, mais aussi si l'utilisateur se déconnecte puis se reconnecte plus tard. Cette donnée est mémorisée dans un **cookie**.
+
+    Effectuez les modifications nécessaires dans votre route `connexion` et dans le template `connexion.html.twig` pour que le champ du login soit automatiquement pré-remplit avec le dernier login avec lequel l'utilisateur a essayé de se connecter.
+
+</div>
+
+#### Déconnexion
+
+Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple, car il n'y a même pas de méthode de route ou de formulaire à créer.
+
+Tout d'abord, on déclare une route **vide** dans notre contrôleur :
+
+```php
+#[Route('/maRouteDeconnexion', name: 'routeDeconnexion', methods: ['POST'])]
+public function routeDeconnexion(): never
+{
+    //Ne sera jamais appelée
+    throw new \Exception("Cette route n'est pas censée être appelée. Vérifiez security.yaml");
+}
+```
+
+Cette route ne sera jamais appelée (type de retour spécial dans ce cas : `never`) car elle sera interceptée et traitée par Symfony. Par contre, les `attributs` eux sont bien utiles et nous servent à définir la route.
+
+Ensuite, il ne reste plus qu'à éditer le fichier `config/packages/security.yaml` et préciser à Symfony quelle est notre route de déconnexion avec une section nommée `logout`, un peu comme nous l'avons fait pour la connexion :
+
+```yaml
+security:
+    ...
+    firewalls:
+       ...
+        main:
+            ...
+            logout:
+                path: routeDeconnexion
+                target: routeRetour
+```
+
+Dans `path`, on précise le **nom** de la route (et pas son chemin) et dans `target` la page vers laquelle est redirigé l'utilisateur après s'être déconnecté.
+
+<div class="exercise">
+
+1. Dans le contrôleur `UtilisateurController`, ajoutez une nouvelle route `deconnexion`, ayant pour chemin `/deconnexion` accessible avec `POST`. Le corps de la fonction traitant cette route est vide et ne sera jamais appelée.
+
+2. Précisez la route de déconnexion dans le fichier `config/packages/security.yaml`. Après s'être déconnecté, l'utilisateur doit être redirigé sur la route `feed`.
+
+3. Dans votre template `base.html.twig`, ajoutez le formulaire suivant dans le menu de navigation en complétant `action` de manière adéquate pour pointer sur votre route `deconnexion` :
+
+    ```html
+    <form method="post" action="A compléter">
+        <button id="btn-deconnexion">Déconnexion</button>
+    </form>
+    ```
+
+4. Tentez de vous connecter/déconnecter. Vous pouvez vérifier votre état dans la barre de débogage de Symfony : si votre pseudonyme apparait, vous êtes connecté. Si à la place vous avez `n/a`, vous êtes déconnecté.
 
 </div>
 
@@ -593,64 +673,13 @@ Cependant, comme nous l'avons vu, dans le cadre d'un formulaire, nous pouvons re
 
 <div class="exercise">
 
-1. Adaptez le template `base.html.twig` afin que les liens menant vers la page `Inscription` et `Connexion` ne soient affichés que si l'utilisateur n'est **pas** connecté.
+1. Adaptez le template `base.html.twig` afin que les liens menant vers la page `Inscription` et `Connexion` ne soient affichés que si l'utilisateur n'est **pas** connecté. À l'inverse, faites en sorte que le formulaire de **déconnexion** ne soit visible que par les utilisateurs connectés.
 
 2. Adaptez votre route `feed` pour autoriser la création d'une publication seulement aux utilisateurs connectés. Attention cependant, tout le monde doit pouvoir voir la liste des publications.
 
 3. Enfin, modifiez votre template `feed.html.twig` pour afficher le formulaire de création d'une publication seulement aux utilisateurs connectés.
 
-</div>
-
-#### Déconnexion
-
-Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple, car il n'y a même pas de méthode de route ou de formulaire à créer.
-
-Tout d'abord, on déclare une route **vide** dans notre contrôleur :
-
-```php
-#[Route('/maRouteDeconnexion', name: 'routeDeconnexion', methods: ['POST'])]
-public function routeDeconnexion(): never
-{
-    //Ne sera jamais appelée
-    throw new \Exception("Cette route n'est pas censée être appelée. Vérifiez security.yaml");
-}
-```
-
-Cette route ne sera jamais appelée (type de retour spécial dans ce cas : `never`) car elle sera interceptée et traitée par Symfony. Par contre, les `attributs` eux sont bien utiles et nous servent à définir la route.
-
-Ensuite, il ne reste plus qu'à éditer le fichier `config/packages/security.yaml` et informer Symfony quelle est notre route de déconnexion avec une section nommée `logout`, un peu comme nous l'avons fait pour la connexion :
-
-```yaml
-security:
-    ...
-    firewalls:
-       ...
-        main:
-            ...
-            logout:
-                path: routeDeconnexion
-                target: routeRetour
-```
-
-Dans `path`, on précise le **nom** de la route (et pas son chemin) et dans `target` la page vers laquelle est redirigé l'utilisateur après s'être déconnecté.
-
-<div class="exercise">
-
-1. Dans le contrôleur `UtilisateurController`, ajoutez une nouvelle route `deconnexion`, ayant pour chemin `/deconnexion` accessible avec `POST`. Le corps de la fonction traitant cette route est vide et ne sera jamais appelée.
-
-2. Précisez la route de déconnexion dans le fichier `config/packages/security.yaml`. Après s'être déconnecté, l'utilisateur doit être redirigé sur la route `feed`.
-
-3. Dans votre template `base.html.twig`, ajoutez le formulaire suivant dans le menu de navigation en complétant `action` de manière adéquate pour pointer sur votre route `deconnexion` :
-
-    ```html
-    <form method="post" action="A compléter">
-        <button id="btn-deconnexion">Déconnexion</button>
-    </form>
-    ```
-
-    Faites en sorte que ce formulaire soit seulement visible par les **utilisateurs connectés**. Avec le CSS, le formulaire et son bouton ressembleront à un lien normal.
-
-4. Tentez de vous connecter/déconnecter, vérifiez que tout s'affiche correctement selon votre état.
+4. Vérifiez que tout s'affiche comme attendu selon votre état (connecté/déconnecté).
 
 </div>
 
@@ -766,19 +795,6 @@ Cependant, gardez en mémoire l'utilisation de `IsGranted` avec une `Expression`
 
 Maintenant, il ne reste plus qu'à finaliser notre site, notamment en reliant nos entités `Utilisateur` et `Publication` afin d'enregistrer (et d'afficher) les auteurs d'une publication ! Nous verrons également comment créer une page listant les publications d'un utilisateur, et aussi comment personnaliser certaines pages d'erreurs.
 
-### Barre de débogage
-
-Vous avez sans doute remarqué une barre d'outil s'affichant sur chaque page de votre application (si elle ne s'affiche pas, il faut cliquer sur le logo Symfony, en bas à droite). Cette barre s'affiche car nous sommes dans un environnement de développement (nous en reparlerons plus tard). Cette barre est très utile car elle nous fournit beaucoup d'informations :
-
-* Temps d'exécution de la requête.
-* Trace : on peut mesurer le temps passé dans chaque fichier, dans chaque fonction, dans la base de données.
-* Requêtes SQL exécutées : code, temps d'exécution, nombre de requêtes
-* Les données de l'utilisateur connecté.
-* Les erreurs, les warnings...
-* Code de réponse HTTP.
-
-Bref, cet outil nous permet de connaître en détail l'état de notre application. Prenez le temps de l'explorer !
-
 ### Auteur d'une publication
 
 Avec **doctrine**, pour associer deux entités, il suffit de créer un attribut faisant référence à une autre classe et utiliser les attributs nécessaires pour préciser le sens et la cardinalité de cette association. Il est aussi possible de paramétrer la stratégie en cas de suppression (mettre à `null` les colonnes faisant référence ou bien supprimer les entités associées...).
@@ -815,7 +831,7 @@ Fort heureusement, Symfony nous permet de mâcher ce travail en utilisant encore
 
 4. Selon la relation, on précise ensuite si l'entité cible (clé étrangère) peut être nulle ou non, par exemple, dans le cas de `OneToMany`.
 
-5. On nous demande ensuite si la relation doit être bi-directionnelle, c'est-à-dire s'il faut aussi mettre à jour l'entité avec laquelle on forme une relation. Si on sélectionne oui, on nous demande aussi si les entités orphelines doivent être supprimée (par exemple dans notre cas, si une publication n'a plus d'auteur...)
+5. On nous demande ensuite si la relation doit être bi-directionnelle, c'est-à-dire s'il faut aussi mettre à jour l'entité avec laquelle on forme une relation. Si on sélectionne oui, on nous demande aussi si les entités orphelines doivent être supprimées (par exemple dans notre cas, si on retire une publication à un auteur...).
 
 <div class="exercise">
 
@@ -833,7 +849,14 @@ Fort heureusement, Symfony nous permet de mâcher ce travail en utilisant encore
 
 3. Observez le code généré dans `Publication` et `Utilisateur`.
 
-4. Modifiez la classe `Publication` pour faire en sorte que quand un utilisateur est supprimé, ses publications soient toutes supprimées (correspondant à une contrainte `ON DELETE CASCADE`). Il vous suffit d'éditer un attribut (annotation) déjà existant...
+4. Modifiez la classe `Publication` pour faire en sorte que quand un utilisateur est supprimé dans la base, ses publications soient toutes supprimées (correspondant à une contrainte `ON DELETE CASCADE`). Il vous suffit d'éditer un attribut (annotation) déjà existant...
+
+    Vous vous faites peut-être la réflexion que cette contrainte semble redondant avec la suppression des entités orphelines. En fait, `onDelete: "CASCADE"` va créer une contrainte au niveau de la base de données. L'option `orphanRemoval` quant à elle agit au niveau de l'application (de l'ORM) : si on retire la publication à l'utilisateur (depuis sa collection de publications) la publication sera supprimée, car considérée comme orpheline (dans ce contexte, l'entité ne peut pas être possédée par plusieurs entités). Mais si on supprime l'utilisateur tout court, cela ne supprimera pas les publications, car on ne retire pas vraiment la publication d'un utilisateur dans ce contexte. C'est donc pour cela qu'on ajoute aussi la contrainte `ON DELETE CASCADE`.
+
+    En résumé :
+
+    * `orphanRemoval` permet de supprimer une publication si on la retire de l'utilisateur.
+    * `ON DELETE CASCADE` : permet de supprimer les publications si l'auteur (l'utilisateur) est supprimé.
 
 5. Mettez à jour la structure de votre base de données avec les commandes `make:migration` et `doctrine:migrations:migrate`.
 

@@ -7,6 +7,8 @@ lang: fr
 
 {% raw %}
 
+**Petite note à l'attention des étudiants du parcours IAMSI** : le TD fait parfois référence au **cours de complément web** de l'année dernière, car nous revenons sur certaines notions, technologies et concepts déjà abordés dans ce cours. Malheureusement, de votre côté, vous n'avez pas eu ce cours spécifique au parcours **RACDV**. Mais pas de panique ! Le TD a été aussi pensé pour vous et ces notions sont réexpliquées complètement. Simplement, là où certaines sections feront office de rappel pour le parcours **RACDV**, dans votre cas, cela sera une découverte. Donc, ne vous en faites pas s'il est fait mention de ce cours de l'année dernière. Ce TD a été conçu pour être accessible par tous !
+
 ## Introduction
 
 L'année dernière, dans le cadre du cours de **complément web**, vous avez étudié et mis en pratique les notions essentielles afin de construire un **framework** web. Nous nous sommes notamment intéressé aux notions de conteneur à injection de dépendances (conteneur IoC), aux design patterns et globalement aux outils utiles permettant de rendre notre framework simple d'utilisation et hautement paramétrable.
@@ -108,9 +110,9 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
 5. Ouvrez le répertoire du projet (`the_feed`) avec votre **IDE** favori (de préférence, `PHPStorm`).
 
-6. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
+6. Téléchargez le {% endraw %}[fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess){% raw %}, renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
 
-7. Si vous travaillez sur le serveur de l'iut, téléchargez aussi un [deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2), renommez-le `.htaccess` et placez-le à la racine de votre projet. Le rôle de ce fichier est capital, car il permet de protéger vos fichiers de configuration pour qu'ils ne soient pas lisibles par tout le monde ! (par exemple, éviter d'exposer le mot de passe BDD...). Cela est dû au fait que votre projet soit hébergé dans une sous-partie du serveur web de l'iut, ce qui n'arrivera donc pas dans un hébergeur normal, avec un nom de domaine qui pointera directement sur votre dossier `public`.
+7. Si vous travaillez sur le serveur de l'iut, téléchargez aussi un {% endraw %}[deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2){% raw %}, renommez-le `.htaccess` et placez-le à la racine de votre projet. Le rôle de ce fichier est capital, car il permet de protéger vos fichiers de configuration pour qu'ils ne soient pas lisibles par tout le monde ! (par exemple, éviter d'exposer le mot de passe BDD...). Cela est dû au fait que votre projet soit hébergé dans une sous-partie du serveur web de l'iut, ce qui n'arrivera donc pas dans un hébergeur normal, avec un nom de domaine qui pointera directement sur votre dossier `public`.
 
 8. Testez que votre projet a bien été initialisé en vous rendant à l'adresse correspondant à votre situation :
 
@@ -189,7 +191,7 @@ Bien entendu, vous pouvez aussi créer un contrôleur à la main, mais la comman
 
 Pour rappel, le **routing** est le fait d'associer un chemin du site (par exemple `/coucou`) et une méthode HTTP (GET, POST, PUT, PATCH ou DELETE) à une fonction (du contrôleur) qui va traiter la requête puis renvoyer la réponse (page `HTML` ou des données sous un format comme du `JSON` pour une API...)
 
-Pour créer une route avec Symfony, nous utilisons une fonctionnalité introduite depuis PHP 8 : les **attributs** (on retrouvera parfois le terme d'annotations pour désigner les attributs, qui était l'ancienne façon de faire...)
+Pour créer une route avec Symfony, nous utilisons une fonctionnalité introduite depuis PHP 8 : les **attributs** (on retrouvera parfois le terme d'**annotations** pour désigner les attributs, qui était l'ancienne façon de faire...)
 
 Les **attributs** sont des informations que nous allons ajouter à un élément de l'application : une fonction, une classe entière, une propriété de la classe... Ce sont des méta-données et des règles qui vont pouvoir être lues (ici par le Framework) interprétées et utilisées pour configurer notre application. Ces attributs sont aussi paramétrables.
 
@@ -199,7 +201,13 @@ Un attribut se présente ainsi :
 #[NomAttribut(param1: ..., param2: ...)]
 ```
 
-Afin de relier une route à une méthode d'un contrôleur avec Symfony, il suffit donc d'ajouter l'annotation suivante, au-dessus de la méthode désirée :
+En réalité, un **attribut** est une classe. Les paramètres que l'on précise quand on utilise un attribut sont des données passées au constructeur de l'attribut (en fait, on a créé une nouvelle instance chaque fois quand précise un attribut). Il est ensuite possible d'analyser une classe, une fonction, etc... afin de récupérer ses attributs (il y a des méthodes PHP dédiées, par exemple : [ReflectionProperty::getAttributes](https://www.php.net/manual/en/reflectionproperty.getattributes.php), [ReflectionClass::getAttributes](https://www.php.net/manual/en/reflectionclass.getattributes.php)).
+
+Lors de l'utilisation de l'application, les différentes briques qui composent Symfony se chargent de lire ces attributs et d'exécuter des actions dans différents contextes, par exemple, pour enregistrer les informations sur les routes de l'application, ou bien sur les permissions.
+
+Vous aurez remarqué que ce constructeur utilise une syntaxe un peu particulière pour son initialisation. En fait, depuis **PHP 8**, nous ne sommes pas obligés de préciser les paramètres d'une fonction dans l'ordre (cela inclut les constructeurs). On peut directement indiquer le nom du paramètre souhaité (même si celui-ci se trouve, par exemple en 3ᵉ position) et lui associer sa valeur. Ce mécanisme est appellé **arguments nommées** et est similaire à ce qu'il est possible de faire en **python**, notamment. Plus d'informations sur [la documentation officielle](https://www.php.net/manual/fr/functions.arguments.php#functions.named-arguments).
+
+Afin de relier une route à une méthode d'un contrôleur avec Symfony, il suffit donc d'ajouter l'attribut suivant, au-dessus de la méthode désirée :
 
 ```php
  #[Route('/exemple', name: 'route_exemple', methods: ["GET", "POST", ...])]
@@ -606,7 +614,7 @@ Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https:
 
 <div class="exercise">
 
-1. Créez un nouveau contrôleur `PublicationController`. Ajoutez une nouvelle route nommée `feed`, pointant sur le chemin `/` (racine du site) et accessible en `GET` seulement (pour le moment). Pour le moment, n'ajoutez rien dans le corps de la méthode, nous le ferons juste après.
+1. Créez un nouveau contrôleur `PublicationController` (vous pouvez encore une fois utiliser la commande `make:controller`, mais attention, des fichiers de templates sont générés par défaut). Ajoutez une nouvelle route nommée `feed`, pointant sur le chemin `/` (racine du site) et accessible en `GET` seulement (pour le moment). Pour le moment, n'ajoutez rien dans le corps de la méthode, nous le ferons juste après.
 
 2. Dans le dossier `templates`, créez un dossier `publication` (s'il n'existe pas déjà), puis, à l'intérieur de ce nouveau dossier, créez un template `feed.html.twig` contenant le squelette suivant :
 
@@ -687,9 +695,9 @@ Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je
 
 <div class="exercise">
 
-1. Créez un dossier `css` dans `public` et importez la feuille de style [styles.css]({{site.baseurl}}/assets/TD1/styles.css) (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur de ce nouveau répertoire.
+1. Créez un dossier `css` dans `public` et importez la feuille de style {% endraw %}[styles.css]({{site.baseurl}}/assets/TD1/styles.css){% raw %} (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur de ce nouveau répertoire.
 
-2. Créez un dossier `img` dans `public`, puis `utilisateurs` dans `img` et importez l'image [anonyme.jpg]({{site.baseurl}}/assets/TD1/anonyme.jpg) (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur du répertoire `utilisateurs`.
+2. Créez un dossier `img` dans `public`, puis `utilisateurs` dans `img` et importez l'image {% endraw %}[anonyme.jpg]({{site.baseurl}}/assets/TD1/anonyme.jpg){% raw %} (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur du répertoire `utilisateurs`.
 
 3. Dans votre template `feed.html.twig` :
 
@@ -1136,11 +1144,11 @@ Quelques exemples :
 
 * `#[Assert\Email]` : vérifie que la propriété est une adresse email bien formatée.
 
-* `#[Assert\Count](min : x, max: y)]` : vérifie que la collection possède bien entre `x` et `y` éléments.
+* `#[Assert\Count(min : x, max: y)]` : vérifie que la collection possède bien entre `x` et `y` éléments.
 
 * `#[Assert\Length(min: x, max: y)]` : vérifie que la propriété a une taille entre `x` et `y` caractères.
 
-* `#[Assert\Regex](pattern: ...)]` : vérifie que la propriété vérifie l'expression régulière spécifiée.
+* `#[Assert\Regex(pattern: ...)]` : vérifie que la propriété vérifie l'expression régulière spécifiée.
 
 * `#[Assert\NotBlank]` : vérifie que la propriété a bien été transmise par le formulaire et possède une valeur.
 
@@ -1527,5 +1535,29 @@ Pour notre site, nous allons donc adopter la stratégie suivante :
 ## Conclusion
 
 Vous maîtrisez maintenant les fondamentaux du framework Symfony : son système de routing, ses commandes, le moteur de template **twig**, les services et l'utilisation de l'ORM **Doctrine**. Vous pouvez déjà construire un petit site assez facilement. Il reste cependant un aspect majeur à aborder : la gestion des utilisateurs. L'objectif du second TD sera donc de mettre en place tout ce qu'il faut pour inscrire, connecter, déconnecter et gérer les permissions (basiques) d'un utilisateur.
+
+### Lien avec le cours de complément web (RACDV)
+
+Une petite dernière section supplémentaire à l'attention du parcours **RACDV**. Dans ce TD, vous avez réutilisé des concepts que vous aviez abordés en cours de **complément web**. Le but de cette section est de faire lien avec tout cela pour comparer la façon de faire de **Symfony** :
+
+ * En cours de complément web, nous avions configuré un **autoloader** afin de charger nos classes. Symfony gère aussi ce chargement automatique à partir du nom de classe complet. Le **namespace** de base est `App` et pointe sur le dossier `src` de l'application. Vous pouvez notamment retrouver cette cofniguration dans le fichier `composer.json` à la source du projet!
+
+ * Symfony réécrit l'URL pour appeler toujours le script de base public/index.php en transmettant l'information de l'URL relative. En utilisant le serveur de **Symfony**, cela se fait tout seul, sinon, le fichier `.htaccess` du dossier `public` est utilisé. Vous aviez vous-même inclut un fichier similaire pour obtenir le même comportement, dans votre framework "maison".
+
+ * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]`. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration) comme vous faisiez l'année dernière. Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manière de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Larravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques librairies). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
+ 
+ Fait amusant : si vous êtes amené à utiliser **Laravel**, vous pourrez constater que le framework importe le routeur de Symfony et l'étend ! Et c'est une bonne chose : on évite de réinventer la roue.
+
+ * Symonfy utilise un `ControllerResolver` et un `ArgumentResolver` pour appeler la bonne action (bon controller, bonne méthode) avec les bons arguments. Vous aviez déjà utilisé exactement ces classes (issues de Symfony) dans votre framework maison ! En effet, nous les avions installé avec composer.
+
+ * La majeure partie de la technologie `twig` (syntaxe, blocs...) a été vue l'année dernière.
+
+ * Nous avions créé une extension pour `twig` permettant d'ajouter deux fonctions : `asset` pour récupérer les assets (images, fichiers...) de notre application et `route` pour générer le lien d'une route à partir de son nom (et éventuellement ses paramètres). Ici, Symfony inclut directement ces fonctions avec `asset` et `path` (à la place de `route`).
+
+ * Le fichier de configuration `config/services.yaml` est assez proche du fichier de configuration du conteneur de services que certains d'entre vous aviez codé (si vous étiez allé au bout du TD SAE portant sur les tests, au semestre 4). Nous avions aussi codé un équivalent de ce fichier sous la forme d'une classe de configuration PHP.
+
+ * La notion d'injection de dépendances et le concept de dépendre d'interfaces plutôt que de classes concrètes a aussi été abordé lors du TD SAE sur les tests. Cela permet à votre application d'être plus modulable et plus facilement testable ! Nous avions utilisé un **conteneur IoC** afin d'enregistrer et configurer toutes nos dépendances et les injecter de manière adéquate dans chaque classe (nous avions d'ailleurs utilisé celui de Symfony, donc c'est le même qui gère tout cela en arrière-plan ici aussi).
+
+ * Nous avions déjà vu la syntaxe des constructeurs avec visibilité devant les arguments, afin de déclarer un attribut (comme nous le faisons dans `FlashMessageHelper`, par exemple).
 
 {% endraw %}
