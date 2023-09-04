@@ -9,7 +9,7 @@ lang: fr
 
 La seconde partie de la découverte de ce framework va se concentrer sur la gestion de nos utilisateurs. Comme c'est un aspect assez courant sur les applications web, Symfony possède bien sûr divers outils et processus permettant de mettre en place rapidement et facilement un système de gestion pour nos utilisateurs.
 
-Enfin, dans une seconde partie, nous effectuerons quelques finitions sur le site comme ajouter des auteurs pour les publications et des pages personnelles pour les utilisateurs. Nous verrons aussi comment **inclure** d'autres templates dans un template twig et enfin, nous personnaliserons nos pages d'erreur.
+Enfin, dans une seconde partie, nous effectuerons quelques finitions sur le site comme ajouter des auteurs pour les publications et des pages personnelles pour les utilisateurs. Nous verrons aussi comment **inclure** d'autres templates dans un template Twig et enfin, nous personnaliserons nos pages d'erreur.
 
 ## Les utilisateurs
 
@@ -67,7 +67,7 @@ Au niveau de la classe `Utilisateur` :
 
 * La propriété `password` représente le mot de passe **haché** (on ne stocke jamais le mot de passe en clair ici)
 
-* La propriété `roles` représente une liste de rôles de l'utilisateur. Les rôles sont un système permettant d'accorder des privilèges à certains utilisateurs. On peut limiter l'accès à des routes à certains rôles, ou bien vérifier le rôle d'un utilisateur dans un template twig. Si vous jetez un œil à la méthode `getRoles`, vous remarquerez que par défaut, un utilisateur a le rôle `ROLE_USER`. C'est le rôle basique d'un utilisateur connecté. Dans la base de données, cette valeur est stockée comme un string et décodée puis transformée en tableau par Symfony.
+* La propriété `roles` représente une liste de rôles de l'utilisateur. Les rôles sont un système permettant d'accorder des privilèges à certains utilisateurs. On peut limiter l'accès à des routes à certains rôles, ou bien vérifier le rôle d'un utilisateur dans un template Twig. Si vous jetez un œil à la méthode `getRoles`, vous remarquerez que par défaut, un utilisateur a le rôle `ROLE_USER`. C'est le rôle basique d'un utilisateur connecté. Dans la base de données, cette valeur est stockée comme un string et décodée puis transformée en tableau par Symfony.
 
 * La méthode `eraseCredentials` permet d'effacer de la mémoire de Symfony des données sensibles, éventuellement stockées dans la classe de l'utilisateur, temporairement (comme le mot de passe en clair, pour la connexion). Dans notre cas, nous ne nous en servirons pas.
 
@@ -79,7 +79,9 @@ Au niveau du fichier `security.yaml` :
 
 * Un peu plus bas, `password_hashers` permet de sélectionner l'algorithme de chiffrement des mots de passes. Depuis les dernières versions de Symfony, on peut utiliser la valeur `auto` (comme c'est le cas ici) qui permet de sélectionner **le meilleur algorithme de chiffrement disponible**. Cela permet aux mots de passes d'être le plus sécurisé possible. De plus, si cet algorithme vient à changer (par exemple, un meilleur algorithme est publié dans le futur), Symfony procède à la **migration** des mots de passes. La prochaine fois qu'ils se connecteront, les utilisateurs dont le mot de passe utilise encore l'ancien algorithme de chiffrement déclencheront automatiquement la migration de leur mot de passe qui sera re-chiffré avec le nouvel algorithme puis stocké, et tout cela de manière invisible. Ainsi, avec ce paramètre, le développeur n'a pas (trop) à se soucier d'être à jour niveau sécurité des mots de passes. Les algorithmes de chiffrement contiennent un système de `salt`, comme vous l'avez vu l'année dernière.
  
-### Inscription
+### Formulaire d'inscription
+
+#### Création du formulaire
 
 Nous allons maintenant mettre en place un formulaire d'inscription pour nos utilisateurs !
 
@@ -270,6 +272,8 @@ Avec Symfony, on peut générer le `<label>` lié à un champ avec {% raw %}`{{ 
 9. Modifiez `base.html.twig` afin d'inclure un lien (généré) vers votre nouvelle page d'inscription dans le menu de navigation.
 </div>
 
+#### Traitement du formulaire d'inscription
+
 Maintenant que nous pouvons afficher notre formulaire d'inscription, il faut pouvoir le traiter ! Mais ce n'est pas aussi simple que pour les publications, car :
 
 * Il faut chiffrer/hacher le mot de passe.
@@ -401,7 +405,7 @@ $valeurChamp = $form["monChamp"]->getData();
 
     * `minlength` et `maxlength` sur le login et le mot de passe.
 
-    * `pattern` sur le mot de passe avec pour valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,30}$` (on utilise `\\d` au lieu de `\d` car autrement, twig interprète le `\` comme un caractère spécial)
+    * `pattern` sur le mot de passe avec pour valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,30}$` (on utilise `\\d` au lieu de `\d` car autrement, Twig interprète le `\` comme un caractère spécial)
 
     * Vous pouvez également déplacer les contraintes déjà présentes dans le code HTML correspondant au champ `fichierPhotoProfil` dans le champ dédié dans classe `UtilisateurType`. Attention, pour `required`, il se place en dehors de `attr` :
 
@@ -420,6 +424,8 @@ $valeurChamp = $form["monChamp"]->getData();
 
 ### Connexion et déconnexion
 
+#### Formulaire de connexion
+
 Concernant la **connexion**, nous n'aurons pas à créer de classe pour le formulaire. En fait, il y a juste besoin de créer un formulaire HTML classique en précisant des valeurs précises pour les champs correspondants au login et au mot de passe. Aussi, il n'y aura pas besoin de gérer explicitement le traitement du formulaire, Symfony se charge de vérifier le mot de passe et de récupérer les informations sur l'utilisateur.
 
 Tout d'abord, on commence par créer une route, accès en `GET` et en `POST` :
@@ -436,7 +442,7 @@ public function connexion(AuthenticationUtils $authenticationUtils) : Response {
 
 * La variable `$lastUsername` permet de conserver l'affichage du login dans le cas où le formulaire est réaffiché si les identifiants sont invalides.
 
-Ensuite, on crée le template `twig` correspondant, contenant un formulaire de connexion :
+Ensuite, on crée le template `Twig` correspondant, contenant un formulaire de connexion :
 
 ```twig
 {% raw %}
@@ -475,13 +481,11 @@ security:
                 enable_csrf: true
 ```
 
-* Le paramètre `login_path` précise le nom de la route (GET) qui affiche le formulaire.
+* Le système de sécurité de Symfony redirige les visiteurs non authentifiés vers la route indiquée dans `login_path` lorsqu'ils tentent d'accéder à un page sécurisé sans être connecté.
+  
+* Le paramètre `check_path` doit correspondre à la route vers laquelle renvoie le formulaire de connexion. Symfony va intercepter les requêtes `POST` à `check_path` pour traiter les identifiants de connexion. En cas d'échec de connexion, Symfony redirige l'utilisateur sur `login_path`, ce qui a pour effet de réafficher le formulaire de connexion.
 
-* Le paramètre `check_path` précise le nom de la route (POST) qui traite le formulaire. Attention, par défaut, cette route est interceptée et traité par Symfony, et dans le cas où il y a une erreur, on redirige sur notre route d'origine (qui permet donc de réafficher le formulaire).
-
-* Les paramètres `default_target_path` et `always_use_default_target_path` permettent de rediriger l'utilisateur vers une route précise après la connexion.
-
-Dès qu'un utilisateur tente d'accéder à une fonction ou une page sans être connecté, il sera automatiquement redirigé vers le formulaire de connexion.
+* Les paramètres `default_target_path` et `always_use_default_target_path` permettent de rediriger l'utilisateur vers une route précise après une connexion réussie.
 
 <div class="exercise">
 
@@ -518,9 +522,11 @@ Dès qu'un utilisateur tente d'accéder à une fonction ou une page sans être c
 
 </div>
 
+#### Sécurisation d'action
+
 Bon, pour le moment, vous ne voyez aucune différence qui indique que vous êtes bien connecté ! Nous allons effectuer quelques modifications pour changer certains éléments affichés selon l'état de l'utilisateur (connecté ou non).
 
-Dans vos templates `twig`, vous pouvez utiliser la fonction `is_granted(role)` pour vérifier le rôle d'un utilisateur (par exemple, dans une structure conditionnelle) et ainsi afficher ou non certaines sections.
+Dans vos templates `Twig`, vous pouvez utiliser la fonction `is_granted(role)` pour vérifier le rôle d'un utilisateur (par exemple, dans une structure conditionnelle) et ainsi afficher ou non certaines sections.
 
 Dans notre cas, nous pouvons vérifier si l'utilisateur a le rôle `ROLE_USER` qui est le rôle de base que tous les utilisateurs connectés possèdent :
 
@@ -595,6 +601,8 @@ Cependant, comme nous l'avons vu, dans le cadre d'un formulaire, nous pouvons re
 
 </div>
 
+#### Déconnexion
+
 Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple, car il n'y a même pas de méthode de route ou de formulaire à créer.
 
 Tout d'abord, on déclare une route **vide** dans notre contrôleur :
@@ -645,6 +653,8 @@ Dans `path`, on précise le **nom** de la route (et pas son chemin) et dans `tar
 4. Tentez de vous connecter/déconnecter, vérifiez que tout s'affiche correctement selon votre état.
 
 </div>
+
+#### Notification utilisateur de connexion
 
 Comme notre système de connexion/déconnexion est géré par Symfony, nous ne pouvons pas ajouter de messages flash comme pour une route normale. Mais heureusement, pour cela, il y a les **événements** ! Durant le cycle de vie de l'application, certains **événements** comme la connexion ou la déconnexion de l'utilisateur peuvent être captés par le développeur afin de réaliser des actions complémentaires. Les classes qui traitent ces événements sont appelées `EventSubscriber`.
 
@@ -710,6 +720,8 @@ $flashBag->add(categorie, message);
 3. Vérifiez que vos messages s'affichent bien dans les trois situations.
 </div>
 
+#### Sécurisation (suite)
+
 Enfin, il reste un dernier problème à régler : malgré le fait que l'accès à la page "inscription" et la page "connexion" soit masqué sur notre page quand un utilisateur est connecté il peut toujours y accéder en tapant l'URL de la route (vous pouvez essayer), ce qui n'est pas normal.
 
 Il est possible d'utiliser l'attribut `#[IsGranted]` pour utiliser une condition plus complexe et vérifier, par exemple, qu'un utilisateur donné n'a pas un rôle spécifique :
@@ -725,7 +737,7 @@ public function methodeExemple(): Response
 }
 ```
 
-Contrairement à l'utilisation habituelle que nous faisions de `#[IsGranted]`, on peut utiliser certaines fonctions et des opérateurs conditionnels, comme dans un template `twig` et ainsi faire une condition du style `!is_granted('ROLE_USER')`, c'est-à-dire "n'est pas authentifié". Une autre fonction ayant le même effet (dans notre cas) est `is_authenticated_fully`. Cela peut être utile de l'utiliser si on ne donne pas par défaut le rôle `ROLE_USER` à tous nos utilisateurs connectés.
+Contrairement à l'utilisation habituelle que nous faisions de `#[IsGranted]`, on peut utiliser certaines fonctions et des opérateurs conditionnels, comme dans un template `Twig` et ainsi faire une condition du style `!is_granted('ROLE_USER')`, c'est-à-dire "n'est pas authentifié". Une autre fonction ayant le même effet (dans notre cas) est `is_authenticated_fully`. Cela peut être utile de l'utiliser si on ne donne pas par défaut le rôle `ROLE_USER` à tous nos utilisateurs connectés.
 
 Cependant, il faut réfléchir en terme d'ergonomie : est-ce qu'un utilisateur connecté tentant d'accéder à ces pages doit recevoir une page d'erreur ou bien être redirigé vers une autre page ? Dans notre cas, nous allons plutôt privilégier la seconde solution. Pour cela, il suffit de regarder les permissions de l'utilisateur à l'intérieur de la route, avec `isGranted` :
 
@@ -848,7 +860,7 @@ Pour le dernier point, il y a plusieurs possibilités : utiliser un "if/else". U
 
 Pour rappel, si une propriété d'un objet est **nulle**, alors un test conditionnel "objet.propriete" renvoi simplement `false`.
 
-Aussi, avec `twig`, pour **concaténer** des valeurs, on utilise le symbole `~` :
+Aussi, avec `Twig`, pour **concaténer** des valeurs, on utilise le symbole `~` :
 
 ```twig
 {% raw %}
@@ -876,7 +888,7 @@ Doctrine utilise notamment une de ses stratégies au niveau des entités en rela
 
 * Quand on exécute `findAllOrderedByDate`, une première requête est exécutée pour récupérer toutes les publications, mais sans les données sur les auteurs.
 
-* Quand, dans notre template `twig`, on lit les données de l'auteur d'une publication, une nouvelle requête est exécutée pour récupérer ses données. Donc, une requête supplémentaire par publication.
+* Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication, une nouvelle requête est exécutée pour récupérer ses données. Donc, une requête supplémentaire par publication.
 
 Ceci est très mauvais niveau performance ! Notamment si on a beaucoup de publications. Et comme a priori, on souhaite pouvoir lire quelques données sur l'auteur à chaque fois qu'on charge une publication, il serait plus judicieux d'utiliser le **eager loading** dans ce contexte.
 
@@ -973,7 +985,7 @@ Dans le cas où on utilise `#[MapEntity]` il faut donc que le paramètre de la r
 
 </div>
 
-Vous connaissez déjà la méthode `path` pour créer une URL depuis le nom d'une route dans un template twig. Mais comment faire quand le chemin de la route contient des paramètres, comme pour les pages des utilisateurs ? Il suffit d'ajout les paramètres correspondants à `path` :
+Vous connaissez déjà la méthode `path` pour créer une URL depuis le nom d'une route dans un template Twig. Mais comment faire quand le chemin de la route contient des paramètres, comme pour les pages des utilisateurs ? Il suffit d'ajout les paramètres correspondants à `path` :
 
 ```twig
 {% raw %}
@@ -1025,7 +1037,7 @@ Comme évoqué plus tôt, dans un site concret, on aurait plutôt un système de
 
 Nous avons dupliqué le code permettant d'afficher la liste des publications dans `feed.html.twig` et `page_perso.html.twig` : ce n'est pas bon !
 
-Une autre fonctionnalité de twig que nous n'avons pas abordé jusqu'ici est **l'inclusion de template** : il est possible d'inclure le code d'un template dans un autre template. Ce mécanisme est différent de l'extension de template que nous utilisions jusqu'ici et qui consistait à "hériter" du code d'un template et redéfinir certaines parties. L'inclusion de template se rapproche plus d'une fonction qu'on peut réutiliser dans plusieurs autres templates. De plus, un peu comme une fonction, on peut passer des paramètres aux templates inclus.
+Une autre fonctionnalité de Twig que nous n'avons pas abordé jusqu'ici est **l'inclusion de template** : il est possible d'inclure le code d'un template dans un autre template. Ce mécanisme est différent de l'extension de template que nous utilisions jusqu'ici et qui consistait à "hériter" du code d'un template et redéfinir certaines parties. L'inclusion de template se rapproche plus d'une fonction qu'on peut réutiliser dans plusieurs autres templates. De plus, un peu comme une fonction, on peut passer des paramètres aux templates inclus.
 
 L'instruction pour inclure un template est la suivante :
 
@@ -1085,14 +1097,14 @@ Actuellement, quand une page d'erreur s'affiche, vous avez une trace assez compl
 
 Bien sûr, toutes ces informations ne doivent pas apparaître quand le site est publié. On change alors d'environnement pour `prod`. Il est aussi possible d'avoir des fichiers de configurations différents par environnement (pas la même base de données entre `dev` et `prod`, par exemple).
 
-Vous avez sans doute remarqué que parfois, le chargement des pages est un peu long après certaines de vos modifications. C'est aussi une des différences majeures entre l'environnement `prod` et `dev`. Quand on est sur l'environnement de production, Symfony utilise un cache ce qui vont permettre d'accélérer les prochaines requêtes. Néanmoins, après une modification du code, il est nécessaire de vider le cache pour constater les mises à jour. 
+Vous avez sans doute remarqué que parfois, le chargement des pages est un peu long après certaines de vos modifications. C'est aussi une des différences majeures entre l'environnement `prod` et `dev`. Quand on est sur l'environnement de production, Symfony utilise un cache qui permet d'accélérer les prochaines requêtes. Néanmoins, après une modification du code, il est nécessaire de vider le cache pour constater les mises à jour. 
 
 En mode développement (`dev`), le cache n'est pas vraiment activé. Après une modification du code, il se régénérera automatiquement, ce qui fait que les requêtes sont plus longues de manière générale. À l'inverse, vous remarquerez que votre site est beaucoup plus rapide en mode `prod` (et heureusement !).
 
 Il faut donc penser à vider le cache quand on fait un changement dans le mode `prod` avec la commande :
 
 ```bash
-php bin/console c:c
+php bin/console cache:clear
 ```
 Ce n'est pas très contraignant, car le développeur ne travaille pas (ou peu) dans le mode `prod`. Ce mode est utilisé là où le site est hébergé publiquement, qui va plutôt subir de "grosses" mises à jour ponctuelles plutôt que plein de petites mises à jour de code toutes les minutes, comme une application en développement. Après une grosse mise à jour du site, il suffit alors de vider le cache une fois.
 
@@ -1131,9 +1143,9 @@ Ces templates seront chargé automatiquement (en mode `prod`) si une erreur surv
 
     * Pour l'erreur `404`, le titre de section est "Page non trouvée !" et le message "La page demandée est introuvable !".
 
-    * Enfin, pour toutes les autres erreurs, le titre de section est "Erreur !" et le message "Une erreur est survenue ! Veuillez ressayer plus tard.".
+    * Enfin, pour toutes les autres erreurs, le titre de section est "Erreur !" et le message "Une erreur est survenue ! Veuillez réessayer plus tard.".
 
-    Pour ne pas perdre trop de temps, ne vous embêtez pas à faire une hiérarchie particulière entre les templates d'erreurs pour généraliser certaines parties du code (même, si cela serait judicieux). Tous les templates d'erreurs héritent simplement de `base.html.twig` et redéfinissent le block de contenu.
+    Pour ne pas perdre trop de temps, ne vous embêtez pas à faire une hiérarchie particulière entre les templates d'erreurs pour généraliser certaines parties du code (même si cela serait judicieux). Tous les templates d'erreurs héritent simplement de `base.html.twig` et redéfinissent le block de contenu.
 
 4. Videz le cache.
 
