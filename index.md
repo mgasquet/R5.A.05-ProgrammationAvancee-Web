@@ -1,12 +1,14 @@
 ---
-title: R5.05 &ndash; Programmation avancée
+title: Frameworks web
 layout: main
 lang: fr
 ---
 
-# Programmation avancée - Web
+# Les frameworks web
 
-Cours *R5.A.05 -- Programmation avancée* en
+Parcours RACDV -- Cours *R5.A.05 -- Programmation avancée*
+Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
+
 3ème année d'IUT.
 
 **Mots clés :** Framework, Symfony, API REST, Vue.js
