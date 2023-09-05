@@ -308,7 +308,7 @@ public function methodeExempleGet(): Response
 
 3. Créez une méthode ayant une route visant le chemin `/hello`, nommée `hello_get` et autorisant seulement la méthode `GET`. Cette méthode doit renvoyer "Hello world" à l'utilisateur. Testez votre route sur votre site.
 
-4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site (`http://adressedusite/hello/Paul`).
+4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site (`http://adressedusite/public/hello/Paul` ou bien simplement `http://adressedusite/hello/Paul` si vous utilisez le serveur de symfony).
 
 </div>
 
