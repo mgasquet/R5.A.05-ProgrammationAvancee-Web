@@ -549,7 +549,7 @@ DATABASE_URL=sgbd://username:password@ip:port/nom_base
 La partie `sgbd` correspond au SGBD utilisé : `mysql`, `postgres`, `sqlite`, `oracle`, etc...
 
 Si vous utilisez la base `MySQL` de l'IUT, la configuration sera donc
-`DATABASE_URL=mysql://login_iut:password@webinfo.iutmontp.univ-montp2.fr:3316/login_iut` en remplaçant `login_iut` et `password` avec vos identifiants (ceux utilisés sur `phpMyAdmin`), bien entendu.
+`DATABASE_URL=mysql://login_iut:password@webinfo.iutmontp.univ-montp2.fr:3316/login_iut` en remplaçant `login_iut` et `password` avec vos identifiants (ceux utilisés sur `phpMyAdmin`), bien entendu. Si vous êtes sur votre machine personnelle (et que vous utilisez donc votre propre SGBD), généralement, le port MySQL est plutôt 3306.
 
 Si vous êtes sur votre machine et que vous souhaitez utiliser une base de données locale (ip `localhost` ou `127.0.0.1`), il faut entrer vos identifiants liés à votre gestionnaire de serveur (par exemple XAMPP) et vous pouvez nommer la base comme bon vous semble. Notez qu'il est bien sûr possible d'utiliser la base de données de l'IUT, même si vous êtes sur votre machine locale (à condition d'être connecté à internet).
 
