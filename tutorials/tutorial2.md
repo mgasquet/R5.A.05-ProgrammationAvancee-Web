@@ -115,7 +115,7 @@ Vous aurez aussi besoin de nouvelles **assertions** :
   #[Assert\File(maxSize : '2M', extensions : ['mp3', 'wav', 'ogg'])]
   ```
 
-* `#[Assert\Regex](pattern: ...)]` : que nous avions brièvement présenté plus tôt. Le paramètre `pattern` défini l'expression régulière que la chaîne de caractères doit respecter.
+* `#[Assert\Regex(pattern: ...)]` : que nous avions brièvement présenté plus tôt. Le paramètre `pattern` défini l'expression régulière que la chaîne de caractères doit respecter.
 
 
 Pour rappel, pour ajouter un champ qui ne fait par partie de l'entité (et lui ajouter des assertions) on le configure ainsi dans la classe du formulaire :
