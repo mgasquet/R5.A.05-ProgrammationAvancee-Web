@@ -25,9 +25,9 @@ Puis, en bonus :
 
 ## JavaScript et fonctionnalités asynchrones
 
-L'année dernière, vous avez découvert la possibilité d'avoir certaines fonctionnalités dîtes asynchrones afin d'effectuer des actions et recevoir des réponses sans avoir besoin de quitter la page courante, afin de rendre votre site pus dynamique. C'est d'ailleurs la logique au cœur des frameworks réactifs (Vue.js, Angular, React) qui seront abordés dans de prochains TPs.
+L'année dernière, vous avez découvert la possibilité d'avoir certaines fonctionnalités dîtes asynchrones afin d'effectuer des actions et recevoir des réponses sans avoir besoin de quitter la page courante, afin de rendre votre site plus dynamique. C'est d'ailleurs la logique au cœur des frameworks réactifs (Vue.js, Angular, React) qui seront abordés dans de prochains TPs.
 
-Comme vous le savez, tout cela passe par JavaScript. Comme on souhaite ajouter la possibilité aux utilisateurs de supprimer leurs publications, il faudrait donc ajouter du JavaScript à notre site et une route prévue pour être utilisée de manière asynchrone (qui n'utilise pas twig et qui ne renvoie pas de page, maos éventuellement des données JSON). En effet, cette fonctionnalité est bien plus adaptée à un système asynchrone plutôt qu'à un formulaire qui ferait recharger la page entière.
+Comme vous le savez, tout cela passe par JavaScript. Comme on souhaite ajouter la possibilité aux utilisateurs de supprimer leurs publications, il faudrait donc ajouter du JavaScript à notre site et une route prévue pour être utilisée de manière asynchrone (qui n'utilise pas twig et qui ne renvoie pas de page, mais éventuellement des données JSON). En effet, cette fonctionnalité est bien plus adaptée à un système asynchrone plutôt qu'à un formulaire qui ferait recharger la page entière.
 
 Aussi, actuellement, notre route `deconnexion` est accessible en `GET`. Nous avions évoqué le fait qu'il serait plus judicieux et sécurisé d'avoir cette route en mode `POST` (ce qui n'est pas possible avec un lien simplement généré). Nous pourrons également gérer cela avec JavaScript.
 
@@ -264,7 +264,7 @@ Ne pas avoir de rôle ne signifie pas que nous ne pourrons pas utiliser l'attrib
 
     * Donner la valeur `false` (au lieu de **null**) à votre propriété. Cela constitue sa valeur par défaut. Comme pour la date de publication, cette donnée doit être générée automatiquement par l'application quand un utilisateur s'inscrit. Pour la date, nous avions dû utiliser une méthode spéciale, car nous avions besoin d'utiliser un objet `DateTime`. Ici, comme c'est un booléen simple, on peut le faire directement lors de la définition de la propriété dans la classe.
 
-    * Rajoutez le paramètre `options: ["default" => false]` dans l'attribut `ORM\Column` lié à cette propriété. Comme nous allons modifier la strucutre de la base, nous allons nous retrouver avec plusieurs utilisateurs qui ne possédaient pas cette propriété avant. Cett option permet d'effectuer la migration et indiquer à notre base de données quelle valeur placer pour `premium` pour les utilisateurs déjà existant. Ici, tous les utilisateurs déjà enregistrés ne sont pas membre premium, par défaut. Cette option est très utile pour ne pas "casser" la base en cas de mise à jour !
+    * Rajoutez le paramètre `options: ["default" => false]` dans l'attribut `ORM\Column` lié à cette propriété. Comme nous allons modifier la structure de la base, nous allons nous retrouver avec plusieurs utilisateurs qui ne possédaient pas cette propriété avant. Cette option permet d'effectuer la migration et indiquer à notre base de données quelle valeur placer pour `premium` pour les utilisateurs déjà existant. Ici, tous les utilisateurs déjà enregistrés ne sont pas membre premium, par défaut. Cette option est très utile pour ne pas "casser" la base en cas de mise à jour !
 
     Quand tout est prêt, mettez à jour votre base de données avec `make:migration` puis `doctrine:migrations:migrate`.
 
@@ -364,7 +364,7 @@ class MessageType extends AbstractType
         $group = $dateService->isWeekend() ? 'message:weekend' : 'message:normal';
         $resolver->setDefaults([
             'data_class' => Message::class,
-            'validation_groups' => ['Deafault', $group]
+            'validation_groups' => ['Default', $group]
         ]);
     }
 }
@@ -461,7 +461,7 @@ Le paramètre devient alors accessible comme une variable normale :
 
 </div>
 
-Même si nous masquons le lien dans le menu de navigation, un utilisateur qui possède le statut premium peut quand même accéder à la page des informations et d'achat du premium. Ce qui ne devrait pas être le cas, un utilisateur étant déjà premium n'a pas à voir cette page. Mais comme nous n'avons pas de rôle "premium" (au sens des rôles de Symfony) nous ne pouvons pas utiliser l'attribut `IsGranted` comme auparavant...Ou peut-être que si ?
+Même si nous masquons le lien dans le menu de navigation, un utilisateur qui possède le statut premium peut quand même accéder à la page des informations et d'achat du premium. Ce qui ne devrait pas être le cas, un utilisateur étant déjà premium n'a pas à voir cette page. Mais comme nous n'avons pas de rôle "premium" (au sens des rôles de Symfony) nous ne pouvons pas utiliser l'attribut `IsGranted` comme auparavant... Ou peut-être que si ?
 
 Rappelez-vous, sur les routes `connexion` et `inscription`, nous avions évoqué la possibilité d'utiliser `IsGranted` en formulant une condition complexe :
 
@@ -485,7 +485,7 @@ public function forumAdo() : Response {
 }
 ```
 
-Dans l'exemple ci-dessus, on stocke l'âge est stocké dans l'entité représentant nos utilisateurs. L'accès à cette page ne pourra se faire que si l'utilisateur est connecté, et s'il a entre 12 et 18 ans.
+Dans l'exemple ci-dessus, l'âge est stocké dans l'entité représentant nos utilisateurs. L'accès à cette page ne pourra se faire que si l'utilisateur est connecté, et s'il a entre 12 et 18 ans.
 
 <div class="exercise">
 
@@ -547,7 +547,7 @@ Attention, dans un contexte réel, vous devez penser à la concurrence : pour ra
 
 Généralement, pour régler ce genre de problème, on utilise des **verrous** pour que les autres requêtes attendent que la requête ayant déclenché le verrou termine son traitement. Ainsi, on aura un ordre d'exécution synchrone pour les requêtes qui accèdent à cette partie "sensible" du code, et on pourra annuler le paiement si on se rend compte qu'il ne reste plus de place...
 
-Bref, même si dans le cas de "The Feed", nous ne rencontrerons pas cette situation (pas de rupture de stock pour le premium) dans un contexte réel, il faut vous poser ces questions ! À partir du moment où vous manipulez de l'argent, les enjeux sont très sérieux.
+Même si dans le cas de "The Feed", nous ne rencontrerons pas cette situation (pas de rupture de stock pour le premium) dans un contexte réel, il faut vous poser ces questions ! À partir du moment où vous manipulez de l'argent, les enjeux sont très sérieux.
 
 Bref, après cette longue introduction, la première étape va être de récupérer notre clé privée de test.
 
@@ -735,7 +735,7 @@ Dans un premier temps, nous allons voir comment installer et configurer cet outi
 5. Exécutez la commande suivante :
 
     ```bash
-    ./stripe login listen
+    ./stripe listen
     ```
 
     Une **signature** secrète de webhook vous est donné. Conservez-la quelque-part.
@@ -768,13 +768,13 @@ try {
     /*
     On construit l'événement.
     On utilise $secretSignature qui contient la signature secrète récupérée plus tôt (dans le terminal)
-    Si la signature n'est pas bonne (vérifié avec la signature de la requête et celle secrète), une exception est décléenchée.
+    Si la signature n'est pas bonne (vérifié avec la signature de la requête et celle secrète), une exception est déclenchée.
     */
     $event = Webhook::constructEvent($payload, $sig_header, $secretSignature);
 
     /*
     On vérifie le type d'événement.
-    Pour l'instant, nous ne traitons que l'événement checkout.session.completed qui est délénché quand l'utilisateur valide le formulaire et le paiement est prêt à être capturé
+    Pour l'instant, nous ne traitons que l'événement checkout.session.completed qui est déclenché quand l'utilisateur valide le formulaire et le paiement est prêt à être capturé
     Si l'application vient à évoluer, on pourrait traiter d'autres événements
     */
     if ($event->type == 'checkout.session.completed') {
@@ -946,7 +946,7 @@ Nous allons maintenant gérer quelques scénarios d'erreurs, où il faut donc an
 
 * L'utilisateur ciblé n'existe pas. Par exemple, l'utilisateur a supprimé son compte (une fonctionnalité que nous n'avons pas encore développée, mais qui pourrait être là dans le futur).
 
-* L'utilisateur possède est déjà membre premium : par exemple, vous avez ouvert deux formulaires de paiement et vous les remplissez à la suite. Il ne faut pas débiter le client deux fois !
+* L'utilisateur est déjà membre premium : par exemple, vous avez ouvert deux formulaires de paiement et vous les remplissez à la suite. Il ne faut pas débiter le client deux fois !
 
 * Le paiement n'a pas pu être capturé, pour diverses raisons.
 
@@ -1008,7 +1008,7 @@ public function methodeExemple(#[MapQueryParameter] string $param1, #[MapQueryPa
 
 Il faut alors bien sûr que le nom des paramètres de la méthode correspondent exactement au nom des paramètres dans le query string.
 
-Du côté de Stripe, il ne nous ai pas possible de rentrer nous-même l'identifiant de la session, car il n'est pas connu à ce stade (on est justement en train de créer la session...). Il faut simplement utiliser la chaîne littérale `{CHECKOUT_SESSION_ID}` afin d'indiquer à Stripe qu'il faudra remplacer cette chaîne lors de la redirection de l'utilisateur, après le paiement :
+Du côté de Stripe, il ne nous est pas possible de rentrer nous-même l'identifiant de la session, car il n'est pas connu à ce stade (on est justement en train de créer la session...). Il faut simplement utiliser la chaîne littérale `{CHECKOUT_SESSION_ID}` afin d'indiquer à Stripe qu'il faudra remplacer cette chaîne lors de la redirection de l'utilisateur, après le paiement :
 
 ```php
 $paymentData = [
@@ -1033,7 +1033,7 @@ $paymentIntentId = $session->payment_intent;
 //On récupère les données du paiement 
 $paymentIntent = $stripe->paymentIntents->retrieve($paymentIntentId);
 
-//L'état "succeeded" signifit que le paiement a bien été capturé (le client a été débité)
+//L'état "succeeded" signifie que le paiement a bien été capturé (le client a été débité)
 $status = $paymentIntent->status;
 ```
 
@@ -1109,7 +1109,7 @@ Deux notes importantes :
 
 * `exceptionCode` permet de définir le code d'erreur à renvoyer si une exception est déclenché par l'expression. Ici, une exception peut être déclenchée si `monObjet` est null et qu'on essaye d'accéder à une de ses méthodes. On peut alors, par exemple, préciser `404` (l'objet n'est pas trouvé...)
 
-* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`, pour rappel, `?` autorise d'avoir une valeur nulle).
+* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`, pour rappel, `?` autorise une valeur nulle).
 
 Normalement, vous devriez maintenant être en mesure de retravailler la logique de vérification du "propriétaire" d'une publication.
 
@@ -1125,7 +1125,7 @@ Tout cela fonctionne bien, mais on reste encore dans des cas assez simples. Mais
 
 Un **voter** est une classe listant des **permissions** (généralement liées à une entité, mais pas obligatoirement.). Lorsque le système vérifie une permissions avec `isGranted` (avec une fonciton ou un attribut), les **voters** sont solicités au travers de deux méthodes :
 
-* Une méthode qui détermine si la classe du **voter** peut traiter cette véerification (est-ce que c'est une permission qui lui ai lié ou non...).
+* Une méthode qui détermine si la classe du **voter** peut traiter cette vérification (est-ce que c'est une permission qui lui est liée ou non...).
 
 * Une méthode qui effectue la vérification et renvoie `true` ou `false` selon sa décision (accepte / refuse).
 
@@ -1139,7 +1139,7 @@ Comme plusieurs **voters** peuvent "voter" sur la décision à prendre pour une 
 
 * On retient le vote du voter ayant la priorité la plus haute.
 
-Par défaut, la première stratégie est choisie. Il est aussi possible de configurer ses propres startégies !
+Par défaut, la première stratégie est choisie. Il est aussi possible de configurer ses propres stratégies !
 
 Dans la classe du Voter, on liste (généralement) les permissions gérées par la classe du Voter avec des constantes. La première méthode `supports` vérifiera que la permission vérifiée est bien une des constantes listées, et que le sujet de la permission (s'il y en a un) correspond au type d'entité géré par la classe (ce 'nest pas obligatoirement le cas).
 
@@ -1207,7 +1207,7 @@ class VideoVoter extends Voter
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
-        //a ce stade, comme `supports` oblige que $subject soit du type Video, je sais que $subject est une vidéo.
+        //a ce stade, comme `supports` oblige $subject à être du type Video, je sais que $subject est une vidéo.
 
         //Je récupère l'utilisateur (null s'il n'est pas connecté)
         $user = $token->getUser();
@@ -1260,7 +1260,7 @@ Il est aussi tout à fait possible d'utiliser cette permission avec la méthode 
 
 ```twig
 {% raw %}
-{% if is_grante('VIDEO_VIEW', video) %}
+{% if is_granted('VIDEO_VIEW', video) %}
 
 {% endif %}
 {% endraw %}
@@ -1308,7 +1308,7 @@ Dans l'exemple ci-dessus, un utilisateur possédant le rôle `ROLE_CUSTOM` poss�
 
 1. Dans le fichier `security.yaml`, définissez une hiérarchie pour le rôle `ROLE_ADMIN` (nouveau rôle) en faisant en sorte que celui-ci hérite de tous les privilèges du rôle de base : `ROLE_USER`.
 
-2. Modifiez le voter `PublicatinVoter` afin de voter favorablement si l'utilisateur possède le privilège `ROLE_ADMIN`. Pour cela, il vous faudra injecter et utiliser le service `Security` qui permet d'utiliser la méthode `isGranted` :
+2. Modifiez le voter `PublicationVoter` afin de voter favorablement si l'utilisateur possède le privilège `ROLE_ADMIN`. Pour cela, il vous faudra injecter et utiliser le service `Security` qui permet d'utiliser la méthode `isGranted` :
 
     ```php
     use Symfony\Bundle\SecurityBundle\Security;
@@ -1344,7 +1344,7 @@ Ce qui génère une classe `MaCommande` dans le dossier `src/Command`. Faisons u
 
 ```php
 #[AsCommand(
-    //Nom de la commande, tel qu'on lutilisera lors de l'éxécution de php bin/console ...
+    //Nom de la commande, tel qu'on l'utilisera lors de l'éxécution de php bin/console ...
     name: 'nomcommande',
     //Pour décrire ce que fait la commande, si l'utilisateur utilise l'option --help, par exemple.
     description: '...',
@@ -1372,7 +1372,7 @@ class MaCommande extends Command
         ;
     }
 
-    //Méthode délclenchée lors de l'éxécution de la commande.
+    //Méthode déclenchée lors de l'éxécution de la commande.
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         //Permet de gérer les messages d'entrées/sorties
@@ -1437,7 +1437,7 @@ class MaCommande extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('videoCode', InputArgument::REQUIRED, "The unique identifier of the video").
+            ->addArgument('videoCode', InputArgument::REQUIRED, "The unique identifier of the video.")
         ;
     }
 
