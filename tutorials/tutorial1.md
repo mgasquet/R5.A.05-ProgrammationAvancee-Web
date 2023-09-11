@@ -1189,7 +1189,7 @@ class ExempleType extends AbstractType {
             ->add('champ1', TextType::class)
 
             // Champ qui n'est pas lié à mon entité Exemple
-            // On rajoute l'otpion "mapped => false" pour dire que ce champ n'appartient pas à la classe "Exemple"
+            // On rajoute l'option "mapped => false" pour dire que ce champ n'appartient pas à la classe "Exemple"
             ->add('champ2', TextType::class, [
                 "mapped" => false,
                 "constraints" => [
