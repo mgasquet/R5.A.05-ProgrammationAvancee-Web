@@ -689,7 +689,7 @@ Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https:
 
 Tout cela manque un peu de style ! Et d'image de profil pour les publications ! Comme nous n'avons pas encore d'utilisateurs, nous allons utiliser une image "anonyme".
 
-Avec Symfony, tous les "assets" (images, fichiers css, js, etc...) doivent être placés dans le dossier `public`, à la racine du projet. Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ assets(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier.
+Avec Symfony, tous les "assets" (images, fichiers css, js, etc...) doivent être placés dans le dossier `public`, à la racine du projet. Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier.
 
 Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : `{{ asset("exemple/coucou.jpg") }}` dans mon template (typiquement, dans la partie `src`).
 
