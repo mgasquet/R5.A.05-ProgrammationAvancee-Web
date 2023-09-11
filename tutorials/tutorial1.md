@@ -1548,7 +1548,7 @@ Une petite dernière section supplémentaire à l'attention du parcours **RACDV*
  
  Fait amusant : si vous êtes amené à utiliser **Laravel**, vous pourrez constater que le framework importe le routeur de Symfony et l'étend ! Et c'est une bonne chose : on évite de réinventer la roue.
 
- * Symonfy utilise un `ControllerResolver` et un `ArgumentResolver` pour appeler la bonne action (bon controller, bonne méthode) avec les bons arguments. Vous aviez déjà utilisé exactement ces classes (issues de Symfony) dans votre framework maison ! En effet, nous les avions installé avec composer.
+ * Symfony utilise un `ControllerResolver` et un `ArgumentResolver` pour appeler la bonne action (bon controller, bonne méthode) avec les bons arguments. Vous aviez déjà utilisé exactement ces classes (issues de Symfony) dans votre framework maison ! En effet, nous les avions installé avec composer.
 
  * La majeure partie de la technologie `twig` (syntaxe, blocs...) a été vue l'année dernière.
 
