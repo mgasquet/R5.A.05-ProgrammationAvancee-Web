@@ -881,7 +881,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 10. Créez un utilisateur, depuis Postman. Il faudra bien préciser le `plainPassword` cette fois. Allez vérifier ensuite, dans votre base, que le mot de passe est bien haché.
 
-11. Modifiez votre `UtilisateurProcessor` de manière à ne pas tenter de hacher le mot de passe s'il n'est pas transmis (s'il est **null**, donc). Cela va nous permettre d'utiliser le même processeur pour la création et la mise à jour (mais on aurait aussi pu en fair deux distincts). Affectez donc aussi `UtilisateurProcessor` comme processeur de l'opération `PATCH`.
+11. Modifiez votre `UtilisateurProcessor` de manière à ne pas tenter de hacher le mot de passe s'il n'est pas transmis (s'il est **null**, donc). Cela va nous permettre d'utiliser le même processeur pour la création et la mise à jour (mais on aurait aussi pu en faire deux distincts). Affectez donc aussi `UtilisateurProcessor` comme processeur de l'opération `PATCH`.
 
 12. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien, c'est-à dire que si le mot de passe est précisé, il est bien re-chiffré.
 
@@ -905,15 +905,15 @@ Pour rappel, afin de préciser les **groupes** dans lesquels un attribut s'appli
     ],
 )]
 class Exemple {
-    #[Assert\NotBlank(groups: `exemple:create`)]
-    #[Assert\NotNull(groups: `exemple:create`)]
+    #[Assert\NotBlank(groups: [`exemple:create`])]
+    #[Assert\NotNull(groups: [`exemple:create`])]
     private ?string $propriete;
 }
 ```
 
 Dans l'exemple ci-dessus, on oblige `propriete` à être précisé seulement lors de la création de l'entité (POST). Lors de la mise à jour, si la propriété n'est pas précisée, cela n'engendre pas d'erreur (mais on peut quand même l'ajouter au payload, ce n'est juste pas obligatoire).
 
-Attention, ces groupes sont différents de ceux utiliser dans `normalizationContext` et `denormalizationContext`. Par convention, nous les nommons de la même manière, mais leur usage est tout à fait différent.
+Attention, ces groupes sont différents de ceux utilisés dans `normalizationContext` et `denormalizationContext`. Par convention, nous les nommons de la même manière, mais leur usage est tout à fait différent.
 
 <div class="exercise">
 
@@ -927,7 +927,7 @@ Attention, ces groupes sont différents de ceux utiliser dans `normalizationCont
 
 ### Contexte de dénormalisation
 
-Maintenant, nous faisons face à un autre problème : on voudrait que certaines propriétés puissent être prcisées lors de la création, mais pas lors de la mise à jour (qu'elles soient ignorées). Par exemple, on souhaite que le login d'un utilisateur ne puisse pas être mis à jour. Pour cela, on peut utiliser les groupes de **dénormalisation**.
+Maintenant, nous faisons face à un autre problème : on voudrait que certaines propriétés puissent être précisées lors de la création, mais pas lors de la mise à jour (qu'elles soient ignorées). Par exemple, on souhaite que le login d'un utilisateur ne puisse pas être mis à jour. Pour cela, on peut utiliser les groupes de **dénormalisation**.
 
 A l'inverse des groupes de **normalisation** où nous avions précisé quels attributs afficher ou non lors d'une opération type `GET`, les groupes de **dénormalisation** permettent d'ignorer certaines propriétés.
 
@@ -961,7 +961,7 @@ Par exemple :
 
 <div class="exercise">
 
-1. En utilisant deux nouveaux groupes : `utilisateur:create` et `utilisateur:update`, faites en sorte que le login soit ignoré dans le cadre d'une requête `PATCH`. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actifs (`login`, `plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mettre à jour de manière générale (mais vous pouvez quand même préciser ses groupes).
+1. En utilisant deux nouveaux groupes : `utilisateur:create` et `utilisateur:update`, faites en sorte que le login soit ignoré dans le cadre d'une requête `PATCH`. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actifs (`login`, `plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale (mais vous pouvez quand même préciser ses groupes).
 
 2. Videz le cache. Tentez de mettre à jour le login d'un utilisateur (avec `PATCH`). Vous devriez constater que le login n'a pas été mis à jour !
 
@@ -1001,7 +1001,7 @@ security:
             json_login:
                 #Le nom de la route d'authentification
                 check_path: auth
-                #La prorpiété correspondant au login dans notre entité
+                #La propriété correspondant au login dans notre entité
                 username_path: login
                 #La prorpiété correspondant au mot de passe (haché) dans notre entité
                 password_path: password
@@ -1059,7 +1059,6 @@ namespace App\EventListener;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-#[As]
 class JWTCreatedListener
 {
     /**
@@ -1084,10 +1083,10 @@ Le but de la méthode `onJWTCreated` est de capter l'événement de création du
 
 * `setData` permet de réaffecter le contenu du `payload` du token.
 
-Une fois la classe créée, il faut l'enregistrer en tant que receveuse de l'événement dans le fichier `config/services.yml` :
+Une fois la classe créée, il faut l'enregistrer en tant que receveuse de l'événement dans le fichier `config/services.yaml` :
 
 ```yml
-    # Dans config/services.yml
+    # Dans config/services.yaml
 
     # Nom custom
     jwt_created_listener:
@@ -1102,7 +1101,7 @@ Une fois la classe créée, il faut l'enregistrer en tant que receveuse de l'év
 
 1. Créez un dossier `EventListener` dans `src` et ajoutez la classe `JWTCreatedListener` telle que définie ci-dessus puis complétez-la afin d'enregistrer l'identifiant, l'adresse email et le statut premium de l'utilisateur dans le payload.
 
-2. Éditez le fichier `config/services.yml` pour enregistrer ce gestionnaire d'événement.
+2. Éditez le fichier `config/services.yaml` pour enregistrer ce gestionnaire d'événement.
 
 3. Videz le cache puis tentez de vous authentifier de nouveau. Décodez le nouveau `JWT` obtenu et vérifiez que les informations supplémentaires sont bien présentes.
 
@@ -1114,7 +1113,7 @@ Maintenant que nous pouvons nous authentifier, nous pouvons sécuriser l'accès 
 
 * Autoriser l'accès à certaines routes seulement aux utilisateurs authentifiés.
 
-* Vérifier qu l'utilisateur qui modifie/supprime une ressource en est bien le propriétaire.
+* Vérifier que l'utilisateur qui modifie/supprime une ressource en est bien le propriétaire.
 
 * Affecter automatiquement l'utilisateur effectuant la requête comme auteur d'une publication.
 
