@@ -348,7 +348,7 @@ $valeurChamp = $form["monChamp"]->getData();
 
 <div class="exercise">
 
-1. Si vous travaillez sur une machine locale sous Linux ou macOS, vous devrez surement donner certaines permissions (notamment l'écriture de fichiers) à votre serveur web. Pour cela, exécutez les [commandes listées ici](https://symfony.com/doc/current/setup/file_permissions.html#1-using-acl-on-a-system-that-supports-setfacl-linux-bsd). Sur les machines de l'IUT, normalement, vous avez déjà donné les permissions nécessaires (pour le serveur de l'IUT) au début du TD1.
+1. Si vous travaillez sur une machine locale sous Linux ou macOS, vous devrez surement donner certaines permissions (notamment l'écriture de fichiers) à votre serveur web. Pour cela, exécutez les [commandes listées ici](https://symfony.com/doc/current/setup/file_permissions.html#1-using-acl-on-a-system-that-supports-setfacl-linux-bsd) en remplaçant le `var` par le chemin du répertoire de votre projet (par exemple, en précisant `.` de manière relative, si vous éxécutez ces commandes à la racine du projet). Sur les machines de l'IUT, normalement, vous avez déjà donné les permissions nécessaires (pour le serveur de l'IUT) au début du TD1.
 
 2. Dans le fichier `config/services.yaml`, ajoutez un paramètre `dossier_photo_profil` ayant pour valeur : `'%kernel.project_dir%/public/img/utilisateurs/uploads'`. La partie `%kernel.project_dir%` désigne la racine du projet. C'est un paramètre défini par Symfony (notez qu'en utilisant `%` on peut utiliser la valeur d'autres paramètres pour construire un autre paramètre, comme c'est le cas ici.).
 
