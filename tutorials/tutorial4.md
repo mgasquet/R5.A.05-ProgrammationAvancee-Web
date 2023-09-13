@@ -1235,7 +1235,7 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
         assert($object instanceof Exemple);
 
         //On décide du (ou des) groupe(s) à ajouter...
-        $group = [...]
+        $group = "..."
 
         //On retourne un tableau avec le groupe "Default" et le (ou les) groupe(s) ajoutés
         return ['Default', $group];
@@ -1267,9 +1267,9 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
 
 ### Vérification du mot de passe avant mise à jour
 
-L'assertion `#[UserPassword]` (placé au-dessus d'une propriété) permet de vérifier que la chaîne de caractère (en clair) correspond au mot de passe de l'utilisateur, lors de la pahse de validation.
+L'assertion `#[UserPassword]` (placé au-dessus d'une propriété) permet de vérifier que la chaîne de caractère (en clair) correspond au mot de passe de l'utilisateur, lors de la phase de validation.
 
-Nous souhaitons créer un système pour que quand un utilisateur souhaite mettre à jour son profil, il soit obligé de préciser une propriété `currentPlainPassword` dans le payload afin de valider son identité (et seulement pour la mise à jour!).
+Nous souhaitons créer un système pour que quand un utilisateur souhaite mettre à jour son profil, il soit obligé de préciser une propriété `currentPlainPassword` dans le payload afin de valider son identité (et seulement pour la mise à jour !).
 
 Normalement, vous avez toutes les connaissances nécessaires pour implémenter ce système !
 
@@ -1277,7 +1277,7 @@ Normalement, vous avez toutes les connaissances nécessaires pour implémenter c
 
 1. Créez une propriété `currentPlainPassword` dans la classe `Utilisateur` (propriété non stockée en base). Ajoutez aussi les getters/setters nécessaires.
 
-2. En utilisant cette nouvelle propriété ainsi que les connaissances acquises dans ce TD, faites en sorte que lors d'une mise à jour (PATCH) l'utilisateur soit obligé de confirmer son mot de passe via la propriété `currentPlainPassword` (afin de valider son identité avant d'effectuer la mise à jour). Vous n'avez pas besoin de quitter la classe `Utilisateur` ou créer de nouvelles classes. Attention, cette propriété ne doit pas être utilisée lors de la création de l'entité, ou de sa lecture.
+2. En utilisant cette nouvelle propriété, l'assertion #[UserPassword] et les connaissances acquises dans ce TD, faites en sorte que lors d'une mise à jour (PATCH) l'utilisateur soit obligé de confirmer son mot de passe via la propriété `currentPlainPassword` (afin de valider son identité avant d'effectuer la mise à jour). Vous n'avez pas besoin de quitter la classe `Utilisateur` ou créer de nouvelles classes. Attention, cette propriété ne doit pas être utilisée lors de la création de l'entité, ou de sa lecture.
 
 3. Dans la méthode `eraseCredentials` mettez aussi `currentPlainPassword` à **null**.
 
