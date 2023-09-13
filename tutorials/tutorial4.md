@@ -1287,7 +1287,7 @@ Normalement, vous avez toutes les connaissances nécessaires pour implémenter c
 
 ### Token de rafraichissement
 
-Plus tôt, dans la partie consacrée aux **JWT**, nous avions évoqué le **système de rfraichissement** pour permettre une plus grande sécurité. La logique est la suivante :
+Plus tôt, dans la partie consacrée aux **JWT**, nous avions évoqué le **système de rafraichissement** pour permettre une plus grande sécurité. La logique est la suivante :
 
 * Les JWT émis par l'application suite à l'authentification ont une faible durée de vie (3600 secondes par défaut). Ainsi, on, limite les risques en cas de vol. En effet, les JWT ne sont stockés nulle part. Il n'y a pas vraiment moyen de les rendre invalide. Seule la date d'expiration définie le moment où le token n'est plus utilisable.
 
@@ -1414,7 +1414,7 @@ Maintenant, à vous de jouer!
 
 Si vous avez complété la section bonus du TD précédent concernant les **permisisons avancées** et les **voters**, sachez que vous pouvez aussi les utiliser ici.
 
-Dans le paramètre `seucirty` de chaque opération, il suffit de préciser la permission dans la fonction `is_granted` et l'objet `object` (si besoin de vérifier la permission par rapport à un objet précis, comme le propriétaire, etc.) :
+Dans le paramètre `security` de chaque opération, il suffit de préciser la permission dans la fonction `is_granted` et l'objet `object` (si besoin de vérifier la permission par rapport à un objet précis, comme le propriétaire, etc.) :
 
 ```php
 #[ApiResource(
