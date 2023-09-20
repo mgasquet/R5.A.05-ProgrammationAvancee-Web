@@ -348,9 +348,11 @@ $valeurChamp = $form["monChamp"]->getData();
 
 <div class="exercise">
 
-1. Dans le fichier `config/services.yaml`, ajoutez un paramètre `dossier_photo_profil` ayant pour valeur : `'%kernel.project_dir%/public/img/utilisateurs/uploads'`. La partie `%kernel.project_dir%` désigne la racine du projet. C'est un paramètre défini par Symfony (notez qu'en utilisant `%` on peut utiliser la valeur d'autres paramètres pour construire un autre paramètre, comme c'est le cas ici.).
+1. Si vous travaillez sur une machine locale sous Linux ou macOS, vous devrez surement donner certaines permissions (notamment l'écriture de fichiers) à votre serveur web. Pour cela, exécutez les [commandes listées ici](https://symfony.com/doc/current/setup/file_permissions.html#1-using-acl-on-a-system-that-supports-setfacl-linux-bsd) en remplaçant le `var` par le chemin du répertoire de votre projet (par exemple, en précisant `.` de manière relative, si vous éxécutez ces commandes à la racine du projet). Sur les machines de l'IUT, normalement, vous avez déjà donné les permissions nécessaires (pour le serveur de l'IUT) au début du TD1.
 
-2. Dans le dossier `src/Service`, créez et complétez la classe suivante :
+2. Dans le fichier `config/services.yaml`, ajoutez un paramètre `dossier_photo_profil` ayant pour valeur : `'%kernel.project_dir%/public/img/utilisateurs/uploads'`. La partie `%kernel.project_dir%` désigne la racine du projet. C'est un paramètre défini par Symfony (notez qu'en utilisant `%` on peut utiliser la valeur d'autres paramètres pour construire un autre paramètre, comme c'est le cas ici.).
+
+3. Dans le dossier `src/Service`, créez et complétez la classe suivante :
 
     ```php
     namespace App\Service;
@@ -396,9 +398,9 @@ $valeurChamp = $form["monChamp"]->getData();
 
     }
     ```
-3. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `processNewUtilisateur` (on rappelle qu'il est très facile d'extraire une interface depuis une classe concrète avec **PHPStorm** !). Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface puis mettez à jour le fichier `services.yaml` pour qu'on puisse injecter et utiliser le service `UtilisateurManager` directement avec `UtilisateurManagerInterface`.
+4. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `proccessNewUtilisateur` (on rappelle qu'il est très facile d'extraire une interface depuis une classe concrète avec **PHPStorm** !). Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface puis mettez à jour le fichier `services.yaml` pour qu'on puisse injecter et utiliser le service `UtilisateurManager` directement avec `UtilisateurManagerInterface`.
 
-4. Dans votre route `inscription`, faites en sorte de gérer la soumission du formulaire et de sauvegarder l'utilisateur construit à partir du formulaire dans la base de données. Cependant, **avant de sauvegarder l'utilisateur**, il faudra extraire `plainPassword` puis `fichierPhotoProfil` et enfin utiliser votre nouveau service avec sa méthode `processNewUtilisateur`.
+5. Dans votre route `inscription`, faites en sorte de gérer la soumission du formulaire et de sauvegarder l'utilisateur construit à partir du formulaire dans la base de données. Cependant, **avant de sauvegarder l'utilisateur**, il faudra extraire `plainPassword` puis `fichierPhotoProfil` et enfin utiliser votre nouveau service avec sa méthode `proccessNewUtilisateur`.
 
     N'oubliez pas aussi de prendre en charge les erreurs du formulaire, à sauvegarder comme messages flash ! 
     
@@ -406,7 +408,7 @@ $valeurChamp = $form["monChamp"]->getData();
     
     Encore une fois, vous pouvez vous inspirer (en partie) du code de votre route `feed`, pour la création d'une publication.
 
-5. Testez d'inscrire un utilisateur en respectant les différentes contraintes et en précisant une image de profil. Vérifiez que :
+6. Testez d'inscrire un utilisateur en respectant les différentes contraintes et en précisant une image de profil. Vérifiez que :
 
     * Vous êtes bien redirigé vers la page principale et le message flash "Inscription réussie" apparaît.
 
@@ -414,11 +416,11 @@ $valeurChamp = $form["monChamp"]->getData();
 
     * L'image de profil a bien été uploadée dans le dossier `public/img/utilisateurs/uploads`.
 
-6. Tentez d'inscrire un nouvel utilisateur, sans image de profil (cela doit fonctionner).
+7. Tentez d'inscrire un nouvel utilisateur, sans image de profil (cela doit fonctionner).
 
-7. Testez les différents cas d'erreurs possibles en ne respectant pas certaines contraintes (sur le login, le mot de passe, le format de l'image de profil...) et vérifiez que les messages flash d'erreur s'affichent bien.
+8. Testez les différents cas d'erreurs possibles en ne respectant pas certaines contraintes (sur le login, le mot de passe, le format de l'image de profil...) et vérifiez que les messages flash d'erreur s'affichent bien.
 
-8. En modifiant `UtilisateurType`, ajoutez des contraintes "client" qui permettront de générer des attributs HTML sur les balises du formulaire pour que le navigateur vérifie certaines contraintes côté client :
+9. En modifiant `UtilisateurType`, ajoutez des contraintes "client" qui permettront de générer des attributs HTML sur les balises du formulaire pour que le navigateur vérifie certaines contraintes côté client :
 
     * `minlength` et `maxlength` sur le login et le mot de passe.
 
@@ -897,13 +899,13 @@ Attention de bien respecter **un espace** avant et après `~`.
 
 1. Mettez à jour votre route `feed` dans le contrôleur `PublicationController` afin de récupérer l'utilisateur connecté et de l'affecter comme auteur de la publication avant de l'enregistrer dans la base de données (idéalement, on aurait pu créer un service comme nous l'avions fait pour les utilisateurs, mais là, il s'agit simplement d'une petite ligne de code à ajouter... Mais s'il y avait plus de code à gérer, il faudrait y penser !)
 
-2. Mettez à jour votre template `feed.html.twig` pour afficher le login de l'utilisateur et son image de profil sur chaque publication. S'il n'a pas d'image de profil, il faut continuer d'afficher l'image par défaut `img/utilisateurs/anonyme.jpg`.
+2. Mettez à jour votre template `feed.html.twig` pour afficher le login de l'utilisateur et son image de profil sur chaque publication. S'il n'a pas d'image de profil, il faut continuer d'afficher l'image par défaut `img/utilisateurs/anonyme.jpg`. Pour rappel, avec twig, vous pouvez concaténer deux chaînes de caractères en utilisant `~`.
 
 3. Connectez-vous (si ce n'est pas déjà fait) puis créez de nouvelles publications. Testez avec un compte ayant une image de profil et un autre compte n'en ayant pas. Vérifiez que tout s'affiche correctement.
 
 </div>
 
-Tout fonctionne bien, mais il y a néanmoins un petit problème : jetez un œil aux requêtes SQL exécutées, en fouillant dans la barre de débogage. Si vous avez X publications, il y a X+1 requêtes exécutées ! Pourquoi ça ?
+Tout fonctionne bien, mais il y a néanmoins un petit problème : jetez un œil aux requêtes SQL exécutées, en fouillant dans la barre de débogage. Si vous avez un ensemble de publications avec X auteurs différents, il y a X+1 requêtes exécutées ! Pourquoi ça ?
 
 Si vous vous souvenez de vos cours de base de données du semestre 3, nous avions parlé de deux modes de chargement de données : le **lazy loading** et le **eager loading**. Le lazy loading consiste à ne charger des données que quand on en a besoin alors que le eager loading permet de charger tout d'un coup (avec une seule requête, si possible).
 
@@ -911,9 +913,17 @@ Doctrine utilise notamment une de ses stratégies au niveau des entités en rela
 
 * Quand on exécute `findAllOrderedByDate`, une première requête est exécutée pour récupérer toutes les publications, mais sans les données sur les auteurs.
 
-* Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication, une nouvelle requête est exécutée pour récupérer ses données. Donc, une requête supplémentaire par publication.
+* Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication pour la première fois, une nouvelle requête est exécutée pour récupérer ses données (et conservées pour ne pas avoir à refaire la requête si on a plusieurs publications avec le même auteur...). Donc, une requête supplémentaire par publication.
 
 Ceci est très mauvais niveau performance ! Notamment si on a beaucoup de publications. Et comme a priori, on souhaite pouvoir lire quelques données sur l'auteur à chaque fois qu'on charge une publication, il serait plus judicieux d'utiliser le **eager loading** dans ce contexte.
+
+En utilisant le **eager loading** :
+
+* Quand on exécute `findAllOrderedByDate`, une seule requête est exécutée pour récupérer toutes les publications et les données des auteurs (avec une jointure).
+
+* Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication, il n'y a pas de nouvelle requêtes exécutées pour récupérer ses données, elles ont déjà été chargées.
+
+Attention, cette stratégie (eager loading) est pertinente dans ce contexte, car nous savons que nous devons afficher les données de l'auteur sur chaque publication. Mais, dans d'autres contextes où ces données ne seraient pas toujours affichées, on pourrait alors préférer le lzay loading.
 
 Pour changer la stratégie utilisée pour récupérer les données d'une propriété, il suffit de configurer le paramètre `fetch` (avec `EAGER` ou `LAZY`) dans l'attribut gérant la relation. Par exemple :
 
@@ -1106,13 +1116,15 @@ Il est intéressant de noter que le template inclus a accès à toutes les varia
 
 <div class="exercise">
 
-1. Créez un template `liste_publications.html.twig` dans `templates/publications` contenant le code de **la boucle** affichant la liste des publications.
+1. Créez un template `publication.html.twig` dans `templates/publications` contenant le code affichant une publication.
 
-2. Dans `feed.html.twig` et `page_perso.html.twig` remplacez le code affichant votre liste de publications en incluant votre nouveau template. Il faudra passer la liste des publications en paramètre.
+2. Dans `feed.html.twig` et `page_perso.html.twig` remplacez le code contenu dans votre boucle affichant chaque publication en incluant votre nouveau template à la palce. Il faudra passer chaque publication traitée en paramètre.
 
 3. Vérifiez que tout s'affiche toujours normalement, sur la page principale et sur une page personnelle.
 
 </div>
+
+On pourrait même aller plus loin et avoir un template `liste_publications.html.twig` si l'affichage d'une liste de publications était plus complexe qu'une simple boucle et se répétait sur plusieurs pages. Ce template pourrait lui-même utiliser notre nouveau template `publication.html.twig`...
 
 ### Environnement et pages d'erreurs
 

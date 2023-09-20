@@ -698,7 +698,7 @@ Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https:
 
 Tout cela manque un peu de style ! Et d'image de profil pour les publications ! Comme nous n'avons pas encore d'utilisateurs, nous allons utiliser une image "anonyme".
 
-Avec Symfony, tous les "assets" (images, fichiers css, js, etc...) doivent être placés dans le dossier `public`, à la racine du projet. Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ assets(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier.
+Avec Symfony, tous les "assets" (images, fichiers css, js, etc...) doivent être placés dans le dossier `public`, à la racine du projet. Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier.
 
 Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : `{{ asset("exemple/coucou.jpg") }}` dans mon template (typiquement, dans la partie `src`).
 
@@ -1198,7 +1198,7 @@ class ExempleType extends AbstractType {
             ->add('champ1', TextType::class)
 
             // Champ qui n'est pas lié à mon entité Exemple
-            // On rajoute l'otpion "mapped => false" pour dire que ce champ n'appartient pas à la classe "Exemple"
+            // On rajoute l'option "mapped => false" pour dire que ce champ n'appartient pas à la classe "Exemple"
             ->add('champ2', TextType::class, [
                 "mapped" => false,
                 "constraints" => [
@@ -1557,7 +1557,7 @@ Une petite dernière section supplémentaire à l'attention du parcours **RACDV*
  
  Fait amusant : si vous êtes amené à utiliser **Laravel**, vous pourrez constater que le framework importe le routeur de Symfony et l'étend ! Et c'est une bonne chose : on évite de réinventer la roue.
 
- * Symonfy utilise un `ControllerResolver` et un `ArgumentResolver` pour appeler la bonne action (bon controller, bonne méthode) avec les bons arguments. Vous aviez déjà utilisé exactement ces classes (issues de Symfony) dans votre framework maison ! En effet, nous les avions installé avec composer.
+ * Symfony utilise un `ControllerResolver` et un `ArgumentResolver` pour appeler la bonne action (bon controller, bonne méthode) avec les bons arguments. Vous aviez déjà utilisé exactement ces classes (issues de Symfony) dans votre framework maison ! En effet, nous les avions installé avec composer.
 
  * La majeure partie de la technologie `twig` (syntaxe, blocs...) a été vue l'année dernière.
 

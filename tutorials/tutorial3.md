@@ -49,7 +49,7 @@ Nous allons commencer par importer un fichier JavaScript simple sur la page prin
 
 2. Faites en sorte de charger ce fichier JavaScript, uniquement dans les templates `feed.html.twig` et `page_perso.html.twig`. Nous allons ajouter de nouvelles pages dans le futur, et il ne faut pas que ce fichier soit chargé dans ces autres pages. Indice : il vous faudra sans doutes modifier `base.html.twig` !
 
-3. Modifiez le template `liste_publications.html.twig` afin de rajouter le bout de code HTML suivant, juste après l'élément `<p>...</p>` contenant le message de la publication : 
+3. Modifiez le template `publication.html.twig` afin de rajouter le bout de code HTML suivant, juste après l'élément `<p>...</p>` contenant le message de la publication : 
 
     ```html
     <button class="delete-feedy">Supprimer</button>
@@ -73,7 +73,7 @@ Nous allons commencer par importer un fichier JavaScript simple sur la page prin
 
 Maintenant que nous avons de quoi supprimer visuellement une publication de manière dynamique, il faut confirmer cette suppression côté back-end. Il faut aussi pouvoir générer le lien de la route dans notre fichier JavaScript, comme nous le faisons avec `path` dans nos templates.
 
-Pour faire une route accessible de manière asynchrone, quelques éléments diffèrent :
+Pour créer une route accessible par une requête HTTP exécutée en JavaScript (et qui ne renvoit pas de page mais plutôt des données), quelques éléments diffèrent :
 
 ```php
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -91,7 +91,7 @@ public function methodeExemple(Request $request): Response
 }
 ```
 
-* Afin que la route puisse être appelée depuis le JavaScript, il faut **exposer la route** en ajoutant `options: ["expose" => true]` dans l'attribut contenant les meta-données de la route.
+* Afin que le chemin de la route puisse être généré à partir de son nom (côté JavaScript), il faut **exposer la route** en ajoutant `options: ["expose" => true]` dans l'attribut contenant les meta-données de la route.
 
 * Si des données `JSON` (ou autre) sont envoyées et doivent être lues, on peut les récupérer avec l'objet `Request`. En fait, cela marche de la même façon que pour récupérer des données depuis query string, ou bien même d'un formulaire...
 
@@ -114,7 +114,7 @@ Comme pour tous les composants, il faut commencer par l'installer avec `composer
 composer require friendsofsymfony/jsrouting-bundle
 ```
 
-Par défaut, un bundle téléchargé n'est pas activé. Pour l'activer, il suffit de rajouter une petite ligne de code dans le fichier `config/bundles.php` :
+Selon votre configuration, il se peut que le bundle ne soit pas activé par défaut. Si ce n'est pas le cas, il suffit de rajouter une petite ligne de code dans le fichier `config/bundles.php` :
 
 ```php
 //config/bundles.php
@@ -123,6 +123,8 @@ return [
     FOS\JsRoutingBundle\FOSJsRoutingBundle::class => ['all' => true],
 ];
 ```
+
+Si la ligne est déjà présente, c'est que le bundle est déjà actif!
 
 Ensuite, comme le bundle défini certaines `routes` qui lui sont spécifiques, il faut les enregistrer dans notre application. Pour notre nouveau bundle, on édite le fichier `config/routes.yaml` en ajoutant la ligne suivante :
 
@@ -191,7 +193,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 <div class="exercise">
 
-1. Dans `PublicationController`, créez une route `deletePublicationAsync` possédant une route paramétrée `/feedy/{id}` et accessible via la méthode `DELETE`. Concrètement, il n'y a aucune donnée à lire (pas de payload) mais vous devez :
+1. Dans `PublicationController`, créez une route `deletePublication` possédant une route paramétrée `/feedy/{id}` et accessible via la méthode `DELETE`. Concrètement, il n'y a aucune donnée à lire (pas de payload) mais vous devez :
 
     * Récupérer la publication visée par l'identifiant donné dans la route.
 
@@ -205,13 +207,15 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
         * `403` si l'utilisateur n'est pas auteur de la publication (opération interdite).
         * `204` si tout se passe bien (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée)
 
+    Souvenez-vous : lors du TD2, nous avions vu l'attribut `MapEntity` qui pourrait vous être très utile ici !
+
 2. En utilisant l'attribut `IsGranted`, faites en sorte que cette route soit accessible seulement aux utilisateurs connectés (possédant le rôle `ROLE_USER`). Allez consulter le TD2 si vous ne savez plus comment faire.
 
 3. Installez `FOSJsRoutingBundle` et configurer tout ce qu'il faut pour pouvoir utiliser la fonction `Routing.generate`. Les deux fichiers JavaScript à importer sont globaux et devront donc être chargés sur toutes les pages(quel template faut-il modifier..?)
 
-4. Modifiez le template `liste_publications.html.twig` afin d'inclure un attribut `data-publication-id` contenant l'identifiant de la publication dans les attributs du bouton de suppression.
+4. Modifiez le template `publication.html.twig` afin d'inclure un attribut `data-publication-id` contenant l'identifiant de la publication dans les attributs du bouton de suppression.
 
-5. Dans le fichier `publications.js`, modifiez la fonction `supprimerFeedy` afin d'ajouter une requête asynchrone vers la route `deletePublicationAsync`. Vous pouvez notamment utiliser l'objet `XMLHttpRequest` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels :
+5. Dans le fichier `publications.js`, modifiez la fonction `supprimerFeedy` afin d'ajouter une requête asynchrone vers la route `deletePublication`. Vous pouvez notamment utiliser l'objet `XMLHttpRequest` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels :
 
     ```javascript
     //Création de l'objet
@@ -268,7 +272,7 @@ Ne pas avoir de rôle ne signifie pas que nous ne pourrons pas utiliser l'attrib
 
     Quand tout est prêt, mettez à jour votre base de données avec `make:migration` puis `doctrine:migrations:migrate`.
 
-2. Modifiez le template `liste_publications.html.twig` pour faire en sorte d'ajouter la classe `premium-login` (qui affiche le pseudonyme en doré) à l'élément `<span></span>` contenant le pseudonyme de l'auteur **si celui-ci est un membre premium**.
+2. Modifiez le template `publication.html.twig` pour faire en sorte d'ajouter la classe `premium-login` (qui affiche le pseudonyme en doré) à l'élément `<span></span>` contenant le pseudonyme de l'auteur **si celui-ci est un membre premium**.
 
 3. Dans votre base de données, modifiez un utilisateur pour lui donner le statut premium. Observez que son pseudonyme est bien affiché différemment sur ses publications.
 
@@ -395,7 +399,9 @@ $form = $this->createForm(MonType::class, $entity, [
     $user = $this->security->getUser();
     ```
 
-    L'autocomplétion ne vous montrera pas forcément les attributs/méthodes de la classe `Utilisateur`, car on nous renvoie un objet de type `UserInterface`. Ce n'est pas grave, car en réalité, c'est bien notre entité `Utilisateur` qui est utilisé (et qui implémente justement cette interface)
+    L'autocomplétion ne vous montrera pas forcément les attributs/méthodes de la classe `Utilisateur`, car on nous renvoie un objet de type `UserInterface`. Ce n'est pas grave, car en réalité, c'est bien notre entité `Utilisateur` qui est utilisé (et qui implémente justement cette interface).
+
+    Comme d'habitude, il faudra penser à ajouter un constructeur dans `PublicationType` afin de réaliser l'injection de dépendance nécessaire.
 
 3. Utilisez un compte non premium et vérifiez que l'erreur apparaît bien si vous faites un message dépassant 50 caractères. Vérifiez également que l'erreur n'apparait pas si vous faites la même chose sur un compte premium (mais que dans ce cas, la limite à 200 est toujours présente) !
 
@@ -841,17 +847,7 @@ Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'
 
 <div class="exercise">
 
-1. Dans votre entité `Utilisateur`, ajoutez la méthode suivante, qui permet d'ajouter un rôle à l'utilisateur :
-
-    ```php
-    public function addRole($role) : void {
-        if(!in_array($role, $this->roles)) {
-            $this->roles[] = $role;
-        }
-    }
-    ```
-
-2. Dans votre service `PaymentHandler`, ajoutez et complétez la méthode suivante :
+1. Dans votre service `PaymentHandler`, ajoutez et complétez la méthode suivante :
 
     ```php
     public function handlePaymentPremium($session) : void {
@@ -865,7 +861,7 @@ Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'
     
     * Récupérer l'objet utilisateur lié à cet id.
 
-    * Valider le paiement (et vérifier qu'il est bien confirmé) puis changer l'attribut "premium" de l'utilisateur.
+    * Valider le paiement (et vérifier qu'il est bien confirmé) puis changer la propriété "premium" de l'utilisateur (en la passant à `true`).
     
     * Sauvegarder ces modifications en base de données.
 
@@ -1075,12 +1071,12 @@ Nous allons maintenant aborder quelques sections bonus, optionnelles. Si le temp
 
 ### Des permissions plus avancées
 
-Actuellement, votre route `deletePublicationAsync` doit à peu près ressembler à ça :
+Actuellement, votre route `deletePublication` doit à peu près ressembler à ça :
 
 ```php
 #[IsGranted('ROLE_USER')]
-#[Route('/feedy/{id}', name: 'deletePublicationAsync', options: ["expose" => true], methods: ["DELETE"])]
-public function deletePublicationAsync(#[MapEntity] ?Publication $publication, EntityManagerInterface $entityManager) : Response {
+#[Route('/feedy/{id}', name: 'deletePublication', options: ["expose" => true], methods: ["DELETE"])]
+public function deletePublication(#[MapEntity] ?Publication $publication, EntityManagerInterface $entityManager) : Response {
     if($publication === null) {
         return new JsonResponse(null, 404);
     }
@@ -1093,29 +1089,31 @@ public function deletePublicationAsync(#[MapEntity] ?Publication $publication, E
 }
 ```
 
-Ici, nous avons notamment besoin de vérifier que l'utilisateur est bien l'auteur de la publication... Mais saviez-vous que nous pouvons aussi faire tout cela dans l'attribut `IsGranted` ? En effet, nous avons vu précédemment que nous pouvions accéder au paramètre `user` représentant l'utilisateur courant. Il est aussi possible d'accéder à un des paramètres de la méthode et de l'utiliser dans notre condition. Pour cela, on ajoute un second paramètre à notre attribut `IsGranted` en précisant le nom d'un de nos paramètres.
+Ici, nous avons notamment besoin de vérifier que l'utilisateur est bien l'auteur de la publication... Mais saviez-vous que nous pouvons aussi faire tout cela dans l'attribut `IsGranted` ? En effet, nous avons vu précédemment que nous pouvions accéder au paramètre `user` représentant l'utilisateur courant en utilisant un objet `Expression` dans l'attribut `IsGranted`. Il est aussi possible d'accéder à un des paramètres de la méthode et de l'utiliser dans notre condition. Pour cela, on ajoute un second paramètre (le `subject`) à notre attribut `IsGranted` en précisant le nom d'un de nos paramètres.
 
 Par exemple :
 
 ```php
-#[IsGranted(new Expression("is_granted('ROLE_USER') and monObjet.method()"), "monObjet", exceptionCode: 404)]
+#[IsGranted(new Expression("is_granted('ROLE_USER') and subject.method()"), "monObjet", exceptionCode: 404)]
 #[Route('/exemple/{id}', name: 'route_exemple'], methods: ["POST"])]
-public function deletePublicationAsync(#[MapEntity] Exemple $monObjet) : Response {
+public function deletePublication(#[MapEntity] Exemple $monObjet) : Response {
     ...
 }
 ```
 
-Deux notes importantes :
+Trois notes importantes :
 
-* `exceptionCode` permet de définir le code d'erreur à renvoyer si une exception est déclenché par l'expression. Ici, une exception peut être déclenchée si `monObjet` est null et qu'on essaye d'accéder à une de ses méthodes. On peut alors, par exemple, préciser `404` (l'objet n'est pas trouvé...)
+* Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode (représentant généralement une entité mappée avec `#[MapEntity]`). Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
 
-* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`, pour rappel, `?` autorise une valeur nulle).
+* `exceptionCode` permet de définir le code d'erreur à renvoyer si une exception est déclenché par l'expression. Ici, une exception peut être déclenchée si `subject` (et donc `monObjet`) est **null** et qu'on essaye d'accéder à une de ses méthodes. On peut alors, par exemple, préciser `404` (l'objet n'est pas trouvé...)
+
+* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`. Pour rappel, `?` autorise une valeur nulle).
 
 Normalement, vous devriez maintenant être en mesure de retravailler la logique de vérification du "propriétaire" d'une publication.
 
 <div class="exercise">
 
-1. Au niveau de la route `deletePublicationAsync`, utilisez vos nouvelles connaissances pour déplacer la logique vérifiant que l'utilisateur courant est bien le propriétaire de la publication vers votre attribut `IsGranted`.
+1. Au niveau de la route `deletePublication`, utilisez vos nouvelles connaissances pour déplacer la logique vérifiant que l'utilisateur courant est bien le propriétaire de la publication vers votre attribut `IsGranted`.
 
 2. Vérifiez que tout fonctionne comme attendu (supprimez des publications sur votre compte).
 
@@ -1272,9 +1270,9 @@ La commande `make:voter NomEntiteVoter` permet de générer une classe `NomEntit
 
 1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication`. Ce voter ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il en est l'auteur.
 
-2. Utilisez votre nouvelle permission au niveau de la route `deletePublicationAsync`.
+2. Utilisez votre nouvelle permission au niveau de la route `deletePublication`.
 
-3. Modifiez le template `liste_publications.html.twig` pour utiliser `is_granted` pour afficher le bouton de suppression de la publication au lieu du code que vous utilisiez avant.
+3. Modifiez le template `publication.html.twig` pour utiliser `is_granted` pour afficher le bouton de suppression de la publication au lieu du code que vous utilisiez avant.
 
 4. Vérifiez que tout fonctionne toujours.
 
