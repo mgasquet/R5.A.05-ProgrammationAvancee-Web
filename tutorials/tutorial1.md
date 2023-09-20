@@ -155,7 +155,7 @@ Symfony propose diverses commandes qui permettent d'initialiser (voir de créer 
 Toutes les commandes de Symfony s'exécutent via un script `PHP` nommé **command** se trouvant dans le sous-dossier **bin**. On utilise donc le programme `php` (généralement à partir de la racine du projet) pour exécuter ce script. Il suffit ensuite de préciser le nom de la commande (de Symfony) souhaitée et d'éventuels paramètres et/ou options.
 
 ```bash
-php bin/console mcommande param1 param2 --option1 --option2
+php bin/console macommande param1 param2 --option1 --option2
 ```
 
 Afin de créer un nouveau contrôleur, nous pouvons notamment utiliser la commande suivante (à partir de la racine du projet) :
@@ -191,6 +191,8 @@ Bien entendu, vous pouvez aussi créer un contrôleur à la main, mais la comman
 
 Pour rappel, le **routing** est le fait d'associer un chemin du site (par exemple `/coucou`) et une méthode HTTP (GET, POST, PUT, PATCH ou DELETE) à une fonction (du contrôleur) qui va traiter la requête puis renvoyer la réponse (page `HTML` ou des données sous un format comme du `JSON` pour une API...)
 
+#### Attributs en PHP
+
 Pour créer une route avec Symfony, nous utilisons une fonctionnalité introduite depuis PHP 8 : les **attributs** (on retrouvera parfois le terme d'**annotations** pour désigner les attributs, qui était l'ancienne façon de faire...)
 
 Les **attributs** sont des informations que nous allons ajouter à un élément de l'application : une fonction, une classe entière, une propriété de la classe... Ce sont des méta-données et des règles qui vont pouvoir être lues (ici par le Framework) interprétées et utilisées pour configurer notre application. Ces attributs sont aussi paramétrables.
@@ -198,14 +200,18 @@ Les **attributs** sont des informations que nous allons ajouter à un élément 
 Un attribut se présente ainsi :
 
 ```php
-#[NomAttribut(param1: ..., param2: ...)]
+#[ClasseAttribut(param1: ..., param2: ...)]
 ```
 
 En réalité, un **attribut** est une classe. Les paramètres que l'on précise quand on utilise un attribut sont des données passées au constructeur de l'attribut (en fait, on a créé une nouvelle instance chaque fois quand précise un attribut). Il est ensuite possible d'analyser une classe, une fonction, etc... afin de récupérer ses attributs (il y a des méthodes PHP dédiées, par exemple : [ReflectionProperty::getAttributes](https://www.php.net/manual/en/reflectionproperty.getattributes.php), [ReflectionClass::getAttributes](https://www.php.net/manual/en/reflectionclass.getattributes.php)).
 
 Lors de l'utilisation de l'application, les différentes briques qui composent Symfony se chargent de lire ces attributs et d'exécuter des actions dans différents contextes, par exemple, pour enregistrer les informations sur les routes de l'application, ou bien sur les permissions.
 
-Vous aurez remarqué que ce constructeur utilise une syntaxe un peu particulière pour son initialisation. En fait, depuis **PHP 8**, nous ne sommes pas obligés de préciser les paramètres d'une fonction dans l'ordre (cela inclut les constructeurs). On peut directement indiquer le nom du paramètre souhaité (même si celui-ci se trouve, par exemple en 3ᵉ position) et lui associer sa valeur. Ce mécanisme est appellé **arguments nommées** et est similaire à ce qu'il est possible de faire en **python**, notamment. Plus d'informations sur [la documentation officielle](https://www.php.net/manual/fr/functions.arguments.php#functions.named-arguments).
+#### Arguments nommés en PHP
+
+Vous aurez remarqué que ce constructeur utilise une syntaxe un peu particulière pour son initialisation. En fait, depuis **PHP 8**, nous ne sommes pas obligés de préciser les paramètres d'une fonction dans l'ordre (cela inclut les constructeurs). On peut directement indiquer le nom du paramètre souhaité (même si celui-ci se trouve, par exemple en 3ᵉ position) et lui associer sa valeur. Ce mécanisme est appelé **arguments nommés** et est similaire à ce qu'il est possible de faire en **python**, notamment. Plus d'informations sur [la documentation officielle](https://www.php.net/manual/fr/functions.arguments.php#functions.named-arguments).
+
+#### Attribut pour le routage
 
 Afin de relier une route à une méthode d'un contrôleur avec Symfony, il suffit donc d'ajouter l'attribut suivant, au-dessus de la méthode désirée :
 
@@ -252,6 +258,8 @@ public function methodeExemplePost(): Response
 ```
 
 Il existe d'autres paramètres utiles dont nous pouvons nous servir, par exemple `locale` qui permet de restreindre une route selon le pays de l'utilisateur.
+
+#### Paramètre des actions
 
 Concernant les paramètres des méthodes, nous pouvons notamment ajouter des services qui seront injectés automatiquement (nous en reparlerons plus tard) ainsi qu'un objet de type `Request` qui permet de lire des données envoyées, par exemple dans le query string, ou bien pour traiter un formulaire.
 
@@ -561,7 +569,8 @@ Si vous êtes sur votre machine et que vous souhaitez utiliser une base de donn�
 + url: '%env(DATABASE_URL)%' 
 ```
 
-Une fois ce paramètre correctement configuré, il faut éventuellement créer la base de données si celle-ci n'existe pas déjà (ce qui n'est pas le cas à l'IUT, mais peut-être sur votre machine personnelle, en local). Pour cela, on exécute cette commande :
+Si la base de données n'existe pas déjà, il faut la créer. Vous n'avez pas
+besoin de le faire si vous utilisez la base de l'IUT. Sur votre machine personnelle, c'est peut-être nécessaire. Si vous avez besoin de créer la BD, exécutez la commande suivante :
 
 ```bash
 php bin/console doctrine:database:create
@@ -1540,11 +1549,11 @@ Vous maîtrisez maintenant les fondamentaux du framework Symfony : son système 
 
 Une petite dernière section supplémentaire à l'attention du parcours **RACDV**. Dans ce TD, vous avez réutilisé des concepts que vous aviez abordés en cours de **complément web**. Le but de cette section est de faire lien avec tout cela pour comparer la façon de faire de **Symfony** :
 
- * En cours de complément web, nous avions configuré un **autoloader** afin de charger nos classes. Symfony gère aussi ce chargement automatique à partir du nom de classe complet. Le **namespace** de base est `App` et pointe sur le dossier `src` de l'application. Vous pouvez notamment retrouver cette cofniguration dans le fichier `composer.json` à la source du projet!
+ * En cours de complément web, nous avions configuré un **autoloader** afin de charger nos classes. Symfony gère aussi ce chargement automatique à partir du nom de classe complet. Le **namespace** de base est `App` et pointe sur le dossier `src` de l'application. Vous pouvez notamment retrouver cette configuration dans le fichier `composer.json` à la source du projet!
 
  * Symfony réécrit l'URL pour appeler toujours le script de base public/index.php en transmettant l'information de l'URL relative. En utilisant le serveur de **Symfony**, cela se fait tout seul, sinon, le fichier `.htaccess` du dossier `public` est utilisé. Vous aviez vous-même inclut un fichier similaire pour obtenir le même comportement, dans votre framework "maison".
 
- * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]`. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration) comme vous faisiez l'année dernière. Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manière de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Larravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques librairies). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
+ * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]`. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration) comme vous faisiez l'année dernière. Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manière de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Laravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques librairies). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
  
  Fait amusant : si vous êtes amené à utiliser **Laravel**, vous pourrez constater que le framework importe le routeur de Symfony et l'étend ! Et c'est une bonne chose : on évite de réinventer la roue.
 
