@@ -389,16 +389,16 @@ $valeurChamp = $form["monChamp"]->getData();
         /**
          * Réalise toutes les opérations nécessaires avant l'enregistrement en base d'un nouvel utilisateur, après soumissions du formulaire (hachage du mot de passe, sauvegarde de la photo de profil...)
          */
-        public function proccessNewUtilisateur(Utilisateur $utilisateur, ?string $plainPassword, ?UploadedFile $fichierPhotoProfil) : void {
+        public function processNewUtilisateur(Utilisateur $utilisateur, ?string $plainPassword, ?UploadedFile $fichierPhotoProfil) : void {
             //On chiffre le mot de passe
             //On sauvegarde (et on déplace) l'image de profil
         }
 
     }
     ```
-3. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `proccessNewUtilisateur` (on rappel qu'il est très facile d'extraire une interface depuis une classe concrète avec **PHPStorm** !). Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface puis mettez à jour le fichier `services.yaml` pour qu'on puisse injecter et utiliser le service `UtilisateurManager` directement avec `UtilisateurManagerInterface`.
+3. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `processNewUtilisateur` (on rappelle qu'il est très facile d'extraire une interface depuis une classe concrète avec **PHPStorm** !). Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface puis mettez à jour le fichier `services.yaml` pour qu'on puisse injecter et utiliser le service `UtilisateurManager` directement avec `UtilisateurManagerInterface`.
 
-4. Dans votre route `inscription`, faites en sorte de gérer la soumission du formulaire et de sauvegarder l'utilisateur construit à partir du formulaire dans la base de données. Cependant, **avant de sauvegarder l'utilisateur**, il faudra extraire `plainPassword` puis `fichierPhotoProfil` et enfin utiliser votre nouveau service avec sa méthode `proccessNewUtilisateur`.
+4. Dans votre route `inscription`, faites en sorte de gérer la soumission du formulaire et de sauvegarder l'utilisateur construit à partir du formulaire dans la base de données. Cependant, **avant de sauvegarder l'utilisateur**, il faudra extraire `plainPassword` puis `fichierPhotoProfil` et enfin utiliser votre nouveau service avec sa méthode `processNewUtilisateur`.
 
     N'oubliez pas aussi de prendre en charge les erreurs du formulaire, à sauvegarder comme messages flash ! 
     
