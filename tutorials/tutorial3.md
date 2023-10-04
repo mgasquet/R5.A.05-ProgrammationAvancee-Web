@@ -812,7 +812,7 @@ Pour le reste du traitement (qui sera délégué à un service), plusieurs objet
 ```php
 use Stripe\StripeClient;
 
-//On peut récupérer les meta-données depuis les données de la session transmisses par Stripe
+//On peut récupérer les meta-données depuis les données de la session transmises par Stripe
 $metadata = $session["metadata"];
 
 //Avant d'extraire une donnée, on peut bien sûr vérifier sa présence...
