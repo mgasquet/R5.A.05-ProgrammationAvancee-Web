@@ -785,17 +785,17 @@ try {
         $session = $event->data->object;
         //On imagine que $service est un service contenant une méthode permettant de traiter la suite de la requête.
         $service->traitement($session);
-        //Si on arrive là, tout s'est bien passé, on renvoi un code de succès à Stripe.
+        //Si on arrive là, tout s'est bien passé, on renvoie un code de succès à Stripe.
         return new Response(null, 200);
     }
     else {
-        //Si on arrive là, c'est qu'on ne gère pas l'événement déclenché, on renvoi alors un code d'erreur à Stripe.
+        //Si on arrive là, c'est qu'on ne gère pas l'événement déclenché, on renvoie alors un code d'erreur à Stripe.
         return new Response(null, 400);
     }
 } catch(\Exception $e) {
     /*
     Ici, la signature n'est pas vérifiée, ou une autre erreur est survenue pendant le traitement.
-    On renvoi donc un code d'erreur à Stripe.
+    On renvoie donc un code d'erreur à Stripe.
     */
     return new Response(null, 400);
 }
@@ -874,7 +874,7 @@ Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'
     }
     ```
 
-    Ce bricolage permet de rejeter les requêtes qui ne vous sont pas destinée. Bien sûr, dans un cas réel, il n'y a pas de tel système à mettre en place, vous aurez votre propre compte et ne capterez pas d'événement indésirable. Il s'agit juste d'une astuce pour que le TD se passe bien si vous utilisez le compte partagé !
+    Ce bricolage permet de rejeter les requêtes qui ne vous sont pas destinées. Bien sûr, dans un cas réel, il n'y a pas de tel système à mettre en place, vous aurez votre propre compte et ne capterez pas d'événement indésirable. Il s'agit juste d'une astuce pour que le TD se passe bien si vous utilisez le compte partagé !
 
 4. Enregistrez la signature secrète que vous aviez récupéré dans le terminal comme une **variable** de l'application définie dans `.env` ou `.env.local`. Enregistrez ensuite cette variable comme paramètre dans `services.yaml` (comme vous l'aviez fait pour la clé secrète de l'API).
 
@@ -914,7 +914,7 @@ Ainsi, il est possible d'avoirs plusieurs **webhooks** différents, pour plusieu
 
 1. Utilisez la commande `listen` du client Stripe en précisant l'URL pointant vers la route de votre site correspondant au **webhook** créé lors de l'exercice précédent (quelque chose comme `http://adressedusite/webhook/stripe`).
 
-2. Testez d'acheter du mode premium (comme tout à l'heure, en utilisant une [carte bancaire de test]((https://stripe.com/docs/testing?locale=fr-FR#cards))).
+2. Testez d'acheter du mode premium (comme tout à l'heure, en utilisant une [carte bancaire de test](https://stripe.com/docs/testing?locale=fr-FR#cards)).
 
 3. Jetez un coup d'œil au terminal, si le code `200` apparaît quelque part, cela doit être bon. Attention toutefois, si vous utilisez le compte partagé, peut-être que vous verrez le résultat de la requête d'un autre étudiant qui a effectué un paiement en même temps que vous.
 
