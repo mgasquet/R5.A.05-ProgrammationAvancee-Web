@@ -821,7 +821,7 @@ if(!isset($metadata["dataExemple"])) {
 }
 $dataExemple = $metadata["dataExemple"];
 
-//L'objet "paymentIntent" permet de capturer (confirmer) ou d'annluler le paiement.
+//L'objet "paymentIntent" permet de capturer (confirmer) ou d'annuler le paiement.
 $paymentIntent = $session["payment_intent"];
 //Pour réaliser ces opérations, on a besoin d'un objet StripeClient initialisé avec notre clé secrète d'API.
 $stripe = new StripeClient(cleSecreteApi);
