@@ -844,7 +844,7 @@ Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'
 1. Dans votre service `PaymentHandler`, ajoutez et complétez la méthode suivante :
 
     ```php
-    public function handlePaymentPremium($session) : void {
+    public function handlePaymentPremium(Session $session) : void {
         
     }
     ```
@@ -894,7 +894,7 @@ Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'
 
 Tout est prêt pour finaliser notre système de paiement ! Avant de traiter les cas d'erreurs, nous allons vérifier que dans un scénario normal, le système fonctionne comme attendu.
 
-Pour que Stripe utilise notre **webhook**, nous devons lui indiquer l'URL à laquelle il se trouve. Pour le mode "test", cela se fait donc avec le client que vous avez utilisé plus tôt, en ligne de commandes. Il suffit d'éxécuter la commande suivante :
+Pour que Stripe utilise notre **webhook**, nous devons lui indiquer l'URL à laquelle il se trouve. Pour le mode "test", cela se fait donc avec le client que vous avez utilisé plus tôt, en ligne de commandes. Il suffit d'exécuter la commande suivante :
 
 ```bash
 ./stripe listen --forward-to http://exemple.com
@@ -906,7 +906,7 @@ Par défaut, nous écoutons **tous les événements** en lien avec notre compte 
 ./stripe listen --events=checkout.session.completed --forward-to http://exemple.com
 ```
 
-Ici, dès que l'événement correspondant à la validation du formulaire de paiment est émis, Stripe enverra une requête à l'adresse précisée (à travers notre machine, car le client est connecté à notre compte).
+Ici, dès que l'événement correspondant à la validation du formulaire de paiement est émis, Stripe enverra une requête à l'adresse précisée (à travers notre machine, car le client est connecté à notre compte).
 
 Ainsi, il est possible d'avoirs plusieurs **webhooks** différents, pour plusieurs événements.
 
@@ -940,7 +940,7 @@ Nous allons maintenant gérer quelques scénarios d'erreurs, où il faut donc an
 
 * Le paiement n'a pas pu être capturé, pour diverses raisons.
 
-Dans chaque cas, il faut **annuller le PaymentIntent** et lever une Exception (ce qui renverra donc un code 400 à Stripe).
+Dans chaque cas, il faut **annuler le PaymentIntent** et lever une Exception (ce qui renverra donc un code 400 à Stripe).
 
 <div class="exercise">
 
@@ -948,7 +948,7 @@ Dans chaque cas, il faut **annuller le PaymentIntent** et lever une Exception (c
 
 2. Vérifiez les deux premiers scénarios d'erreur (le troisième est plus difficile à simuler) :
 
-    * Pour le premier, créez un compte, connectez-vous, ouvre le formulaire de paiement, supprimez l'utilisateur dans la base de données, simulez le paiement. Le paiement ne devrait pas avoir lieu.
+    * Pour le premier, créez un compte, connectez-vous, ouvrez le formulaire de paiement, supprimez l'utilisateur dans la base de données, simulez le paiement. Le paiement ne devrait pas avoir lieu.
 
     * Pour le second, connectez-vous à un compte non-premium, ouvre deux fois le formulaire de paiement et simulez deux paiements. Vérifiez que le deuxième paiement n'aboutit pas (code 400 sur le client Stripe).
 
@@ -1050,7 +1050,7 @@ Maintenant, à vous de jouer !
 
 4. Pour vérifier que tout fonctionne, exécutez le scénario suivant :
 
-    * Depuis un compte non-premium, ouvre deux fois le formulaire de paiement.
+    * Depuis un compte non-premium, ouvrez deux fois le formulaire de paiement.
 
     * Complétez et validez le premier : lorsque vous êtes redirigé, le message de confirmation devrait être affiché.
 
@@ -1115,7 +1115,7 @@ Normalement, vous devriez maintenant être en mesure de retravailler la logique 
 
 Tout cela fonctionne bien, mais on reste encore dans des cas assez simples. Mais si la condition grandit (de nouveaux rôles, comme un administrateur, ayant tous les droits...) ou bien que la vérification devient plus compliquée (appel à des services, plusieurs lignes de code...), que doit-on faire ? Tout mettre dans le contrôleur ? Non ! Comme évoqué précédemment, Symfony possède un système avancé pour gérer les permissions : les **voters**.
 
-Un **voter** est une classe listant des **permissions** (généralement liées à une entité, mais pas obligatoirement.). Lorsque le système vérifie une permissions avec `isGranted` (avec une fonciton ou un attribut), les **voters** sont solicités au travers de deux méthodes :
+Un **voter** est une classe listant des **permissions** (généralement liées à une entité, mais pas obligatoirement.). Lorsque le système vérifie une permission avec `isGranted` (avec une fonction ou un attribut), les **voters** sont sollicités au travers de deux méthodes :
 
 * Une méthode qui détermine si la classe du **voter** peut traiter cette vérification (est-ce que c'est une permission qui lui est liée ou non...).
 
@@ -1133,7 +1133,7 @@ Comme plusieurs **voters** peuvent "voter" sur la décision à prendre pour une 
 
 Par défaut, la première stratégie est choisie. Il est aussi possible de configurer ses propres stratégies !
 
-Dans la classe du Voter, on liste (généralement) les permissions gérées par la classe du Voter avec des constantes. La première méthode `supports` vérifiera que la permission vérifiée est bien une des constantes listées, et que le sujet de la permission (s'il y en a un) correspond au type d'entité géré par la classe (ce 'nest pas obligatoirement le cas).
+Dans la classe du Voter, on liste (généralement) les permissions gérées par la classe du Voter avec des constantes. La première méthode `supports` vérifiera que la permission vérifiée est bien une des constantes listées, et que le sujet de la permission (s'il y en a un) correspond au type d'entité géré par la classe (ce n'est pas obligatoirement le cas).
 
 Les **voters** se placent dans le dossier `src/Security/Voter`. Il est possible d'injecter des services (et autres paramètres) via le constructeur.
 
@@ -1258,7 +1258,7 @@ Il est aussi tout à fait possible d'utiliser cette permission avec la méthode 
 {% endraw %}
 ```
 
-La commande `make:voter NomEntiteVoter` permet de générer une classe `NomEntiteVoter` contenant du code basique pour un Voter, lié à l'entité `NomEntite`. Mais encore une fois, il n'est pas obligatoire d'avoir des permissions liés spécifiquement à une entité !
+La commande `make:voter NomEntiteVoter` permet de générer une classe `NomEntiteVoter` contenant du code basique pour un Voter, lié à l'entité `NomEntite`. Mais encore une fois, il n'est pas obligatoire d'avoir des permissions liées spécifiquement à une entité !
 
 <div class="exercise">
 
@@ -1332,7 +1332,7 @@ Pour initialiser la classe d'une commande, on exécute :
 php bin/console make:command MaCommande
 ```
 
-Ce qui génère une classe `MaCommande` dans le dossier `src/Command`. Faisons un tour des possibiltiés proposées par cette classe :
+Ce qui génère une classe `MaCommande` dans le dossier `src/Command`. Faisons un tour des possibilités proposées par cette classe :
 
 ```php
 #[AsCommand(

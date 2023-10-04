@@ -923,7 +923,7 @@ En utilisant le **eager loading** :
 
 * Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication, il n'y a pas de nouvelle requêtes exécutées pour récupérer ses données, elles ont déjà été chargées.
 
-Attention, cette stratégie (eager loading) est pertinente dans ce contexte, car nous savons que nous devons afficher les données de l'auteur sur chaque publication. Mais, dans d'autres contextes où ces données ne seraient pas toujours affichées, on pourrait alors préférer le lzay loading.
+Attention, cette stratégie (eager loading) est pertinente dans ce contexte, car nous savons que nous devons afficher les données de l'auteur sur chaque publication. Mais, dans d'autres contextes où ces données ne seraient pas toujours affichées, on pourrait alors préférer le lazy loading.
 
 Pour changer la stratégie utilisée pour récupérer les données d'une propriété, il suffit de configurer le paramètre `fetch` (avec `EAGER` ou `LAZY`) dans l'attribut gérant la relation. Par exemple :
 
