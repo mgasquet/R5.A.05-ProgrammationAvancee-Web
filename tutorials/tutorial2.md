@@ -1118,7 +1118,7 @@ Il est intéressant de noter que le template inclus a accès à toutes les varia
 
 1. Créez un template `publication.html.twig` dans `templates/publications` contenant le code affichant une publication.
 
-2. Dans `feed.html.twig` et `page_perso.html.twig` remplacez le code contenu dans votre boucle affichant chaque publication en incluant votre nouveau template à la palce. Il faudra passer chaque publication traitée en paramètre.
+2. Dans `feed.html.twig` et `page_perso.html.twig` remplacez le code contenu dans votre boucle affichant chaque publication en incluant votre nouveau template à la place. Il faudra passer chaque publication traitée en paramètre.
 
 3. Vérifiez que tout s'affiche toujours normalement, sur la page principale et sur une page personnelle.
 
