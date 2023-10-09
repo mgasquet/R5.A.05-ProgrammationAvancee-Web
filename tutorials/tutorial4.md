@@ -107,7 +107,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
     * `port` : 5673
 
-    * `nom_base` : votre login IUT.
+    * `nom_base` : `iut?schema=loginIUT`.
 
     Assurez-vous au préalable que votre base est vide ! Vous pouvez vous y connecter et vérifier cela avec DBeaver, notamment (sauvegardez les données utiles si nécessaires, avant de nettoyer).
 
@@ -157,9 +157,9 @@ Pour générer le code de base lié à l'entité publication, nous allons utilis
     composer require symfony/maker-bundle --dev
     ```
 
-2. Créez une nouvelle entité `Publication` à l'aide de la commande `make:entity`. Une nouvelle question vous sera demandée lors de l'éxécution, par rapport à d'habitude. Symfony détecte que vous êtes en train d'utiliser `API Platform`, et vous demande si l'entité est une ressource de l'API ou non. il faudra répondre que oui, bien entendu.
+2. Créez une nouvelle entité `Publication` à l'aide de la commande `make:entity` en ajoutant l'option `--api-resource` qui permet d'indiquer à Symfony que nous créeons une entité liée à **API Platform**.
 
-    Pour les propriétés :
+    Pour les propriétés à ajouter :
 
     * `message` de type `text` (`null` non autorisé).
 
@@ -265,9 +265,9 @@ On trie les résultats par rapport au premier attribut spécifié puis, en cas d
 
 ```php
 //Quand je récupère l'ensemble des entreprises, elles sont triées de celle possédant le plus gros CA à celle possédant le plus petit CA.
-#[ApiResource](
+#[ApiResource(
     order : ["chiffreAfaire" => "DESC"]
-)
+)]
 class Entreprise {
 
     private ?string $nom = null;
@@ -281,12 +281,38 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
 
 <div class="exercise">
 
-1. Faites les modifications nécessaires au niveau de l'entité `Publication` afin qu'une date entrée dans le `payload` soit ignorée (qu'on ne puisse pas l'écrire) et que celle-ci soit plutôt générée automatiquement du côté du serveur. Pour ce dernier point, reprenez simplement le code correspondant depuis votre classe `Publication` développée dans les TDs précédents.
+1. Faites les modifications nécessaires au niveau de l'entité `Publication` afin qu'une date entrée dans le `payload` soit ignorée (qu'on ne puisse pas l'écrire). Ensuite, pour que celle-ci soit plutôt générée automatiquement du côté du serveur, on pourra utiliser le code suivant qu'on avait déjà utilisé dans les TDs précédents :
 
-2. Reprenez les **assertions** des propriétés de votre ancienne classe `Publication` et appliquez-les sur celle-ci. Concernant l'assertion `Length` sur le message, gardez en une seule pour le moment et supprimez son groupe de validation (nous ajouterons le premium plus tard...). N'oubliez pas de faire l'import suivant :
+```php
+#[ORM\HasLifecycleCallbacks]
+class Publication {
+
+    #[ORM\PrePersist]
+    public function prePersistDatePublication() : void {
+        $this->datePublication = new \DateTime();
+    }
+
+}
+```
+
+2. Nous allons reprendre les **assertions** de notre ancienne classe `Publication` pour la propriété `message`. Concernant l'assertion `Length`, nous allons en garder qu'une seule pour le moment, et sans son groupe de validation (nous ajouterons le premium plus tard...).
 
     ```php
     use Symfony\Component\Validator\Constraints as Assert;
+
+    class Publication {
+
+        #[ORM\Column(type: Types::TEXT)]
+        #[Assert\NotNull]
+        #[Assert\NotBlank]
+        #[Assert\Length(
+            min: 4,
+            max: 50,
+            minMessage: "Le message est trop court! (4 caractères minimum)",
+            maxMessage: "Le message est trop long! (50 caractères maximum)"
+        )]
+        private ?string $message = null;
+    }
     ```
 
 3. Faites en sorte que la collection de publications renvoyées soit triées de la plus récente à la plus ancienne.
@@ -366,7 +392,7 @@ Note à part : pour la méthode `PATCH`, le payload n'est pas au format `json`, 
 
 3. Supprimez la propriété `nomPhotoProfil`, ses attributs et ses getters/setters. Nous ne gérerons pas l'upload de photo de profil dans notre API (cela est néanmoins possible !).
 
-4. Concernant le **mot de passe**, nous gérerons ça plus tard, donc pour le moment, **commentez** simplement la propriété `password`, ses attributs ainsi que ses getters/setters.
+4. Concernant le **mot de passe**, nous gérerons ça plus tard, donc pour le moment, **commentez** simplement la propriété `password`, ses attributs, ses getters/setters et la déclaration de l'implémentation de l'interface `PasswordAuthenticatedUserInterface` (au niveau du `implements`...).
 
 5. Faites en sorte que la propriété premium puisse être lue, mais jamais écrite.
 
@@ -419,7 +445,7 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
 
 8. Maintenant, tentez d'ajouter une publication en précisant l'identifiant numérique (son id) de l'utilisateur pour la partie `auteur`. Analysez le message d'erreur.
 
-9. La valeur à préciser pour faire référence à une autre ressource est appelé `IRI` (International Ressource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`.
+9. La valeur à préciser pour faire référence à une autre ressource est appelé `IRI` (International Ressource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/api/...`.
 
 10. Une fois le mécanisme des `IRI` compris, retentez de créer une publication en affectant un utilisateur.
 
@@ -491,7 +517,7 @@ Ici, quand on récupère les données d'un étudiant, on affiche seulement son i
 
 Pour les groupes, on affiche tout sauf la liste des étudiants (qui aurait était une liste d'IRI aussi).
 
-Pour qu'on obtienne aussi l'identifiant et le nom du groupe quand on lit les données d'un étudiant, il faut d'abord ajouter le groupe `utilisateur:read` à la propriété `groupe` et il faut ensuite ajouter le groupe `utilisateur:read` sur chaque propriété de la classe `Groupe` qu'on souhaite afficher quand on rend le groupe d'un utilisateur : 
+Pour qu'on obtienne aussi l'identifiant et le nom du groupe quand on lit les données d'un étudiant, il faut d'abord préciser le groupe `etudiant:read` au niveau de la propriété `groupe` et il faut ensuite ajouter le groupe `etudiant:read` sur chaque propriété de la classe `Groupe` qu'on souhaite afficher quand on rend le groupe d'un utilisateur : 
 
 ```php
 #[ApiResource(
@@ -523,6 +549,45 @@ class Groupe {
     private ?int $id = null;
 
     #[Groups(['groupe:read', 'etudiant:read'])]
+    private ?string $nomGroupe = null;
+
+    public iterable $etudiants;
+
+}
+```
+
+On aurait aussi pu préciser directement le groupe `groupe:read` dans l'attribut `normalizationContext` de la classe `Etudiant` :
+
+```php
+#[ApiResource(
+    ...
+    normalizationContext: ["groups" => ["etudiant:read", "groupe:read"]],
+)]
+class Etudiant {
+
+    #[Groups(['etudiant:read'])]
+    private ?int $id = null;
+
+    #[Groups(['etudiant:read'])]
+    private ?string $nom = null;
+
+    #[Groups(['etudiant:read'])]
+    private ?string $prenom = null;
+
+    #[Groups(['etudiant:read'])]
+    public ?Groupe $groupe = null;
+}
+
+#[ApiResource(
+    ...
+    normalizationContext: ["groups" => ["groupe:read"]],
+)]
+class Groupe {
+
+    #[Groups(['groupe:read'])]
+    private ?int $id = null;
+
+    #[Groups(['groupe:read'])]
     private ?string $nomGroupe = null;
 
     public iterable $etudiants;
@@ -569,48 +634,11 @@ class Groupe {
 }
 ```
 
-On aurait aussi pu préciser directement le groupe `groupe:read` dans l'attribut `normalizationContext` de la classe `Etudiant` :
-
-```php
-#[ApiResource(
-    ...
-    normalizationContext: ["groups" => ["etudiant:read", "groupe:read"]],
-)]
-class Etudiant {
-
-    #[Groups(['etudiant:read'])]
-    private ?int $id = null;
-
-    #[Groups(['etudiant:read'])]
-    private ?string $nom = null;
-
-    #[Groups(['etudiant:read'])]
-    private ?string $prenom = null;
-
-    #[Groups(['etudiant:read'])]
-    public ?Groupe $groupe = null;
-}
-
-#[ApiResource(
-    ...
-    normalizationContext: ["groups" => ["groupe:read"]],
-)]
-class Groupe {
-
-    #[Groups(['groupe:read'])]
-    private ?int $id = null;
-
-    #[Groups(['groupe:read'])]
-    private ?string $nomGroupe = null;
-
-    public iterable $etudiants;
-
-}
-```
+Si ce n'est pas encore clair, ce que nous faisons ici, c'est dire à quel groupe appartient telle ou telle propriété. Lorsque l'API traite une requête (en GET, en POST, etc...) elle n'activera pas les mêmes groupes, selon le contexte. Ces groupes définissent les propriétés qui sont renvoyées dans le JSON lors de requêtes de lecture (type GET) et à l'inverse ce qui est traité (ou ignoré, si le groupe ne correspond pas) dans le **payload** lors d'une requête d'écriture (POST, PUT, PATCH...).
 
 Bref, les groupes activés dans `normalizationContext` traversent les entités ! Il est aussi possible de définir plusieurs groupes (affichant plus ou moins de propriétés selon le contexte). On peut même créer une classe et une méthode permettant de coder un algo pour savoir quels groupes sont activés (par exemple, pour afficher plus d'informations à un utilisateur connecté...).
 
-Il faut éviter dans se retrouver dans une situation de "cycle" (par exemple, un étudiant donne aussi les infos de son groupe, qui donne les infos sur ses étudiants, qui donne les infos de leur groupe, etc...)
+Il faut éviter dans se retrouver dans une situation de "cycle" (par exemple, un étudiant donne aussi les infos de son groupe, qui donne les infos sur ses étudiants, qui donne les infos de leur groupe, etc...).
 
 Si vous avez bien compris ce mécanisme, à vous de jouer !
 
@@ -863,7 +891,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 2. Modifiez le fichier `security.yaml` afin que Symfony utilise votre entité `Utilisateur` comme classe pour les utilisateurs de l'application.
 
-3. Dans votre classe `Utilisateur`, décommenttez la propriété `password` et ses getters/setters. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API).
+3. Dans votre classe `Utilisateur`, décommenttez la propriété `password`, ses getters/setters ainsi que la déclaration d'implémentation de l'interface `PasswordAuthenticatedUserInterface`. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API).
 
 4. Ajoutez une propriété `$plainPassword` de type `string` à la classe `Utilisateur` (ainsi que ses getters/setters). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété. Cette propriété ne doit jamais pouvoir être lue par l'utilisateur (jamais normalisée).
 
@@ -1086,7 +1114,10 @@ Le but de la méthode `onJWTCreated` est de capter l'événement de création du
 Une fois la classe créée, il faut l'enregistrer en tant que receveuse de l'événement dans le fichier `config/services.yaml` :
 
 ```yml
-    # Dans config/services.yaml
+# Dans config/services.yaml
+services:
+
+    ...
 
     # Nom custom
     jwt_created_listener:
@@ -1253,7 +1284,7 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
 
 <div class="exercise">
 
-1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `publication:write:normal` (comme dans le TD précédent).
+1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `publication:write:normal` (en récupérant le code correspondant dans le TD précédent...).
 
 2. Créez un dossier `Validator` dans `src` puis à l'intérieur une classe `PublicationWriteGroupGenerator` qui permettra de choisir la bonne liste de groupes le statut de l'utilisateur. Vous aurez encore une fois besoin du service `Security` pour obtenir l'utilisateur courant.
 
@@ -1382,6 +1413,8 @@ Maintenant, à vous de jouer!
     ```bash
     composer require gesdinet/jwt-refresh-token-bundle
     ```
+
+    Si on vous pose une question relative à l'utilisation d'une `recipe` répondez **no**. Le mécanisme des `recipes` permet de configurer automatiquement certains aspects de l'application quand on ajoute une nouvelle librairie, un bundle... Par exemple, en créant de nouveaux fichiers ou en complétant certains fichiers de configuration. Cela est défini par le développeur du module installé. Dans notre cas, pour ce bundle précis, cela ne nous arrange pas forcément.
 
 2. Activez le bundle dans `config/bundles.php` :
 

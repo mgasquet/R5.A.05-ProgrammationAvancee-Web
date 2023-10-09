@@ -1088,20 +1088,18 @@ Ici, nous avons notamment besoin de vérifier que l'utilisateur est bien l'auteu
 Par exemple :
 
 ```php
-#[IsGranted(new Expression("is_granted('ROLE_USER') and subject.method()"), "monObjet", exceptionCode: 404)]
+#[IsGranted(new Expression("is_granted('ROLE_USER') and subject.method()"), "monObjet")]
 #[Route('/exemple/{id}', name: 'route_exemple'], methods: ["POST"])]
 public function deletePublication(#[MapEntity] Exemple $monObjet) : Response {
     ...
 }
 ```
 
-Trois notes importantes :
+Deux notes importantes :
 
 * Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode (représentant généralement une entité mappée avec `#[MapEntity]`). Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
 
-* `exceptionCode` permet de définir le code d'erreur à renvoyer si une exception est déclenché par l'expression. Ici, une exception peut être déclenchée si `subject` (et donc `monObjet`) est **null** et qu'on essaye d'accéder à une de ses méthodes. On peut alors, par exemple, préciser `404` (l'objet n'est pas trouvé...)
-
-* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`. Pour rappel, `?` autorise une valeur nulle).
+* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`) Pour rappel, `?` autorise une valeur nulle. Ici, le fait de ne pas autoriser cela générera automatiquement une réponse **404** si l'utilisateur essaye d'accèder à un objet qui n'existe pas (identifiant invalide).
 
 Normalement, vous devriez maintenant être en mesure de retravailler la logique de vérification du "propriétaire" d'une publication.
 
