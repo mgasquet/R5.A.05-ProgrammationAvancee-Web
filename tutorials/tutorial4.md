@@ -107,7 +107,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
     * `port` : 5673
 
-    * `nom_base` : votre login IUT.
+    * `nom_base` : `iut?schema=loginIUT`.
 
     Assurez-vous au préalable que votre base est vide ! Vous pouvez vous y connecter et vérifier cela avec DBeaver, notamment (sauvegardez les données utiles si nécessaires, avant de nettoyer).
 
