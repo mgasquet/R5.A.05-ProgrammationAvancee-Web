@@ -265,9 +265,9 @@ On trie les résultats par rapport au premier attribut spécifié puis, en cas d
 
 ```php
 //Quand je récupère l'ensemble des entreprises, elles sont triées de celle possédant le plus gros CA à celle possédant le plus petit CA.
-#[ApiResource](
+#[ApiResource(
     order : ["chiffreAfaire" => "DESC"]
-)
+)]
 class Entreprise {
 
     private ?string $nom = null;
