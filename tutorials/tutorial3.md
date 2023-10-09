@@ -1095,7 +1095,7 @@ public function deletePublication(#[MapEntity] Exemple $monObjet) : Response {
 }
 ```
 
-Trois notes importantes :
+Deux notes importantes :
 
 * Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode (représentant généralement une entité mappée avec `#[MapEntity]`). Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
 
