@@ -1148,8 +1148,9 @@ class ExempleVoter extends Voter
     }
 
     /*
-    $attribute correspond à la permisison vérifiée
-    $subject correspond au sujet sur lequelle la vérification est effectué (par exemple, une publication, un utilisateur)? Le sujet peut être éventuellement null!
+    $attribute correspond à la permission vérifiée
+    $subject correspond au sujet sur lequelle la vérification est effectué (par exemple, une publication, un utilisateur)
+    Le sujet peut être éventuellement null!
     La méthode renvoie true si ce Voter est habilité à voter pour cette permission (et ce subject)
     */
     protected function supports(string $attribute, mixed $subject): bool
@@ -1336,15 +1337,15 @@ Ce qui génère une classe `MaCommande` dans le dossier `src/Command`. Faisons u
 
 ```php
 #[AsCommand(
-    //Nom de la commande, tel qu'on l'utilisera lors de l'éxécution de php bin/console ...
+    /* Nom de la commande, tel qu'on l'utilisera lors de l'éxécution de php bin/console ... */
     name: 'nomcommande',
-    //Pour décrire ce que fait la commande, si l'utilisateur utilise l'option --help, par exemple.
+    /* Pour décrire ce que fait la commande, si l'utilisateur utilise l'option --help, par exemple. */
     description: '...',
 )]
 class MaCommande extends Command
 {
     public function __construct(
-        //Injection de dépendances...
+        /* Injection de dépendances... */
     ) {
         //Il faut quand même appeller le constructeur parent (de la classe Command)
         parent::__construct();
@@ -1397,13 +1398,10 @@ class MaCommande extends Command
         //On peut aussi utiliser $io->ask pour poser une question et récupérer des arguments de manière intéractive... $io contient plein de méthodes utiles!
 
         /* 
-            On retourne une des trois valeurs possibles :
-
-            Command::SUCCESS : la commande s'st bien éxécutée (de bout en bout)
-
-            Command::INVALID: il y a un problème par rapport aux arguments passés.
-
-            Command:FALIURE : il y a eu un problème lors de l'éxécution.
+        On retourne une des trois valeurs possibles :
+        * Command::SUCCESS : la commande s'st bien éxécutée (de bout en bout)
+        * Command::INVALID: il y a un problème par rapport aux arguments passés.
+        * Command:FALIURE : il y a eu un problème lors de l'éxécution.
         */
         return Command::SUCCESS;
     }
@@ -1444,7 +1442,7 @@ class MaCommande extends Command
         }
         $this->entityManager->remove($video);
         $this->entityManager->flush();
-        $io->error("The video has been deleted !");
+        $io->success("The video has been deleted !");
         return Command::SUCCESS;
     }
 }
@@ -1471,7 +1469,7 @@ class MaCommande extends Command
     ```php
     public function removeRole($role) : void {
         $index = array_search($role, $this->roles);
-        //array_searh renvoie soit l'index (la clé) soit false is rien n'est trouver 
+        //array_search renvoie soit l'index (la clé) soit false is rien n'est trouver 
         //Préciser le !== false est bien nécessaire, car si le role se trouve à l'index 0, utiliser un simple if($index) ne vérifie pas le type! Et donc, si l'index retournait est 0, la condition ne passerait pas...!
         if ($index !== false) {
             unset($this->roles[$index]);
