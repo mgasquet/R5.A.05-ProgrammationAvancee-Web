@@ -9,7 +9,7 @@ lang: fr
 
 Dans ce TD, nous allons mettre en place une **API REST** pour l'application **The Feed** que nous avons développé lors des TDs précédemment. Nous n'allons pas directement poursuivre le code du site que vous avez développé (dans une API, il n'y a que le côté "back-end", hors pages de documentation) mais vous pourrez reprendre certains bouts de code qui pourront être réutilisés (notamment les assertions).
 
-Nous avons déjà abordé la notion d'API l'an dernier. Nous allons tout de même faire une petite mise sur les **API** et plus particulièrement sur les **API REST**.
+Nous avons déjà abordé la notion d'API l'an dernier. Nous allons tout de même faire une petite remise à niveau sur les **API** et plus particulièrement sur les **API REST**.
 
 De nos jours, les architectures qui séparent activement la partie `back-end` (serveur, routage, services, accès aux données) de la partie `front-end` (ce qui est rendu niveau client, pages html, etc...) sont de plus en plus privilégiées. En effet, une telle séparation permet notamment d'utiliser un même serveur applicatif avec plusieurs technologies clientes (une application sur smartphone, une application Vue.js, React, etc...).
 
@@ -33,7 +33,7 @@ Grossièrement, on retrouve le schéma `/{ensemble}/{id}/...` etc...
 
 Pour manipuler ces ressources, on utilise les méthodes `HTTP` suivantes :
 
-* `GET` : Récupère les données de la ressource désignée par la route. On utilise généralement cette méthodes sous deux formes : soit pour récupérer un ensemble de ressources (liste) ou bien pour récupérer une ressource précise.
+* `GET` : Récupère les données de la ressource désignée par la route. On utilise généralement cette méthode sous deux formes : soit pour récupérer un ensemble de ressources (liste) ou bien pour récupérer une ressource précise.
 
 * `POST` : Crée une ressource dans l'ensemble désignée par la route avec les informations fournies dans le corps de la requête.
 
@@ -55,7 +55,7 @@ Donc, par exemple, on pourrait avoir :
 
 Bien entendu, pour une ressource donnée, le développeur n'est pas obligé d'implémenter toutes les méthodes. Parfois, il n'est pas souhaitable que toutes les opérations soient disponibles pour agir sur une ressource.
 
-Dans les requêtes de type **création / modification** (`POST`, `PUT`, `PATCH`), le client envoie des données dans le corps de la requête, généralement sous le même format que les réponses de l'API (donc, généralement, du `JSON`). Ce corps de données est appelé `payload`.
+Dans les requêtes de type **création / modification** (`POST`, `PUT`, `PATCH`), le client envoie des données dans le corps de la requête, généralement sous le même format que les réponses de l'API (donc, généralement, du `JSON`). Ce corps de requête contenant les données est appelé `payload`.
 
 En plus de cela, une `API REST` doit être **sans état** (stateless), c'est-à-dire que le serveur **ne doit pas stocker d'informations sur l'état du client**. Donc, par exemple, l'utilisation d'une session est interdite. À la place, le client peut stocker des données sous la forme de `token` qui peuvent être lus et vérifiés par le serveur. C'est notamment grâce à ce système qu'on pourra authentifier nos utilisateurs et ajouter de la sécurité sur certaines routes.
 
@@ -63,7 +63,7 @@ En plus de cela, une `API REST` doit être **sans état** (stateless), c'est-à-
 
 Pour développer le plus simplement possible notre **API**, nous allons utiliser un outil appelé **API Platform** exploitable au travers de **Symfony**.
 
-Cet outil est assez puissant, car il permet de centraliser une grande partie de la logique de l'API au niveau des classes **entités**. Il y a peu de code à écrire dans d'autres classes (sauf pour certaines opérations spécifiques plus complexes) et généralement pas du tout de contrôleur à mettre en place (sauf opérations très particulières, comme un webhook, par exemple pour Stripe.). À partir des données des entités et des différentes attributs, **API Platform** se charge de générer les routes et appliquer les différentes opérations de récupération, de sauvegarde, de vérification, etc... Vous n'aurez quasiment pas à manipuler de repositories par vous-même.
+Cet outil est assez puissant, car il permet de centraliser une grande partie de la logique de l'API au niveau des classes **entités**. Il y a peu de code à écrire dans d'autres classes (sauf pour certaines opérations spécifiques plus complexes) et généralement pas du tout de contrôleur à mettre en place (sauf opérations très particulières, comme un webhook, par exemple pour Stripe). À partir des données des entités et des différents attributs, **API Platform** se charge de générer les routes et appliquer les différentes opérations de récupération, de sauvegarde, de vérification, etc... Vous n'aurez quasiment pas à manipuler de repositories par vous-même.
 
 Vous allez vite vous rendre compte qu'il est possible de configurer beaucoup d'aspects de l'API au travers des **attributs** (comme nous le faisions pour les routes, par exemple). Bien sûr, nous n'allons pas explorer toutes les possibilités qu'offre l'outil aujourd'hui, mais vous pourrez pousser plus loin dans votre projet !
 
@@ -96,20 +96,21 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
     * Si vous êtes en local, configurez la base que vous voulez, mais ne réutilisez pas celle précédente (par exemple, créez une base `the_feed_api`).
 
     * Si vous souhaitez utiliser une des bases de données mises à disposition à l'IUT, nous allons éviter de réutiliser votre unique base MySQL, pour ne pas effacer le travail effectué sur le site. À la place, nous allons utiliser votre base de données **Postgres** :
+        ```bash
+        DATABASE_URL="postgresql://username:password@ip:port/nom_base"
+        ```
 
-    `DATABASE_URL=postgresql://username:password@ip:port/nom_base`
+        À l'IUT, on a la configuration suivante :
 
-    À l'IUT, on a la configuration suivante :
+        * `username` et `password` : votre login et mot de passe de l'IUT (pour les machines, l'intranet, etc.)
 
-    * `username` et `password` : votre login et mot de passe de l'IUT (pour les machines, l'intranet, etc.)
+        * `ip` : 162.38.222.151
 
-    * `ip` : 162.38.222.151
+        * `port` : 5673
 
-    * `port` : 5673
+        * `nom_base` : `iut?schema=loginIUT`.
 
-    * `nom_base` : `iut?schema=loginIUT`.
-
-    Assurez-vous au préalable que votre base est vide ! Vous pouvez vous y connecter et vérifier cela avec DBeaver, notamment (sauvegardez les données utiles si nécessaires, avant de nettoyer).
+        Assurez-vous au préalable que votre base est vide ! Vous pouvez vous y connecter et vérifier cela avec DBeaver, notamment (sauvegardez les données utiles si nécessaires, avant de nettoyer).
 
     **Attention**, si vous comptez déposer votre projet sur un repository git **public**, utilisez plutôt un fichier `.env.local` à la place, qui ne sera ignoré lors des commits (pour ne pas exposer vos mots de passe).
 
@@ -277,23 +278,23 @@ class Entreprise {
 }
 ```
 
-Concernant la **génération automatique** d'une propriété (dans notre cas, la date) nous avons déjà vu cela dans le premier TD. Il vous suffit d'ajouter l'attribut `#[ORM\HasLifecycleCallbacks]` au niveau de la classe puis créer une méthode initialisant la date, annotée avec l'attribut `[ORM\PrePersist]`.
+Concernant la **génération automatique** d'une propriété (dans notre cas, la date) nous avons déjà vu cela dans le premier TD. Il vous suffit d'ajouter l'attribut `#[ORM\HasLifecycleCallbacks]` au niveau de la classe puis créer une méthode initialisant la date, annotée avec l'attribut `#[ORM\PrePersist]`.
 
 <div class="exercise">
 
 1. Faites les modifications nécessaires au niveau de l'entité `Publication` afin qu'une date entrée dans le `payload` soit ignorée (qu'on ne puisse pas l'écrire). Ensuite, pour que celle-ci soit plutôt générée automatiquement du côté du serveur, on pourra utiliser le code suivant qu'on avait déjà utilisé dans les TDs précédents :
 
-```php
-#[ORM\HasLifecycleCallbacks]
-class Publication {
+    ```php
+    #[ORM\HasLifecycleCallbacks]
+    class Publication {
 
-    #[ORM\PrePersist]
-    public function prePersistDatePublication() : void {
-        $this->datePublication = new \DateTime();
+        #[ORM\PrePersist]
+        public function prePersistDatePublication() : void {
+            $this->datePublication = new \DateTime();
+        }
+
     }
-
-}
-```
+    ```
 
 2. Nous allons reprendre les **assertions** de notre ancienne classe `Publication` pour la propriété `message`. Concernant l'assertion `Length`, nous allons en garder qu'une seule pour le moment, et sans son groupe de validation (nous ajouterons le premium plus tard...).
 
@@ -392,7 +393,9 @@ Note à part : pour la méthode `PATCH`, le payload n'est pas au format `json`, 
 
 3. Supprimez la propriété `nomPhotoProfil`, ses attributs et ses getters/setters. Nous ne gérerons pas l'upload de photo de profil dans notre API (cela est néanmoins possible !).
 
-4. Concernant le **mot de passe**, nous gérerons ça plus tard, donc pour le moment, **commentez** simplement la propriété `password`, ses attributs, ses getters/setters et la déclaration de l'implémentation de l'interface `PasswordAuthenticatedUserInterface` (au niveau du `implements`...).
+4. Concernant le **mot de passe**, nous gérerons ça plus tard, donc pour le moment, **commentez** simplement la propriété `password`, ses attributs, ses getters/setters et la déclaration de l'implémentation de l'interface `PasswordAuthenticatedUserInterface` (au niveau du `implements`...).  
+   Il faut aussi commenter dans `UtilisateurRepository` la déclaration de
+   l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la méthode `upgradePassword`.
 
 5. Faites en sorte que la propriété premium puisse être lue, mais jamais écrite.
 
@@ -636,7 +639,7 @@ class Groupe {
 
 Si ce n'est pas encore clair, ce que nous faisons ici, c'est dire à quel groupe appartient telle ou telle propriété. Lorsque l'API traite une requête (en GET, en POST, etc...) elle n'activera pas les mêmes groupes, selon le contexte. Ces groupes définissent les propriétés qui sont renvoyées dans le JSON lors de requêtes de lecture (type GET) et à l'inverse ce qui est traité (ou ignoré, si le groupe ne correspond pas) dans le **payload** lors d'une requête d'écriture (POST, PUT, PATCH...).
 
-Bref, les groupes activés dans `normalizationContext` traversent les entités ! Il est aussi possible de définir plusieurs groupes (affichant plus ou moins de propriétés selon le contexte). On peut même créer une classe et une méthode permettant de coder un algo pour savoir quels groupes sont activés (par exemple, pour afficher plus d'informations à un utilisateur connecté...).
+Bref, les groupes activés dans `normalizationContext` traversent les entités ! Il est aussi possible de définir plusieurs groupes (affichant plus ou moins de propriétés selon le contexte). On peut même créer une classe et une méthode permettant de coder un algorithme pour savoir quels groupes sont activés (par exemple, pour afficher plus d'informations à un utilisateur connecté...).
 
 Il faut éviter dans se retrouver dans une situation de "cycle" (par exemple, un étudiant donne aussi les infos de son groupe, qui donne les infos sur ses étudiants, qui donne les infos de leur groupe, etc...).
 
@@ -662,21 +665,21 @@ Comme nous l'avons vu en introduction de ce TD, avec l'architecture `REST`, il d
 
 Par exemple : `/utilisateurs/2/publications` : les publications de l'utilisateur 2.
 
-Pour cela, rien de plus simple : il suffit de configurer une **nouvelle opération** `GetCollection` avec un chemin custom (il est possible d'avoir plusieurs fois la même opération si les chemins sont différents). Il faut préciser un **template d'URL** et des **variables** afin d'aller chercher la ressource au bon endroit.
+Pour cela, rien de plus simple : il suffit de configurer une **nouvelle opération** `GetCollection` avec un chemin personnalisé (il est possible d'avoir plusieurs fois la même opération si les chemins sont différents). Il faut préciser un **template d'URL** et des **variables** afin d'aller chercher la ressource au bon endroit.
 
 ```php
 #[ApiResource(
     operations: [
         ...,
         new GetCollection(
-            //Template avec nom de variables intégrées entre accolades. Il est possible d'en indiquer plusieurs
+            /* Template avec nom de variables intégrées entre accolades. Il est possible d'en indiquer plusieurs */
             uriTemplate: '/chemin/{identifiant1}/ressource',
             uriVariables: [
-                //On indique comment accèder à la sous-ressource (dont l'identifiant correspondant à celui passé dans la route)
+                /* On indique comment accèder à la sous-ressource (dont l'identifiant correspondant à celui passé dans la route) */
                 'identifiant1' => new Link(
-                    //La propriété qui contient la ressource ciblée dans la classe cible
+                    /* La propriété qui contient la ressource ciblée dans la classe cible */
                     fromProperty: 'nom_propriete',
-                    //La classe cible dont on veut récupérer une instance à partir de l'identifiant 
+                    /* La classe cible dont on veut récupérer une instance à partir de l'identifiant  */
                     fromClass: Target::class
                 )
             ],
@@ -734,13 +737,13 @@ Nous avons enfin pu relier nos publications à nos utilisateurs efficacement, ma
 
 * N'importe qui peut supprimer un utilisateur ou une de ses publications.
 
-* N'importe qui peut modifier le profil d'un utilisateur
+* N'importe qui peut modifier le profil d'un utilisateur.
 
 Pour régler cela, nous allons mettre en place un système d'authentification pour faire en sorte qu'une publication soit affectée à l'utilisateur authentifié qui la poste et nous rajouterons un système de sécurité pour empêcher la modification ou la suppression de ressources qui n'appartiennent pas à l'utilisateur qui émet la requête.
 
 ### Json Web Token
 
-Comme nous l'avons mentionné au début de ce TD, l'architecture **REST** implique la notion de **stateless**, c'est-à-dire que le serveur ne garde aucune information sur l'utilisateur en mémoire vive, avec une session, etc... Mais alors, comment mettre en place un système d'authentification et faire comprendre au serveur que l'utilisateur est légitime ? Pour cela, nous allons utiliser le mécanisme des `JSON Web Tokens` souvent abrégé en `JWT`.
+Comme nous l'avons mentionné au début de ce TD, l'architecture **REST** implique la notion de **stateless**, c'est-à-dire que le serveur ne garde aucune information sur l'utilisateur en mémoire, avec une session, etc... Mais alors, comment mettre en place un système d'authentification et faire comprendre au serveur que l'utilisateur est légitime ? Pour cela, nous allons utiliser le mécanisme des `JSON Web Tokens` souvent abrégé en `JWT`.
 
 Un `JWT` est une chaîne de caractères appelée `token` encodée en `base64` qui contient de l'information. Une fois déchiffré, ce jeton se décompose en trois parties :
 
@@ -1119,7 +1122,7 @@ services:
 
     ...
 
-    # Nom custom
+    # Nom personnalisé
     jwt_created_listener:
         # Classe prenant en charge l'événement
         class: App\EventListener\JWTCreatedListener
