@@ -87,7 +87,7 @@ public function methodeExemple(Request $request): Response
     //Traitement...
 
     //Renvoie d'une réponse au format JSON
-    return JsonResponse(contenu, codeReponse);
+    return new JsonResponse(contenu, codeReponse);
 }
 ```
 
