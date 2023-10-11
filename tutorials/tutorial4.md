@@ -743,13 +743,13 @@ Pour régler cela, nous allons mettre en place un système d'authentification po
 
 ### Json Web Token
 
-Comme nous l'avons mentionné au début de ce TD, l'architecture **REST** implique la notion de **stateless**, c'est-à-dire que le serveur ne garde aucune information sur l'utilisateur en mémoire, avec une session, etc... Mais alors, comment mettre en place un système d'authentification et faire comprendre au serveur que l'utilisateur est légitime ? Pour cela, nous allons utiliser le mécanisme des `JSON Web Tokens` souvent abrégé en `JWT`.
+Comme nous l'avons mentionné au début de ce TD, l'architecture **REST** implique la notion de **stateless**, c'est-à-dire que le serveur ne garde aucune information sur l'utilisateur en mémoire vive ou avec une session, etc... Mais alors, comment mettre en place un système d'authentification et faire comprendre au serveur que l'utilisateur est légitime ? Pour cela, nous allons utiliser le mécanisme des `JSON Web Tokens` souvent abrégé en `JWT`.
 
-Un `JWT` est une chaîne de caractères appelée `token` encodée en `base64` qui contient de l'information. Une fois déchiffré, ce jeton se décompose en trois parties :
+Un `JWT` est une chaîne de caractères appelée `token` encodée en `base64` qui contient de l'information. Une fois décodée, ce jeton se décompose en trois parties :
 
-* Le `header` (au format `JSON`) qui contient des informations sur la nature du jeton (le type de jeton, le type d'algorithme utilisé)
+* Le `header` (au format `JSON`) qui contient des informations sur la nature du jeton (le type de jeton, le type d'algorithme utilisé),
 
-* Le `payload` (au format `JSON`) qui contient de l'information utile (que l'on souhaite lire) placée dans ce jeton.
+* Le `payload` (au format `JSON`) qui contient de l'information utile (que l'on souhaite lire) placée dans ce jeton,
 
 * La `signature` qui permet de vérifier l'authenticité du jeton.
 
@@ -779,7 +779,7 @@ Néanmoins, si ce token venait à être dérobé, alors on pourrait usurper un u
 
 ### Prise en charge des utilisateurs
 
-Tout abord, nous allons devoir intégrer nos utilisateurs au système d'authentification de `Symfony` pour que par la suite, ils puissent être vérifiés et récupéré automatiquement lors de l'envoi des identifiants au serveur.
+Tout abord, nous allons devoir intégrer nos utilisateurs au système d'authentification de `Symfony` pour que par la suite, ils puissent être vérifiés et récupérés automatiquement lors de l'envoi des identifiants au serveur.
 
 Il faut tout d'abord indiquer à Symfony que notre entité `Utilisateur` joue le rôle d'utilisateur dans notre application, en ajoutant cette section dans `config/packages/security.yaml` :
 
@@ -797,9 +797,9 @@ security:
 
 Dans le projet précédent, cette section avait était générée automatiquement, car nous avions utilisé la commande `make:user` pour créer l'entité `Utilisateur`.
 
-Si vous vous souvenez bien, dans le formulaire de création de l'utilisateur, il y avait un champ `plainPassword` qui ne faisait pas partie de l'entité et qui était **haché** puis placé dans la propriété `password`. Mais comment faire cela, alors que nous n'avons pas de formulaire ni de controller pour gérer ce comportement ?
+Si vous vous souvenez bien, dans le formulaire de création de l'utilisateur, il y avait un champ `plainPassword` qui ne faisait pas partie de l'entité et qui était **haché** puis placé dans la propriété `password`. Mais comment faire cela, alors que nous n'avons pas de formulaire ni de contrôleur pour gérer ce comportement ?
 
-Pour la question du champ `plainPassword`, c'est très simple : il suffit de la placer dans la classe `Utilisateur` (comme propriété de la classe) mais ne pas placer d'attribut `#[ORM\Column]` dessus. Ainsi, la propriété pourra être utilisée dans le payload mais ne sera pas enregistré dans la base de données. On interdira l'écriture du champ `password` par l'utilisateur, car cela sera géré par l'application (pour rappel, `password` contient le mot de passe chiffré).
+Pour la question du champ `plainPassword`, c'est très simple : il suffit de la placer dans la classe `Utilisateur` (comme propriété de la classe) mais ne pas placer d'attribut `#[ORM\Column]` dessus. Ainsi, la propriété pourra être utilisée dans le payload mais ne sera pas enregistré dans la base de données. On interdira l'écriture du champ `password` par l'utilisateur, car cela sera géré par l'application (pour rappel, `password` contient le mot de passe haché).
 
 Enfin, pour pouvoir transformer `plainPassword` en mot de passe haché, nous allons utiliser une classe particulière appelée `StateProcessor`.
 
@@ -811,7 +811,7 @@ Sur API Platform, il existe deux types de classes importantes : Les `StateProces
 
 Il est bien entendu possible d'injecter des services (et paramètres) dans ces classes. Il est notamment possible d'accéder au **processeur** utilisé par API Platform pour poursuivre le traitement normal après (ou avant) avoir appliqué nos modifications.
 
-Dans notre cas, il nous faut donc un `StateProcessor` afin de chiffrer le mot de passe avant de sauvegarder l'utilisateur dans la base de données.
+Dans notre cas, il nous faut donc un `StateProcessor` afin de hacher le mot de passe avant de sauvegarder l'utilisateur dans la base de données.
 
 La commande suivante permet d'initialiser un `StateProcessor` :
 
@@ -833,7 +833,7 @@ class MonStateProcessor implements StateProcessor {
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
     {
         //$data est l'entité qu'on manipule (par exemple, une Publication, un Utilisateur...)
-        //$operation est l'opération éxécutée (GET, POST, ...)
+        //$operation est l'opération exécutée (GET, POST, ...)
         //$uriVariables contient les éventuelles variables paramétrés dans le chemin de la route
     }
 
@@ -894,7 +894,10 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 2. Modifiez le fichier `security.yaml` afin que Symfony utilise votre entité `Utilisateur` comme classe pour les utilisateurs de l'application.
 
-3. Dans votre classe `Utilisateur`, décommenttez la propriété `password`, ses getters/setters ainsi que la déclaration d'implémentation de l'interface `PasswordAuthenticatedUserInterface`. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API).
+3. Dans votre classe `Utilisateur`, décommentez la propriété `password`, ses getters/setters ainsi que la déclaration d'implémentation de l'interface `PasswordAuthenticatedUserInterface`. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API).  
+   Il faut aussi décommenter dans `UtilisateurRepository` la déclaration de
+   l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la
+   méthode `upgradePassword`.
 
 4. Ajoutez une propriété `$plainPassword` de type `string` à la classe `Utilisateur` (ainsi que ses getters/setters). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété. Cette propriété ne doit jamais pouvoir être lue par l'utilisateur (jamais normalisée).
 
@@ -914,7 +917,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 11. Modifiez votre `UtilisateurProcessor` de manière à ne pas tenter de hacher le mot de passe s'il n'est pas transmis (s'il est **null**, donc). Cela va nous permettre d'utiliser le même processeur pour la création et la mise à jour (mais on aurait aussi pu en faire deux distincts). Affectez donc aussi `UtilisateurProcessor` comme processeur de l'opération `PATCH`.
 
-12. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien, c'est-à dire que si le mot de passe est précisé, il est bien re-chiffré.
+12. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien, c'est-à dire que si le mot de passe est précisé, il est bien re-haché.
 
     Attention, pour rappel, il faut utiliser le **Content-Type** `application/merge-patch+json` pour faire un `PATCH`.
 
@@ -932,7 +935,7 @@ Pour rappel, afin de préciser les **groupes** dans lesquels un attribut s'appli
 #[ApiResource(
     operations: [
         new Post(validationContext: ["groups" => ["Default", "exemple:create"]]),
-        new Patch(validationContext: ["groups" => ["Default", "exemple:udpate"]]),
+        new Patch(validationContext: ["groups" => ["Default", "exemple:update"]]),
     ],
 )]
 class Exemple {
