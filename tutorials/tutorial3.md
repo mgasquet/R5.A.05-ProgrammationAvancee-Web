@@ -797,7 +797,7 @@ try {
     Ici, la signature n'est pas vérifiée, ou une autre erreur est survenue pendant le traitement.
     On renvoie donc un code d'erreur à Stripe.
     */
-    return new Response(null, 400);
+    return new Response($e->getMessage(), 400);
 }
 ```
 
@@ -917,6 +917,13 @@ Ainsi, il est possible d'avoirs plusieurs **webhooks** différents, pour plusieu
 2. Testez d'acheter du mode premium (comme tout à l'heure, en utilisant une [carte bancaire de test](https://stripe.com/docs/testing?locale=fr-FR#cards)).
 
 3. Jetez un coup d'œil au terminal, si le code `200` apparaît quelque part, cela doit être bon. Attention toutefois, si vous utilisez le compte partagé, peut-être que vous verrez le résultat de la requête d'un autre étudiant qui a effectué un paiement en même temps que vous.
+
+   **Aide pour déboguer :** Si le code `400` apparaît et que vous n'arrivez pas
+   à savoir pourquoi, allez dans le terminal exécutant `stripe listen` et
+   cliquez sur le lien ressemblant à `evt_xxx`. Après connexion à Stripe, vous
+   trouverez en bas de la page dans la section *Réponses webhook CLI* la réponse
+   HTTP que vous avez envoyé à Stripe. En la déroulant, vous verrez le message
+   de l'exception qui a causé le code `400`.
 
 4. Vérifiez sur le site que l'utilisateur est bien devenu membre premium.
 
