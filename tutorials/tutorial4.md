@@ -85,48 +85,64 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
 3. Installez maintenant la librairie spécifique à API Platform :
 
-    ```bash
-    composer require api
-    ```
+    * Dans le dossier du projet, exécutez la commande suivante :
 
-    Répondez `n` (no) à la question demandée.
+        ```bash
+        composer require api
+        ```
+
+        Répondez `n` (no) à la question demandée.
+
+    * Une fois l'installation terminée, supprimez le **contenu** du fichier `config/packages/api_platform.yaml`. Ce fichier de configuration a été généré avec un paramétrage par défaut, mais nous n'avons pas besoin de tout cela pour le moment. Nous irons l'éditer proprement plus tard. 
 
 4. Nous allons maintenant configurer la base de données dans le fichier `.env` :
 
-    * Si vous êtes en local, configurez la base que vous voulez, mais ne réutilisez pas celle précédente (par exemple, créez une base `the_feed_api`).
+    * Si vous êtes en local, configurez la base que vous voulez, mais ne réutilisez pas celle précédente (par exemple, nommez la base `the_feed_api`).
 
-    * Si vous souhaitez utiliser une des bases de données mises à disposition à l'IUT, nous allons éviter de réutiliser votre unique base MySQL, pour ne pas effacer le travail effectué sur le site. À la place, nous allons utiliser votre base de données **Postgres** :
+    * Si vous souhaitez utiliser une des bases de données mises à disposition à l'IUT, nous allons éviter de réutiliser votre unique base MySQL, pour ne pas effacer le travail effectué sur le site. À la place, nous allons utiliser une base de données locale, stockée dans un fichier, avec **SQLite** :
+
         ```bash
-        DATABASE_URL="postgresql://username:password@ip:port/nom_base"
+        DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"
         ```
-
-        À l'IUT, on a la configuration suivante :
-
-        * `username` et `password` : votre login et mot de passe de l'IUT (pour les machines, l'intranet, etc.)
-
-        * `ip` : 162.38.222.151
-
-        * `port` : 5673
-
-        * `nom_base` : `iut?schema=loginIUT`.
-
-        Assurez-vous au préalable que votre base est vide ! Vous pouvez vous y connecter et vérifier cela avec DBeaver, notamment (sauvegardez les données utiles si nécessaires, avant de nettoyer).
 
     **Attention**, si vous comptez déposer votre projet sur un repository git **public**, utilisez plutôt un fichier `.env.local` à la place, qui ne sera ignoré lors des commits (pour ne pas exposer vos mots de passe).
 
-5. **Si vous utilisez une base en local**, exécutez la commande suivante afin de créer la base :
+5. Exécutez la commande suivante afin de créer la base :
 
     ```bash
     php bin/console doctrine:database:create
     ```
 
-6. En vous rendant dans le dossier du projet, videz le cache :
+6. Si vous utilisez une base **SQLite** (par exemple, sur les machines de l'IUT), la base sera générée dans un fichier **data.db** placé dans le dossier **var** du projet. Pour visualiser et manipuler le contenu de cette base, vous ne pouvez pas simplement éditer le fichier. Néanmoins, comme vous êtes maintenant professionnel et que vous maîtrisez votre **IDE** (PHPStorm) nous allons pouvoir nous en servir pour manipuler la base à travers une interface intégrée :
+
+    * Cliquez sur l'onglet **Databases** à droite de PHPStorm afin d'ouvrir le panneau de gestion des bases de données.
+
+    * Effectuez un clic droit sur ce panneau puis **New** → **Datasource** → **SQLite**.
+
+    * Au niveau du champ **File**, cliquez sur les trois petits points (...) pour rechercher un fichier dans le système. Sélectionnez votre fichier **data.db** situé dans le dossier **var** de votre projet.
+
+    * En bas de la fenêtre, cliquez sur le bouton pour télécharger le driver nécessaire (si cela vous est demandé) puis validez le tout.
+
+    * Votre base de données apparait dans le panneau. Vos tables seront placées dans **data.db** → **main** → **tables**.
+
+    * Après une mise à jour de la structure de votre BDD, effectuez un clic droit sur **data.db** (dans le paneau) puis **refresh**.
+
+    * Si vous êtes à l'IUT, donnez les droits nécessaires au serveur web pour qu'il puisse manipuler votre fichier de BDD :
+
+    ```bash
+    setfacl -R -m u:www-data:rwx ~/public_html/the_feed_api
+    setfacl -R -m d:u:www-data:rwx ~/public_html/the_feed_api
+    ```
+
+    Il est important de noter que vous pouvez manipuler n'importe quelle base de données via cet outil de PHPStorm ! Même votre base MySQL, par exemple.
+
+7. En vous rendant dans le dossier du projet, videz le cache :
 
     ```bash
     php bin/console cache:clear
     ```
 
-7. Rendez-vous sur votre site à l'adresse : [https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/](https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/). Adaptez l'URL selon votre situation (avec le serveur local de `Symfony`, il ne faut pas mettre le "public" dans l'URL). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
+8. Rendez-vous sur votre site à l'adresse : [https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/](https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/). Adaptez l'URL selon votre situation (avec le serveur local de `Symfony`, il ne faut pas mettre le "public" dans l'URL). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
 
 </div>
 
@@ -353,10 +369,10 @@ Petite note à part, par défaut, `GetCollection` utilise un système de paginat
 
 Ce système est nécessaire afin de limiter les données lues côté client et ainsi charger le contenu au fur et à mesure (imaginez si vous deviez charger tout **Twitter** à chaque accès !!!). Il est possible d'augmenter le nombre de ressources renvoyées par page ou bien simplement désactiver ce système (et donc tout renvoyer à chaque fois). Par convenance dans le cadre de l'application mobile que nous allons développer, nous allons donc désactiver ce système, mais retenez bien que dans un contexte réel, il faudrait le conserver et charger le contenu petit à petit, au fil du parcours de l'utilisateur.
 
-Pour configurer tout cela, on créé et on édite le fichier `config/packages/api_platform.yaml` :
+Pour configurer tout cela, on édite le contenu du fichier `config/packages/api_platform.yaml` (que vous aviez vidé tout à l'heure) :
 
 ```yaml
-# Dans config/packages/api_platform.yaml (à créer)
+# Dans config/packages/api_platform.yaml
 api_platform:
     defaults:
         pagination_items_per_page: 30 # Pour changer le nombre de ressources renvoyées si la pagination est activée
