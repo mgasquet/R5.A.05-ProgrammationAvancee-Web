@@ -345,14 +345,11 @@ Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En ef
 Les opérations possibles sont :
 
 * `GetCollection` : récupération d'un ensemble de ressources.
-
 * `Get` : récupération d'une ressource ciblée.
-
 * `Post`
-
 * `Put`
-
 * `Patch`
+* `Delete`
 
 Ainsi, la configuration suivante permet seulement l'utilisation de la méthode `Get` ciblée et `Delete` :
 
