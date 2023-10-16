@@ -986,8 +986,8 @@ Par exemple :
 ```php
 #[ApiResource(
     operations: [
-        new Patch(denormalizationContext: ["groups" => ["entite:create"]]) ,
-        new Post(denormalizationContext: ["groups" => ["entite:udpate"]]) ,
+        new Patch(denormalizationContext: ["groups" => ["entite:update"]]) ,
+        new Post(denormalizationContext: ["groups" => ["entite:create"]]) ,
     ],
     normalizationContext: ["entite:read"]
 )]
