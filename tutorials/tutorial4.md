@@ -941,7 +941,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 10. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien, c'est-à dire que si le mot de passe est précisé, il est bien re-haché.
 
-    Attention, pour rappel, il faut utiliser le **Content-Type** `application/merge-patch+json` pour faire un `PATCH`.
+    Attention, pour rappel, il faut utiliser le **Content-Type** `application/merge-patch+json` pour faire un `PATCH`. Quant au `payload`, on met un *JSON* classique dans *Body* > *Raw (JSON)*.   
 
 </div>
 
