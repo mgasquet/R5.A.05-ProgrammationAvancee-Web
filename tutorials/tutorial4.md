@@ -1050,7 +1050,7 @@ security:
                 check_path: auth
                 #La propriété correspondant au login dans notre entité
                 username_path: login
-                #La prorpiété correspondant au mot de passe (haché) dans notre entité
+                #La propriété correspondant au mot de passe (haché) dans notre entité
                 password_path: password
                 #Les services qui gèrent le succès ou l'échec d'authentification
                 success_handler: lexik_jwt_authentication.handler.authentication_success
@@ -1196,8 +1196,8 @@ Si l'objet ciblé a un lien avec l'utilisateur, il est alors possible de compare
 #[ApiResource(
     operations: [
         new Post(security: "is_granted('ROLE_USER') and user.age > 13"),
-        new Delete(security: "is_granted('ROLE_USER') and object.getOwner() = user"),
-        new Get(security: "!object.isPrivate() or (is_granted('ROLE_USER') and object.getOwner() = user) or is_granted('ROLE_ADMIN') "),
+        new Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user"),
+        new Get(security: "!object.isPrivate() or (is_granted('ROLE_USER') and object.getOwner() == user) or is_granted('ROLE_ADMIN') "),
     ]
 )]
 ```
@@ -1222,7 +1222,7 @@ Dans cet exemple :
 
 4. Tentez d'accéder à une des routes sécurisées et vérifiez que l'accès vous est refusé.
 
-5. Pour pouvoir accéder à une route sécurisée, il faut vous authentifier auprès du serveur en lui envoyant le `JWT` dans les `Headers` de la requête. Pour faire cela sur `Postman`, suivez ces étapes :
+   **Aide :** Pour pouvoir accéder à une route sécurisée, il faut vous authentifier auprès du serveur en lui envoyant le `JWT` dans les `Headers` de la requête. Pour faire cela sur `Postman`, suivez ces étapes :
 
     * Dans l'onglet de la requête, rendez-vous dans `Authorization`.
 
@@ -1230,15 +1230,15 @@ Dans cet exemple :
 
     * Dans `Token`, placez le JWT que vous avez obtenu en vous authentifiant (re-authentifiez vous si nécessaire).
 
-6. Réessayez de soumettre la requête de création d'une publication, cela devrait fonctionner !
+5. Réessayez de soumettre la requête de création d'une publication, cela devrait fonctionner !
 
-7. Essayer de supprimer une publication qui ne vous appartient pas et un compte qui ne vous appartient pas (cela ne doit pas fonctionner). Et vérifiez qu'à l'inverse, vous pouvez effectivement supprimer vos propres publications (celles du compte auquel vous êtes connectés), et que vous pouvez aussi modifier vos propres informations...
+6. Essayer de supprimer une publication qui ne vous appartient pas et un compte qui ne vous appartient pas (cela ne doit pas fonctionner). Et vérifiez qu'à l'inverse, vous pouvez effectivement supprimer vos propres publications (celles du compte auquel vous êtes connectés), et que vous pouvez aussi modifier vos propres informations...
 
 </div>
 
 ### Affectation automatique de l'auteur d'une publication
 
-Enfin, avec ce nouveau système d'authentification, nous pouvons logiquement automatiquement affecter l'utilisateur qui créé une publication comme auteur de celle-ci et de plus avoir à spécifier l'`IRI` (ce qui posait aussi un problème de sécurité, car on peut ainsi affecter un autre utilisateur à une publication !).
+Enfin, avec ce nouveau système d'authentification, nous pouvons automatiquement affecter l'utilisateur qui créé une publication comme auteur de celle-ci et de ne plus avoir à spécifier l'`IRI` (ce qui posait aussi un problème de sécurité, car on peut ainsi affecter un autre utilisateur à une publication !).
 
 Pour cela, nous allons réutiliser le mécanisme des `processeurs` que nous avions vu plus tôt dans le cadre du hachage du mot de passe. Il vous suffit de créer un `processeur` affecté à la création d'une publication !
 
@@ -1250,7 +1250,7 @@ En plus du même `ProcessorInterface` que vous avez utilisé auparavant (pour sa
 
 2. Au niveau de la classe `Publication`, spécifiez votre nouveau processeur au niveau de la méthode `POST`.
 
-3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également les attributs `NotBlank` et `NotNull` que vous aviez sans doute placé sur cette propriété, précédemment.
+3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également les attributs `NotBlank` et `NotNull` que vous aviez sans doute placé précédemment sur cette propriété.
 
 4. Videz le cache puis tentez de créer une nouvelle publication (toujours en attachant votre `JWT` dans la requête). Vérifiez alors que la publication est bien créée et que l'auteur a bien été affecté par rapport à l'utilisateur représenté par le `JWT` que vous utilisez.
 
@@ -1305,7 +1305,7 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
 
 1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `publication:write:normal` (en récupérant le code correspondant dans le TD précédent...).
 
-2. Créez un dossier `Validator` dans `src` puis à l'intérieur une classe `PublicationWriteGroupGenerator` qui permettra de choisir la bonne liste de groupes le statut de l'utilisateur. Vous aurez encore une fois besoin du service `Security` pour obtenir l'utilisateur courant.
+2. Créez un dossier `Validator` dans `src` puis à l'intérieur une classe `PublicationWriteGroupGenerator` qui permettra de choisir la bonne liste de groupes à partir du statut de l'utilisateur. Vous aurez encore une fois besoin du service `Security` pour obtenir l'utilisateur courant.
 
 3. Modifiez l'opération `POST` au niveau de l'entité `Publication` afin d'utiliser votre nouveau générateur de groupes, pour la validation.
 
@@ -1327,7 +1327,9 @@ Normalement, vous avez toutes les connaissances nécessaires pour implémenter c
 
 1. Créez une propriété `currentPlainPassword` dans la classe `Utilisateur` (propriété non stockée en base). Ajoutez aussi les getters/setters nécessaires.
 
-2. En utilisant cette nouvelle propriété, l'assertion #[UserPassword] et les connaissances acquises dans ce TD, faites en sorte que lors d'une mise à jour (PATCH) l'utilisateur soit obligé de confirmer son mot de passe via la propriété `currentPlainPassword` (afin de valider son identité avant d'effectuer la mise à jour). Vous n'avez pas besoin de quitter la classe `Utilisateur` ou créer de nouvelles classes. Attention, cette propriété ne doit pas être utilisée lors de la création de l'entité, ou de sa lecture.
+2. En utilisant cette nouvelle propriété, l'assertion `#[UserPassword]` et les connaissances acquises dans ce TD, faites en sorte que lors d'une mise à jour (PATCH) l'utilisateur soit obligé de confirmer son mot de passe via la propriété `currentPlainPassword` (afin de valider son identité avant d'effectuer la mise à jour). 
+   
+   Vous n'avez pas besoin de quitter la classe `Utilisateur` ou créer de nouvelles classes. Attention, cette propriété ne doit pas être utilisée lors de la création de l'entité, ou de sa lecture.
 
 3. Dans la méthode `eraseCredentials` mettez aussi `currentPlainPassword` à **null**.
 
@@ -1339,7 +1341,7 @@ Normalement, vous avez toutes les connaissances nécessaires pour implémenter c
 
 Plus tôt, dans la partie consacrée aux **JWT**, nous avions évoqué le **système de rafraichissement** pour permettre une plus grande sécurité. La logique est la suivante :
 
-* Les JWT émis par l'application suite à l'authentification ont une faible durée de vie (3600 secondes par défaut). Ainsi, on, limite les risques en cas de vol. En effet, les JWT ne sont stockés nulle part. Il n'y a pas vraiment moyen de les rendre invalide. Seule la date d'expiration définie le moment où le token n'est plus utilisable.
+* Les JWT émis par l'application suite à l'authentification ont une faible durée de vie (3600 secondes par défaut). Ainsi, on limite les risques en cas de vol. En effet, les JWT ne sont stockés nulle part. Il n'y a pas vraiment moyen de les rendre invalide. Seule la date d'expiration définie le moment où le token n'est plus utilisable.
 
 * Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraichissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, 1 mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraichir notre JWT, en transmettant le token de rafraichissement. Un nouveau JWT est transmis et la durée de vie du token de rafraichissement est réinitialisé (à son max). Côté serveur, on peut aussi supprimer les tokens de rafraichissement si besoin (et ainsi "déconnecter" l'utilisateur réellement).
 
@@ -1347,7 +1349,7 @@ Contrairement au JWT, le token de rafraichissement peut être gardé de manière
 
 Pour mettre en place tout cela, nous allons nous servir du bundle `JWTRefreshTokenBundle`. La configuration est assez simple.
 
-* Tout d'abord, on créé l'entité suivante, qui correspond à l'entité gérant les tokens de rafraichissement (car ils sont stockés dans notre BDD) :
+* Tout d'abord, on crée l'entité suivante, qui correspond à l'entité gérant les tokens de rafraichissement (car ils sont stockés dans notre BDD) :
 
 ```php
 namespace App\Entity;
@@ -1478,7 +1480,7 @@ Dans le paramètre `security` de chaque opération, il suffit de préciser la pe
 
 <div class="exercise">
 
-1. Importez la hiérarchie de rôles que vous aviez mis en place dans `security.yaml` du projet précédent (avec `ROLE_ADMIN`)?.
+1. Importez la hiérarchie de rôles que vous aviez mis en place dans `security.yaml` du projet précédent (avec `ROLE_ADMIN`).
 
 1. Importez le voter `PublicationVoter` depuis le projet précédent (il faudra créer le chemin de répertoires `src/Security/Voter`).
 
@@ -1490,7 +1492,7 @@ Dans le paramètre `security` de chaque opération, il suffit de préciser la pe
 
 5. Videz le cache et testez que les permissions fonctionnent bien (mêmes tests que dans l'exercice que nous avions effectué dans la partie "sécurité de ce TD).
 
-6. Si vous voulez, vous pouvez également ajouter une permission `PUBLICATION_CREATE` dans votre `PublicationVoter`. La permission est accordée si l'utilisateur est connecté (donc possède `ROLE_USER`). Cela permet de centraliser cette permission et la changer si besoin, dans le futur. Attention toutefois dans la méthode `support`, il faut autoriser que l"'objet traité soit **null** en modifiant légèrement la condition (dans une opération de création, la publication n'existe pas encore...).
+6. Si vous voulez, vous pouvez également ajouter une permission `PUBLICATION_CREATE` dans votre `PublicationVoter`. La permission est accordée si l'utilisateur est connecté (donc possède `ROLE_USER`). Cela permet de centraliser cette permission et la changer si besoin, dans le futur. Attention toutefois dans la méthode `support`, il faut autoriser que l'objet traité soit **null** en modifiant légèrement la condition (dans une opération de création, la publication n'existe pas encore...).
 
 </div>
 
@@ -1500,4 +1502,4 @@ Nous avons terminé de construire notre `API` ! Elle est complète et prête à 
 
 Vous avez pu constater la puissance de l'outil `API Platform`. Nous ne sommes pas beaucoup sortis des classes **entités** et la majeure partie de la logique métier de l'application est spécifiée grâce aux attributs dans ces classes. Pour les traitements particuliers, nous pouvons utiliser les **state processors** (et les **state provider**). S'il y a vraiment besoin, il y toujours possibilité de définir des **controllers** avec des routes comme nous le faisions avant (par exemple, pour un **webhook**).
 
-Dans la suite des TDs de web, vous allez apprendre à utiliser un framework JS client : `Vue.js`. Gardez donc cette API de côté, vous pourriez être amené à la réutiliser...
+Dans la suite des TDs de web, vous allez apprendre à utiliser un framework JS client : `Vue.js`. Gardez donc cette API de côté, vous serez amenés à la réutiliser...
