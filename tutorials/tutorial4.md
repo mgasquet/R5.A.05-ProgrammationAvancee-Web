@@ -249,7 +249,7 @@ Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de 
 
 ### Configuration plus poussée
 
-À ce stade, vous avez pu tester diverses routes pour manipuler les publications, mais vous avez pu constater quelques soucis de logique. En effet, la **date** est un paramètre rentré par le client. Ce qui implique qu'il doit connaître précisément la date d'envoi, mais aussi qu'il peut la falsifier (par exemple, mettre 2050 pour être la publication la plus récente...). D'ailleurs, la date qui vous ai donné plus tôt dans le `payload` est antérieure à aujourd'hui ! 
+À ce stade, vous avez pu tester diverses routes pour manipuler les publications, mais vous avez pu constater quelques soucis de logique. En effet, la **date** est un paramètre rentré par le client. Ce qui implique qu'il doit connaître précisément la date d'envoi, mais aussi qu'il peut la falsifier (par exemple, mettre 2050 pour être la publication la plus récente...). D'ailleurs, la date qui vous est donnée plus tôt dans le `payload` est antérieure à aujourd'hui ! 
 
 Dans le premier TD, nous avons vu comment générer cette date automatiquement, mais il faut aussi pouvoir **empêcher** l'utilisateur de pouvoir l'envoyer dans le `payload`. Pour cela, nous pouvons nous aider de l'attribut `#[ApiProperty]`. Cet attribut se place au-dessus d'une propriété de la classe. Ses paramètres permettent de configurer la présentation de la propriété et ajouter certaines règles. Par exemple :
 
@@ -396,8 +396,6 @@ Il est temps de nous attaquer à la création de nos **utilisateurs** qui vont, 
 
 Pour créer la ressource `Utilisateur`, nous n'allons pas nous embêter et reprendre la classe `Utilisateur` (et son repository) que vous avez déjà développé dans le projet précédent et l'adapter légèrement. En fait, pour spécifier que notre entité est une ressource de l'API, il suffit de rajouter l'attribut `ApiRessource` au-dessus de la classe.
 
-Note à part : pour la méthode `PATCH`, le payload n'est pas au format `json`, mais au format `merge-patch+json`. C'est exactement la même chose, sauf que ce format indique à l'application qu'on souhaite mettre à jour seulement une partie de l'entité, avec les attributs spécifiés. Sur `Postman`, lorsque vous réaliserez une requête `PATCH`, il faudra préciser ce format dans votre requête en vous rendant dans la partie `Header` puis en modifiant la valeur de la clé `Content-Type` avec `application/merge-patch+json`.
-
 <div class="exercise">
 
 1. Importez la classe `Utilisateur` dans `src/Entity` ainsi que la classe `UtilisateurRepository` dans `src/Repository` depuis le projet précédent.
@@ -423,6 +421,8 @@ Note à part : pour la méthode `PATCH`, le payload n'est pas au format `json`, 
 10. Testez de créer des utilisateurs (login/adresseEmail, pas de mot de passe pour le moment) et vérifiez que vos contraintes sont respectées (essayez de rentrer un login trop court ou trop long, une adresse email au mauvais format, etc...). Vérifiez aussi que, même si la propriété `premium` est précisé dans le payload, avec la valeur `true`, elle est ignorée (la valeur `premium` de l'utilisateur reste à `false`).
 
 11. Testez la modification d'un utilisateur existant avec `PATCH`, en configurant la requête correctement, sur `Postman`. Là aussi, on doit pouvoir modifier le login et l'adresse email, mais toute modification sur le statut premium est ignorée.
+
+    **Aide :** pour la méthode `PATCH`, le `payload` n'est pas au format `json`, mais au format `merge-patch+json`. On envoie le même `payload`, sauf que ce format indique à l'application qu'on souhaite mettre à jour seulement une partie de l'entité, avec les attributs spécifiés. Sur `Postman`, lorsque vous réaliserez une requête `PATCH`, il faudra préciser ce format dans votre requête en vous rendant dans la partie `Header` puis en modifiant la valeur de la clé `Content-Type` avec `application/merge-patch+json`.
 
 12. Testez également la méthode `GET` (récupérer tous les utilisateurs, récupérer un utilisateur précis...)
 </div>
