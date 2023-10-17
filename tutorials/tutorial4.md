@@ -907,30 +907,39 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 2. Modifiez le fichier `security.yaml` afin que Symfony utilise votre entité `Utilisateur` comme classe pour les utilisateurs de l'application.
 
-3. Dans votre classe `Utilisateur`, décommentez la propriété `password`, ses getters/setters ainsi que la déclaration d'implémentation de l'interface `PasswordAuthenticatedUserInterface`. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API).  
+   Modifiez aussi le fournisseur de sécurité
+   ```diff
+    security:
+        firewalls:
+            main:
+   -            provider: users_in_memory
+   +            provider: app_user_provider
+   ```
+
+1. Dans votre classe `Utilisateur`, décommentez la propriété `password`, ses getters/setters ainsi que la déclaration d'implémentation de l'interface `PasswordAuthenticatedUserInterface`. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API).  
    Il faut aussi décommenter dans `UtilisateurRepository` la déclaration de
    l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la
    méthode `upgradePassword`.
 
-4. Ajoutez une propriété `$plainPassword` de type `string` à la classe `Utilisateur` (ainsi que ses getters/setters). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété. Cette propriété ne doit jamais pouvoir être lue par l'utilisateur (jamais normalisée).
+2. Ajoutez une propriété `$plainPassword` de type `string` à la classe `Utilisateur` (ainsi que ses getters/setters). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété. Cette propriété ne doit jamais pouvoir être lue par l'utilisateur (jamais normalisée).
 
-5. Modifiez la méthode `eraseCredentials` afin que celle-ci mette `plainPassword` à **null**. En effet, par mesure de sécurité, comme cette propriété est stockée dans la classe utilisateur et non pas dans un formulaire, elle va être enregistré dans la session. Il faut donc posséder une méthode afin de "vider" cette information sensible après l'avoir utilisé.
+3. Modifiez la méthode `eraseCredentials` afin que celle-ci mette `plainPassword` à **null**. En effet, par mesure de sécurité, comme cette propriété est stockée dans la classe utilisateur et non pas dans un formulaire, elle va être enregistré dans la session. Il faut donc posséder une méthode afin de "vider" cette information sensible après l'avoir utilisé.
 
-6. Créez un **state processor** nommé `UtilisateurProcessor` qui devra hacher le mot de passe de l'utilisateur (`plainPassword`), puis l'affecter à `password`. Il faut ensuite utiliser `eraseCredentials` afin de supprimer les informations sensibles. Enfin, il faut reprendre le traitement normal d'API Platform pour sauvegarder l'entité en base. 
+4. Créez un **state processor** nommé `UtilisateurProcessor` qui devra hacher le mot de passe de l'utilisateur (`plainPassword`), puis l'affecter à `password`. Il faut ensuite utiliser `eraseCredentials` afin de supprimer les informations sensibles. Enfin, il faut reprendre le traitement normal d'API Platform pour sauvegarder l'entité en base. 
 
     * Vous pouvez réutiliser le bout de code (voir la méthode complète) définie dans la classe `UtilisateurManager` du projet précédent. Il vous faudra donc aussi injecter et utiliser le service `UserPasswordHasherInterface`.
 
-7. Utilisez votre `UtilisateurProcessor` comme processeur de l'opération `POST` sur l'entité `Utilisateur`.
+5. Utilisez votre `UtilisateurProcessor` comme processeur de l'opération `POST` sur l'entité `Utilisateur`.
 
-8. Videz le cache.
+6. Videz le cache.
 
-9. Synchronisez vos changements avec la base de données.
+7.  Synchronisez vos changements avec la base de données.
 
-10. Créez un utilisateur, depuis Postman. Il faudra bien préciser le `plainPassword` cette fois. Allez vérifier ensuite, dans votre base, que le mot de passe est bien haché.
+8.  Créez un utilisateur, depuis Postman. Il faudra bien préciser le `plainPassword` cette fois. Allez vérifier ensuite, dans votre base, que le mot de passe est bien haché.
 
-11. Modifiez votre `UtilisateurProcessor` de manière à ne pas tenter de hacher le mot de passe s'il n'est pas transmis (s'il est **null**, donc). Cela va nous permettre d'utiliser le même processeur pour la création et la mise à jour (mais on aurait aussi pu en faire deux distincts). Affectez donc aussi `UtilisateurProcessor` comme processeur de l'opération `PATCH`.
+9.  Modifiez votre `UtilisateurProcessor` de manière à ne pas tenter de hacher le mot de passe s'il n'est pas transmis (s'il est **null**, donc). Cela va nous permettre d'utiliser le même processeur pour la création et la mise à jour (mais on aurait aussi pu en faire deux distincts). Affectez donc aussi `UtilisateurProcessor` comme processeur de l'opération `PATCH`.
 
-12. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien, c'est-à dire que si le mot de passe est précisé, il est bien re-haché.
+10. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien, c'est-à dire que si le mot de passe est précisé, il est bien re-haché.
 
     Attention, pour rappel, il faut utiliser le **Content-Type** `application/merge-patch+json` pour faire un `PATCH`.
 
