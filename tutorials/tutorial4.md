@@ -836,7 +836,7 @@ Ce qui donne la classe suivante :
 
 ```php
 #src/State/MonStateProcessor.php
-class MonStateProcessor implements StateProcessor {
+class MonStateProcessor implements ProcessorInterface {
 
     public function __construct(
         /* Injection de dépendances */
@@ -859,7 +859,7 @@ Comme il existe différents services que nous pouvons utiliser pour cette interf
 
 ```php
 #src/State/MonStateProcessor.php
-class MonStateProcessor implements StateProcessor {
+class MonStateProcessor implements ProcessorInterface {
 
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
