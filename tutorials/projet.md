@@ -146,7 +146,7 @@ setfacl -R -m d:u:www-data:r-w-x ~/public_html
 
 La **deadline** du projet est le **date à définir**.
 
-Le proejt sera à rendre sur **Moodle**. Un seul membre du quadrinôme dépose une archive **zip** nommée selon le pattern : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
+Le projet sera à rendre sur **Moodle**. Un seul membre du quadrinôme dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
 
 Cette archive devra contenir :
 
