@@ -87,6 +87,8 @@ On attend de vous que vous exploitiez au mieux le concept de **réactivité** qu
 
 Là-aussi, il faudra adapter la présentation de l'interface au thème choisi. Vous n'allez pas présenter de la même façon un site permettant de gérer des recettes Minecraft qu'un site permettant de gérer des recettes de cuisine.
 
+Comme vous gérez des utilisateurs via l'API, il faut aussi avoir tout cet aspect sur le site (inscription, connexion, gestion du compte, etc.).
+
 N'hésitez pas à être ambitieux dans votre projet de manière générale et de proposer quelque-chose de sympa en accord avec le thème choisi. Par exemple, un site avec un thème style "Little Alchemy" pourrait bénéficier d'une partie avec une interface simple où on combine deux éléments pour en obtenir un nouveau.
 
 ### Site web classique "MyAvatar" (Symfony)
