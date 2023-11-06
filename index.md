@@ -27,4 +27,4 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
 
 ## Projet
 
-A venir
+[Sujet et consignes du projet](tutorials/projet)
