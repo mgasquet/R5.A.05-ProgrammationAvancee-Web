@@ -79,18 +79,17 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
     * Si vous êtes sur votre machine avec un serveur Web local (`XAMPP`, `apache`, `Wamp`, `UwAmp`, `Mamp`). Il faudra simplement créer le projet dans un dossier accessible par votre serveur.
 
-    * Si vous êtes sur votre machine sans serveur local mais avec **PHP installé**, vous pourrez créer le dossier n'importe où et utiliser le **serveur local de Symfony** à télécharger ici :
+    * Si vous êtes sur votre machine sans serveur local mais avec **PHP installé**, vous pourrez créer le dossier n'importe où et utiliser le **serveur local de Symfony** à télécharger [ici](https://github.com/symfony-cli/symfony-cli/releases/).
 
-        * [Windows](https://github.com/symfony-cli/symfony-cli/releases/download/v5.5.8/symfony-cli_windows_386.zip)
-        * [macOS](https://github.com/symfony-cli/symfony-cli/releases/download/v5.5.8/symfony-cli_darwin_all.tar.gz)
-        * [Linux](https://github.com/symfony-cli/symfony-cli/releases/download/v5.5.8/symfony-cli_linux_386.tar.gz)
+      Dans la version tout en haut de la page, cliquez sur le bouton `Assets` afin d'afficher toutes les versions et sélectionnez celle
+      correspondant à votre système d'exploitation (généralement, `symfony-cli_windows_386.zip` pour Windows, `symfony-cli_darwin_all.tar.gz` pour macOS, et `symfony-cli_linux_386.tar.gz` pour Linux). 
 
-      Vous placerez le fichier `symfony` dans le dossier du projet une fois créé, nous verrons comment l'utiliser. Vous pouvez aussi utiliser ce serveur Symfony local sur les machines l'IUT.
+      Vous placerez le fichier `symfony` contenu dans l'archive dans le dossier du projet, une fois créé. Nous verrons comment utiliser ce serveur plus tard.
 
 3. Dans le répertoire où vous souhaitez placer le dossier du projet, exécutez les commandes suivantes :
 
     ```bash
-    composer create-project symfony/skeleton:"6.3.*" nom_projet
+    composer create-project symfony/skeleton:"6.4.*" nom_projet
     cd nom_projet
     composer require webapp
     ```
@@ -343,6 +342,8 @@ public function methodeExempleGet(): Response
 
 * Le second paramètre est un **tableau associatif** qui permet de passer des données nommées directement au template, qui pourra alors les utiliser directement pour générer la page HTML. Ce paramètre est **optionnel**. On ne le spécifie donc pas s'il n'y a pas de paramètres à passer au template.
 
+Chaque paramètre passé au template est accessible sous le même nom dans le template (le "nom" correspond à la valeur de la clé associée à la donnée dans le tableau associatif). Dans l'exemple précédent, dans le template, on a alors accès à deux variables `param1` et `param2`.
+
 Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates (vous pouvez aller rapidement sur cette partie si vous vous souvenez bien des cours de l'année dernière)
 
 * L'instruction `{{ donnee }}` permet d'afficher une donnée. Elle sera
@@ -353,6 +354,15 @@ Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates 
   un attribut public `$donnes->attribut`, puis appellera sinon
   `$donnes->getAttribut()`, `$donnes->isAttribut()` et `$donnes->hasAttribut()`
   (*cf.* [documentation de Twig](https://twig.symfony.com/doc/3.x/templates.html#variables)).
+
+    ```twig
+    <p>{{ donnee }}</p>
+    ```
+
+    ```twig
+    <p>{{ monObjet.attribut }}</p>
+    <p>{{ monObjet.methode() }}</p>
+    ```
 
 * On peut définir des variables locales : 
 
@@ -428,6 +438,7 @@ Pour vérifier que vous avez bien compris le fonctionnement basique de twig et c
     Ces templates auront le squelette suivant :
 
     ```html
+    <!DOCTYPE html>
     <html>
         <head>
             <meta charset="UTF-8">
@@ -619,6 +630,13 @@ Vous allez aussi être amené à utiliser des **filtres** de `twig`. Les **filtr
 
 * Le filtre `date(format)` permet d'afficher une date selon un format désiré. Par exemple `Y-m-d`, si on souhaite un affichage du style "2023-09-01".
 
+Par exemple : 
+
+```twig
+<p> {{ texte|capitalize }}</p>
+<p> {{ user.dateDeNaissance|date(...) }}</p>
+```
+
 Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https://twig.symfony.com/doc/3.x/filters/index.html).
 
 <div class="exercise">
@@ -698,7 +716,31 @@ Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https:
 
 Tout cela manque un peu de style ! Et d'image de profil pour les publications ! Comme nous n'avons pas encore d'utilisateurs, nous allons utiliser une image "anonyme".
 
-Avec Symfony, tous les "assets" (images, fichiers css, js, etc...) doivent être placés dans le dossier `public`, à la racine du projet. Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier.
+En Symfony, la gestion des **assets** (images, fichiers css, js, etc...) peut être effectuée de différentes manières :
+
+* En plaçant simplement les assets dans le dossier `public`.
+
+* En utilisant une librairie symfony (`bundle`) dédiée (par exemple, **Webpack Encore**).
+
+* En utilisant le récent système `AssetMapper` installé par défaut dans une application web symfony (cela se passe au niveau du dossier `assets`).
+
+Le système `AssetMapper` propose divers avantages **lors du développement** :
+
+* Le versionning des fichiers : les noms de fichiers sont associés à un suffixe lors du chargement de la page, liés à leurs versions. Si un changement intervient dans un des fichiers (par exemple, modification du js ou du css), le suffixe changera et le navigateur détectera donc qu'il doit recharger ce fichier (utile si le navigateur met en cache certains fichiers).
+
+* L'utilisation de librairies "clientes" externes disponibles sur npm (node package manager) sans avoir besoin d'installer `npm` sur votre machine. L'import est aussi très facile. Il en va de même pour les différents frameworks css.
+
+* On peut créer différentes configurations et charger celle qu'on souhaite sur une page donnée, ou même plusieurs.
+
+Cependant, pour que tout cela soit automatique, il faut obligatoirement utiliser le serveur web de Symfony pendant le développement. Sinon il faudra exécuter une commande chaque fois qu'on voudra mettre à jour un fichier.
+
+De plus, si on souhaite faire des choses plutôt simples et basique (comme cela va être le cas dans ce TP), la mise en place et la configuration de ce système peut être un peu lourde.
+
+Bref, nous allons plutôt opter pour la solution la plus "simple" dans le cadre de ce TP : utiliser le dossier `public` à la racine du projet. Nous allons placer toutes nos ressources (css, js, images) dans ce dossier.
+
+Lors de la mise en **production**, même si on utilise le `AssetMapper` l'objectif final est d'avoir nos **assets** dans le dossier `public`. Si on utilise donc ce système, il suffit d'exécuter une commande pour tout "compiler" et copier dans le dossier en question.
+
+Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ assets(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier. Cela marche avec tous les systèmes (qu'on utilise `AssetMapper` ou directement le dossier `public`).
 
 Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : `{{ asset("exemple/coucou.jpg") }}` dans mon template (typiquement, dans la partie `src`).
 
@@ -761,9 +803,9 @@ Il est temps de faire un point sur les méthodes essentielles disponibles (par d
 
 * `findBy($criteres, $tri)` : renvoie toutes les entrées de l'entité sous la forme d'un tableau d'objets (du type de l'entité) respectant tous les critères passés en paramètres et ordonnés selon les attributs précisés.
 
-    * `$criteres` correspond à un tableau associatif qui associe des attributs de l'entité à une valeur souhaitée. En fait, cela correspond à un `WHERE column1 = ... AND column2 = ...`.
+    * `$criteres` correspond à un tableau associatif qui associe des attributs de l'entité à une valeur souhaitée. En fait, cela correspond à un `WHERE column1 = ... AND column2 = ...`. S'il n'y a aucun critère de sélection, on donne un tableau vide `[]`. Dans ce cas, toutes les entités seront alors sélectionnées.
 
-    * `$tri` (optionnel) correspond aussi à un tableau associatif qui liste les attributs selon lesquels on veut que les résultats soient triés, associés au sens (`DESC` ou `ASC`).
+    * `$tri` (optionnel) correspond aussi à un tableau associatif qui liste les attributs selon lesquels on veut que les résultats soient triés, associés au sens (`DESC` ou `ASC`). Si on ne veut pas faire de tri, on ne précise pas ce paramètre.
 
     Par exemple, si j'ai une entité "Livre" possédant notamment une année de publication, un auteur et un genre, et que je souhaite trouver tous les livres de fantasy écrits par J.R.R Tolkien, ordonnés par année de publication de manière croissante, je peux utiliser :
 
@@ -794,13 +836,38 @@ public function methodeExempleGet(PublicationRepository $repository, EntityManag
 }
 ```
 
-Tout cela fonctionne sur la base d'un **conteneur IoC** que vous aviez déjà utilisé l'année, configuré et géré par Symfony. L'autowiring est un système permettant de détecter et d'injecter automatiquement les dépendances. Et cela ne se limite pas qu'aux contrôleurs ! Il est possible d'injecter des services dans d'autres classes (généralement via le constructeur) et il est aussi très facile de construire ses propres services et de les utiliser de la même façon, comme vous le ferez un peu plus tard.
+**Il faut donc bien préciser le type de la classe/service souhaité dans la fonction et penser à l'importer en début de fichier.**
+
+Tout cela fonctionne sur la base d'un **conteneur IoC** que vous aviez déjà utilisé l'année dernière, configuré et géré par Symfony. **L'autowiring** est un système permettant de détecter et d'injecter automatiquement les dépendances. Et cela ne se limite pas qu'aux contrôleurs ! Il est possible d'injecter des services dans d'autres classes (généralement via le constructeur) et il est aussi très facile de construire ses propres services et de les utiliser de la même façon, comme vous le ferez un peu plus tard.
+
+À noter que, si vous avez besoin d'un service qui est utilisé dans chaque route de votre contrôleur (ou quasiment partout), vous pouvez l'importer une seule fois de manière globale, en utilisant le **constructeur** du contrôleur :
+
+```php
+use App\Repository\PublicationRepository;
+
+public function __construct(private PublicationRepository $publicationRepository)
+{}
+
+#[Route('/exemple', name: 'route_un_exemple_get', methods: ["GET"])]
+public function methodeUnExempleGet(): Response
+{
+    $result = $this->publicationRepository->methodeA(...);
+}
+
+#[Route('/exemple', name: 'route_deux_exemple_get', methods: ["GET"])]
+public function methodeUnExempleGet(): Response
+{
+    $this->publicationRepository->methodeB(...);
+}
+```
+
+Avec cette configuration, dès que le contrôleur est chargé, le repository sera chargé aussi (il ne faut donc plus l'injecter dans chaque méthode). Il faut donc être sûr qu'il va bien être utile à quasiment toutes nos méthodes. Si ce n'est pas le cas, il est alors plus optimisé de l'injecter seulement là où on en a besoin.
 
 <div class="exercise">
 
 1. Accédez à l'espace d'administration de votre base de données (phpMyAdmin par exemple) et ajoutez quelques publications avec des dates différentes.
 
-2. Modifiez votre route `feed` : supprimez vos "fausses" publications de tests et à la place, récupérez le tableau de publications directement depuis la base de données, en utilisant `PublicationRepository`.
+2. Modifiez le code associé à votre route `feed` (dans `PublicationController`) : supprimez vos "fausses" publications de tests et à la place, récupérez le tableau de publications directement depuis la base de données, en utilisant `PublicationRepository`.
 
 3. Testez votre route et vérifiez que les publications s'affichent bien.
 
@@ -825,6 +892,8 @@ Dans votre contrôleur, vous avez sans doute utilisé la méthode `findAll`, hor
         //A compléter
     }
     ```
+
+    Pour rappel : `PublicationRespository`, grâce  àl'héeritage, possède les méthodes `find`, `findAll`, etc.
 
 </div>
 
@@ -957,20 +1026,22 @@ public function methodeExemple(): Response
 
 Du côté de `twig`, on peut alors générer le formulaire en utilisant plusieurs fonctions :
 
-* `form_start(nomFormulaire, {'attr' : {'id' : '...', 'class' : '...'}})` : permet de générer la balise ouvrante du formulaire. La partie `attr` permet de configurer des **attributs HTML** supplémentaires : (identifiants HTML, classes...)
+* `form_start(formulaireExemple, {'attr' : {'id' : '...', 'class' : '...'}})` : permet de générer la balise ouvrante du formulaire. La partie `attr` permet de configurer des **attributs HTML** supplémentaires : (identifiants HTML, classes...)
 
-* `form_end(nomFormulaire)` : génère la balise fermante du formulaire.
+* `form_end(formulaireExemple)` : génère la balise fermante du formulaire.
 
-* `form_widget(nomFormulaire.nomChamp, {'id' : '...', 'attr' : {'class' : '...'}})` : permet de générer la balise HTML correspondant au champ (en utilisant le nom du champ de la classe du formulaire). On peut aussi configurer ses attributs HTML, son id, ses classes, etc...
+* `form_widget(formulaireExemple.nomChamp, {'id' : '...', 'attr' : {'class' : '...'}})` : permet de générer la balise HTML correspondant au champ (en utilisant le nom du champ de la classe du formulaire). On peut aussi configurer ses attributs HTML, son id, ses classes, etc...
 
-* `form_rest(nomFormulaire)` : permet de générer ce qu'il "reste" : généralement, un champ caché appelé **token CSRF**. Ce token est généré aléatoirement à chaque affichage de formulaire permet de se protéger d'une attaque appelée **cross site request forgery** ou plus simplement `CSRF`. Cette attaque consiste à vous faire exécuter une requête sur un site cible depuis un site extérieur.
+* `form_rest(formulaireExemple)` : permet de générer ce qu'il "reste" : généralement, un champ caché appelé **token CSRF**. Ce token est généré aléatoirement à chaque affichage de formulaire permet de se protéger d'une attaque appelée **cross site request forgery** ou plus simplement `CSRF`. Cette attaque consiste à vous faire exécuter une requête sur un site cible depuis un site extérieur.
 
-Vous noterez que dans le cas de `form_widget`, l'identifiant ne se place pas dans `attr`, contrairement à `form_start`.
+La variable `formulaireExemple` correspondant au nom de la variable associé au formulaire dans le tableau associatif passé au template par le contrôleur.
+
+Vous noterez que dans le cas de `form_widget`, l'identifiant ne se place pas dans `attr`, contrairement à `form_start`. De manière assez générale, tous les attributs "normaux" d'in **input** de formulaire (comme par exemple `placeholder`) se plaçeront à l'intérieur de `attr`.
 
 Attention, dans le cas du bouton d'envoi du formulaire, on l'affiche aussi avec `form_widget`, et on configure le message contenu dans le bouton avec le paramètre `label` : 
 
 ```twig
-{{ form_widget(nomFormulaire.nomChampSubmit, {'label' : "Envoyer"}) }}
+{{ form_widget(formulaireExemple.nomChampSubmit, {'label' : "Envoyer"}) }}
 ```
 
 Voici une petite démonstration, avec l'exemple de formulaire précédent (contenant un champ `motDePasse` et un champ `valider`, correspondant au bouton d'envoi) :
@@ -1102,7 +1173,7 @@ class Exemple {
 
 1. Dans votre classe `Publication`, ajoutez une méthode `prePersistDatePublication` permettant d'initialiser la date de publication avant son enregistrement en base. Pour rappel, la date de publication peut simplement s'initialiser avec un `new \DateTime()`.
 
-2. Dans votre route `feed`, ajoutez le code pour traiter le formulaire et créer la publication. Après sauvegarde, on redirige vers la même route : `feed` (on doit faire cela, sinon les données du formulaire ne seront pas effacées lors de l'affichage de la page...).
+2. Dans votre route `feed`, ajoutez le code pour traiter le formulaire et créer la publication (on regroupe à la fois l'affichage du feed et du formulaire, pour le `GET` et son traitement, pour le `POST`). Après sauvegarde, on redirige vers la même route : `feed` (on doit faire cela, sinon les données du formulaire ne seront pas effacées lors de l'affichage de la page...). N'oubliez pas qu'il faut autoriser **une autre méthode** dans la configuration de votre route !
 
 3. Rechargez la page principale et tentez d'ajouter des nouvelles publications. Vos publications devraient s'afficher sur votre feed.
 
@@ -1249,15 +1320,16 @@ Dans notre template `twig`, on utilisera le design suivant pour nos messages fla
 
 ```html
 <div id="flashes-container">
-    <!-- Pour chaque message du type "success" -->
-    <span class="flashes flashes-success">Message</span>
-
-    <!-- Pour chaque message du type "error" -->
-    <span class="flashes flashes-error">Message</span>
+    <!-- Boucle, pour chaque message du type "success" -->
+        <span class="flashes flashes-success">Message</span>
+    <!-- Fin boucle -->
+    <!-- Boucle, pour chaque message du type "error" -->
+        <span class="flashes flashes-error">Message</span>
+    <!-- Fin boucle -->
 </div>
 ```
 
-Pour obtenir chaque message d'erreur d'un formulaire, on peut utiliser une boucle, comme dans l'exemple qui suit :
+Pour obtenir chaque message d'erreur d'un formulaire côté PHP/contrôleur, on peut utiliser une boucle, comme dans l'exemple qui suit :
 
 ```php
 $errors = $form->getErrors(true);
@@ -1306,7 +1378,7 @@ class ExempleService {
 }
 ```
 
-Vous êtes peut-être intrigué par l'aspect du constructeur, qui définit un niveau de visibilité à ses paramètres. C'est une des nouveautés des dernières versions de `PHP`. En fait, avec cette syntaxe, on signifie qu'on souhaite enregistrer directement les paramètres comme attributs de la classe. Ainsi, il n'y a pas de code basique à écrire pour déclarer manuellement ces attributs et les affecter dans le constructeur. Le constructeur peut rester vide. En fait, on peut voir cela comme une version compacte entre la déclaration et l'affectation d'un attribut de la classe.
+La syntaxe utilisée pour définir ce constructeur ne doit pas vous être inconnue. Pour rappel, avec cette syntaxe, on signifie qu'on souhaite enregistrer directement les paramètres comme attributs de la classe (en précisant, au passage, leur visibilité). Ainsi, il n'y a pas de code basique à écrire pour déclarer manuellement ces attributs et les affecter dans le constructeur. Le corps du constructeur peut rester vide. En fait, on peut voir cela comme une version compacte entre la déclaration et l'affectation d'un attribut de la classe.
 
 Ainsi, si j'ai une classe avec le constructeur suivant :
 
@@ -1382,28 +1454,15 @@ interface ExempleServiceInterface {
     public function maFonction() : void;
 } 
 
-class ExempleService implements ExempleServiceInterface {
+#src/Service/ExempleServiceA.php
+class ExempleServiceA implements ExempleServiceInterface {
     ...
 }
 ```
 
-Je peux ensuite éditer le fichier `services.yaml` ainsi :
+S'il n'y a qu'une seule classe qui implémente l'interface en question, Symfony va la trouver automatiquement et faire le lien.
 
-```yaml
-#Dans config/services.yaml
-parameters:
-
-services:
-    #Je déclare la classe concrète de mon service:
-    #Le ~ signifie qu'il n'y a pas de paramètres particuliers (les services dont la classe a besoin sont injectés automatiquement)
-    App\Service\ExempleService: ~
-
-    #Je créé le service ExempleServiceInterface qui se réfère au service ExempleService définit juste avant
-    App\Service\ExempleServiceInterface: '@App\Service\ExempleService'
-    
-```
-
-Ainsi, quand je veux injecter ce service, je peux maintenant utiliser son interface :
+Ainsi, quand je veux injecter ce service, je peux maintenant utiliser son interface (`ExempleA` sera alors utilisé):
 
 ```php
  #[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
@@ -1413,19 +1472,41 @@ public function methodeExemple(ExempleServiceInterface $exempleService): Respons
 }
 ```
 
-Si jamais je souhaite changer de classe concrète, j'ai juste à créer une nouvelle classe, la faire implémenter mon interface, puis changer le fichier `services.yaml`. Il n'y aura pas de changements à faire dans les classes qui utilisaient mon service jusqu'à présent.
+Cependant, si **deux classes** (ou plus) implémentent la même interface (ce qui peut arriver : par exemple, une classe gérant la connexion à une base de données MySQL contre une classe gérant la connexion à une base de données Oracle), Symfony ne saura donc pas laquelle choisir.
+
+Par exemple, si j'ai aussi : 
+
+```php
+#src/Service/ExempleServiceB.php
+class ExempleServiceB implements ExempleServiceInterface {
+    ...
+}
+```
+Dans ce cas, il faut éditer le fichier `config/services.yaml` ainsi, en précisant le service qu'on souhaite associer à l'interface :
+
+```yaml
+#Dans config/services.yaml
+parameters:
+    ...
+services:
+    #Je créé le service abstrait ExempleServiceInterface qui se réfère au service concret ExempleServiceB
+    App\Service\ExempleServiceInterface: '@App\Service\ExempleServiceB'
+    
+```
+
+Si jamais je souhaite changer de classe concrète, j'ai juste à changer le fichier `services.yaml`. Il n'y aura pas de changements à faire dans les classes qui utilisaient mon service jusqu'à présent.
+
+Il peut être intéressant de créer une **interface** pour son service, même si on ne prévoit pas immédiatement d'avoir plusieurs classes concrètes différentes pour ce service. C'est une bonne pratique car, on injectera alors systématiquement le service via l'interface, dans les contrôleurs, dans les autres services. Si jamais on vient finalement à ajouter une autre classes concrète implémentant la même interface (variante de ce service), il suffira alors d'éditer `services.yaml` sans toucher au reste du code si on souhaite en changer.
 
 <div class="exercise">
 
 1. Créez une interface `FlashMessageHelperInterface` (toujours dans le dossier `Service`) contentant la signature de la méthode `addFormErrorsAsFlash` puis faites-la implémenter à `FlashMessageHelper`. Pour rappel, dans **PHPStorm**, vous pouvez faire cela automatiquement : clic droit sur le nom de classe `FlashMessageHelper` > `Refactor` >` Extract Interface`.
 
-2. Éditez le fichier `services.yaml` afin de faire pointer le service `FlashMessageHelperInterface` vers `FlashMessageHelper`.
+2. Dans votre route `feed`, utilisez votre nouvelle interface à la place du service concret.
 
-3. Dans votre route `feed`, utilisez votre nouvelle interface à la place du service concret.
+3. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
 
-4. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
-
-<!-- 5. À l'aide des attributs HTML `minlength` et `maxlength` de `textarea`, ajoutez également une vérification des données côté client (min 4 caractères, max 200). Pour rappel, même si ces attributs permettent de vérifier le formulaire avant envoi, tout cela peut être très facilement désactivé ou le client peut faire une requête POST sans nécessairement utiliser le formulaire. Il ne faut donc jamais faire confiance aux données envoyées par le client et toujours re-vérifier côté serveur (ce que nous faisons avec nos assertions). -->
+4. Pour bien vérifier que vous avez compris les explications précédentes, ajoutez une classe `TestService.php` dans le dossier `Service` qui implémente aussi `FlashMessageHelperInterface`. Laissez le corps de la méthode `addFormErrorsAsFlash` vide. Essayez d'envoyer un message. Symfony renvoie alors une erreur qui explique qu'il n'a pas pu trouver le service en question. Comme dans l'exemple, éditez le fichier `services.yaml` afin de faire pointer le service `FlashMessageHelperInterface` vers `FlashMessageHelper`. Testez que tout fonctionne à nouveau, puis, supprimez les modifications apportées dans `services.yaml` et supprimez également `TestService.php`.
 
 </div>
 
@@ -1468,7 +1549,7 @@ Ainsi, quand j'utiliserai `form_widget`, ces contraintes seront automatiquement 
 
 1. Modifiez la classe `PublicationType` afin d'ajouter les contraintes `minlength` et `maxlength` sur votre champ `message` (min 4, max 200).
 
-2. Rechargez la page principale et vérifiez que les contraintes sont bien appliquées (vous pouvez notamment vérifier cela en inspectant le code HTML, pour voir si les attributs sont bien présents).
+2. Rechargez la page principale et vérifiez que les contraintes sont bien appliquées (vous pouvez notamment vérifier cela en inspectant le code HTML, pour voir si les attributs sont bien présents, ou bien même en vérifiant que le formulaire n'est pas envoyé si ces contraintes ne sont pas respectées).
 
 </div>
 
@@ -1533,11 +1614,11 @@ Pour notre site, nous allons donc adopter la stratégie suivante :
 
 2. Dans le `body` de ce template, juste après la zone affichant les messages flash, créez un block `page_content`.
 
-3. Dans `feed.html.twig`, faites en sorte d'étendre `base.html.twig` puis de récrire le block `page_content` de manière adéquate, en ne gardant que le contenu propre à cette page. Si ce n'est pas déjà fait, supprimez tout le reste (qui est redondant avec ce qui est déjà contenu `base.html.twig`).
+3. Dans `feed.html.twig`, faites en sorte d'étendre `base.html.twig` puis de récrire le block `page_content` de manière adéquate, en ne gardant que le contenu propre à cette page (le `main`). Si ce n'est pas déjà fait, supprimez tout le reste (qui est redondant avec ce qui est déjà contenu `base.html.twig`).
 
 4. Rechargez votre page principale et vérifiez qu'elle s'affiche toujours correctement. Vérifiez le code HTML généré pour être sûr qu'il n'y a pas d'erreur.
 
-5. On souhaite que le titre (`<title></title>`) de chaque page puisse être redéfini par chaque sous-template étendant `base.html.twig`. Faites à l'aide d'un block nommé `page_title` puis, dans le template `feed.html.twig`, faites en sorte de nommer la page "The Feed". Vérifiez que cela fonctionne bien.
+5. On souhaite que le titre (contenu de `<title></title>`) de chaque page puisse être redéfini par chaque sous-template étendant `base.html.twig`. Faites cela en créant un block (vide) nommé `page_title` dans `base.html.twig`, puis, dans le template `feed.html.twig`, faites en sorte de nommer la page "The Feed" en utilisant ce nouveau block. Vérifiez que cela fonctionne bien.
 
 </div>
 
