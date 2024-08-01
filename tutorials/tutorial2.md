@@ -66,7 +66,7 @@ L'entité générée est vraiment basique et contient le strict nécessaire (id,
     * `adresseEmail` : string, 255 caractères maximum, non null.
     * `nomPhotoProfil` : text, null autorisé.
 
-3. Afin de rendre l'adresse email **unique**, ajoutez le paramètre `unique: true` au niveau de l'annotation sur la propriété `adresseEmail` dans la classe `Utilisateur`.
+3. Tout en haut de la classe, vous pouvez observer un attribut nommé `UniqueConstraint`. Cet attribut permet de faire en sorte que, dans la base de données, deux utilisateurs différents n'aient pas le même login. On souhaite faire la même chose avec l'adresse email. Afin de rendre l'adresse email **unique**, ajoutez une nouvelle annotation `UniqueConstraint` nommée `UNIQ_IDENTIFIER_EMAIL` et visant l'attribut `adresseEmail`.
 
 4. Prenez le temps d'observer le code des classes générées ainsi que le fichier `security.yaml`.
 
@@ -90,7 +90,7 @@ Au niveau du fichier `security.yaml` :
 
 * La zone `app_user_provider` permet d'informer Symfony quelle est l'entité qui représente nos utilisateurs ainsi que la propriété utilisée comme identifiant de connexion.
 
-* Un peu plus bas, `password_hashers` permet de sélectionner l'algorithme de chiffrement des mots de passes. Depuis les dernières versions de Symfony, on peut utiliser la valeur `auto` (comme c'est le cas ici) qui permet de sélectionner **le meilleur algorithme de chiffrement disponible**. Cela permet aux mots de passes d'être le plus sécurisé possible. De plus, si cet algorithme vient à changer (par exemple, un meilleur algorithme est publié dans le futur), Symfony procède à la **migration** des mots de passes. La prochaine fois qu'ils se connecteront, les utilisateurs dont le mot de passe utilise encore l'ancien algorithme de chiffrement déclencheront automatiquement la migration de leur mot de passe qui sera re-chiffré avec le nouvel algorithme puis stocké, et tout cela de manière invisible. Ainsi, avec ce paramètre, le développeur n'a pas (trop) à se soucier d'être à jour niveau sécurité des mots de passes. Les algorithmes de chiffrement contiennent un système de `salt`, comme vous l'avez vu l'année dernière.
+* Un peu plus bas, `password_hashers` permet de sélectionner l'algorithme de chiffrement des mots de passes. Depuis les dernières versions de Symfony, on peut utiliser la valeur `auto` (comme c'est le cas ici) qui permet de sélectionner **le meilleur algorithme de chiffrement disponible**. Cela permet aux mots de passes d'être le plus sécurisé possible. De plus, si cet algorithme vient à changer (par exemple, un meilleur algorithme est publié dans le futur), Symfony procède à la **migration** des mots de passes. La prochaine fois qu'ils se connecteront, les utilisateurs dont le mot de passe utilise encore l'ancien algorithme de chiffrement déclencheront automatiquement la migration de leur mot de passe qui sera re-chiffré avec le nouvel algorithme puis stocké, et tout cela de manière invisible. Ainsi, avec ce paramètre, le développeur n'a pas (trop) à se soucier d'être à jour niveau sécurité des mots de passes. Une partie du code de ce système se trouve dans la classe `Repository/UtilisateurRepository` au niveau de la méthode `upgradePassword` (vous pouvez y jeter un œil). Les algorithmes de chiffrement contiennent un système de `salt`, comme vous l'avez vu l'année dernière.
  
 ### Formulaire d'inscription
 
@@ -98,7 +98,7 @@ Au niveau du fichier `security.yaml` :
 
 Nous allons maintenant mettre en place un formulaire d'inscription pour nos utilisateurs !
 
-À la différence du formulaire que nous avons créé pour les publications, celui-ci contiendra deux champs qui ne sont pas lié directement à la classe Utilisateur :
+À la différence du formulaire que nous avons créé pour les publications, celui-ci contiendra deux champs qui ne seront pas liés directement à la classe Utilisateur :
 
 * `plainPassword`: il s'agit du mot de passe **en clair** transmis via le formulaire, qui diffère de l'attribut `password` qui lui représente le mot de passe chiffré et ne doit justement pas faire partie du formulaire ! Cela signifie que pour les **assertions** concernant `plainPassword`, il faudra le faire au niveau de la classe du formulaire, et non pas au niveau de l'entité `Utilisateur`.
 
@@ -146,28 +146,30 @@ Ensuite, au niveau de la classe `Utilisateur`, nous pouvons utiliser un attribut
 ```php
 #[UniqueEntity(propriete)]
 ``` 
-Cet attribut se place juste au-dessus du nom de la classe et permet de signifier à l'application qu'une valeur d'une propriété de la classe est **unique** (pas de doublons entre les utilisateurs pour cet attribut, comme le "unique" en base de données). Encore une fois, cela peut paraître redondant avec la base de données, mais cela permet de détecter cette erreur plus tôt, au niveau de l'application, et ainsi de la gérer par nous-même plutôt qu'obtenir une page d'erreur que l'utilisateur n'est pas censé voir.
+Cet attribut se place juste au-dessus du nom de la classe et permet de signifier à l'application qu'une valeur d'une propriété de la classe est **unique** (pas de doublons entre les utilisateurs pour cet attribut, comme le "unique" en base de données). Cela peut paraître redondant avec l'attribut `ORM\UniqueConstraint` lié à la base de données, mais cela permet de détecter cette erreur plus tôt, au niveau de l'application, et ainsi de la gérer par nous-même plutôt qu'obtenir une page d'erreur liée à la base de données que l'utilisateur n'est pas censé voir.
 
 Par exemple :
 
 ```php
 #[UniqueEntity('champ1', message : "Cette valeur est déjà prise!")]
 #[UniqueEntity('champ3')]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_CHAMP_1', fields: ['champ1'])]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_CHAMP_3', fields: ['champ3'])]
 class Exemple {
 
-    #[ORM\Column(unique:true)]
+    #[ORM\Column]
     private ?string $champ1 = null;
 
     #[ORM\Column]
     private ?string $champ2 = null;
 
-    #[ORM\Column(unique:true)]
+    #[ORM\Column]
     private ?string $champ3 = null;
 
 }
 ```
 
-Pour bien que vous compreniez la différence, le paramètre `unique` de l'attribut `#[ORM\Column(..., unique : true)]` va créer une contrainte **UNIQUE INDEX** au niveau de la base de données tandis que `#[UniqueEntity]` est similaire aux autres **assertions** et est vérifié lors de l'appel à la méthode `isValid` du formulaire. Avec `#[UniqueEntity]`, la vérification est faite avant tout enregistrement et on est ainsi sûr de ne pas exécuter une requête d'insertion qui produira une erreur (pour cause de doublons).
+Pour bien que vous compreniez la différence, l'attribut `ORM\UniqueConstraint(...)` va créer une contrainte **UNIQUE INDEX** au niveau de la base de données tandis que `#[UniqueEntity]` est similaire aux autres **assertions** et est vérifié lors de l'appel à la méthode `isValid` du formulaire. Avec `#[UniqueEntity]`, la vérification est faite avant toute tentative d'enregistrement en base de données et on est ainsi sûr de ne pas exécuter une requête d'insertion qui produira une erreur (pour cause de doublons).
 
 Concernant notre formulaire, contrairement à celui de la page principale,
 celui-ci va contenir des balises `<label>`. Pour rappel, une balise `<label>`
@@ -179,7 +181,7 @@ Avec Symfony, on peut générer le `<label>` lié à un champ avec {% raw %}`{{ 
 
 <div class="exercise">
 
-1. À l'aide de la commande `make:form` créez une classe de formulaire `UtilisateurType` pour l'entité `Utilisateur`. Dans cette nouvelle classe, supprimez les champs `password` et `nomPhotoProfil` et `roles` (qui ne sont pas envoyées et gérés par l'utilisateur) puis ajoutez deux nouveaux champs : `plainPassword` et `fichierPhotoProfil`.
+1. À l'aide de la commande `make:form` créez une classe de formulaire `UtilisateurType` pour l'entité `Utilisateur`. Dans cette nouvelle classe, supprimez les champs `password` et `nomPhotoProfil` et `roles` (qui ne sont pas envoyées et gérés par l'utilisateur) puis ajoutez trois nouveaux champs : `plainPassword`, `fichierPhotoProfil` et `inscription`.
 
 2. Configurez le type des champs ainsi :
 
@@ -192,6 +194,7 @@ Avec Symfony, on peut générer le `<label>` lié à un champ avec {% raw %}`{{ 
     Quelques imports utiles à faire dans `UtilisateurType` :
 
     ```php
+    use Symfony\Component\Form\Extension\Core\Type\EmailType;
     use Symfony\Component\Form\Extension\Core\Type\FileType;
     use Symfony\Component\Form\Extension\Core\Type\PasswordType;
     use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -206,7 +209,7 @@ Avec Symfony, on peut générer le `<label>` lié à un champ avec {% raw %}`{{ 
 
         * `adresseEmail` : non blanc, non null, adresse email valide. Configurez un message d'erreur en cas d'adresse non valide (paramètre `message`).
 
-        * `login` et `adresseEmail` doivent être des propriétés à valeurs uniques. Spécifiez un message d'erreur si ces contraintes ne sont pas respectées.
+        * Deux entités différentes ne doivent pas avoir le même `login` et/ou la même `adresseEmail`. Faites le nécessaire pour implémenter ces contraintes au niveau de la classe `Utilisateur`. Spécifiez un message d'erreur si ces contraintes ne sont pas respectées.
 
         Classes à importer :
 
@@ -217,7 +220,7 @@ Avec Symfony, on peut générer le `<label>` lié à un champ avec {% raw %}`{{ 
 
     2. Au niveau de `UtilisateurType` :
 
-        * `plainPassword` : non blanc, non null, entre 8 et 30 caractères, et doit respecter l'expression régulière (**regex**) suivante : `#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,30}$#` (au moins une minuscule, une majuscule et un chiffre). Configurez des messages d'erreurs pour la taille du mot de passe et aussi si l'expression régulière n'est pas validée (juste `message`). Il faut aussi configurer l'option `mapped` pour préciser que ce champ ne fait pas partie de la classe `Utilisateur`.
+        * `plainPassword` : non blanc, non null, entre 8 et 30 caractères, et doit respecter l'expression régulière (**regex**) suivante : `#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#` (au moins une minuscule, une majuscule et un chiffre). Configurez des messages d'erreurs pour la taille du mot de passe et aussi si l'expression régulière n'est pas validée (juste `message`). Il faut aussi configurer l'option `mapped` pour préciser que ce champ ne fait pas partie de la classe `Utilisateur`.
 
         * `fichierPhotoProfil` : taille maximum **10 mégaoctets**, formats autorisés : **jpg**, et **png**. Configurez des messages d'erreurs dans le cas où la taille n'est pas respectée (`maxSizeMessage`) ou que le format n'est pas respecté (`extensionsMessage`). Ici aussi, il faut configurer l'option `mapped`.
 
@@ -237,11 +240,11 @@ Avec Symfony, on peut générer le `<label>` lié à un champ avec {% raw %}`{{ 
 
     * Le titre de la page doit être `Inscription`.
 
-5. À l'aide de la commande `make:controller`, créez un nouveau contrôleur `UtilisateurController`, effacez le code par défaut et le template `index.html.twig` généré dans le dossier `utilisateur`.
+5. À l'aide de la commande `make:controller`, créez un nouveau contrôleur `UtilisateurController`, effacez la méthode `index` générée par défaut ainsi que le template `index.html.twig` généré dans le dossier `utilisateur`.
 
 6. Créez une route nommée `inscription`, ayant pour chemin `/inscription` et accessible avec les méthodes `GET` et `POST`. Dans le code de cette route, initialisez un formulaire avec `UtilisateurType`. Le formulaire utilisera la méthode `POST` et son action pointe vers la route `inscription`. Renvoyez une réponse générant une page avec le template créé à l'étape 4, en passant le formulaire en paramètre (n'hésitez pas à vous inspirer du code de la route `feed`). Comme pour les publications, nous utiliserons la même route pour afficher (GET) et traiter (POST) le formulaire.
 
-7. Dans votre template, redéfinissez le bloc de contenu en incluant et en complétant le squelette suivant afin d'afficher le formulaire :
+7. Dans votre template, redéfinissez le bloc de contenu (`page_content`) en incluant et en complétant le squelette suivant afin d'afficher le formulaire :
 
     ```twig
     {% raw %}
@@ -286,7 +289,7 @@ Avec Symfony, on peut générer le `<label>` lié à un champ avec {% raw %}`{{ 
 
 8. Accédez à votre nouvelle page et vérifiez que le formulaire s'affiche correctement.
 
-9. Modifiez `base.html.twig` afin d'inclure un lien (généré) vers votre nouvelle page d'inscription dans le menu de navigation.
+9. Modifiez `base.html.twig` afin d'inclure un lien (généré) vers votre nouvelle page d'inscription dans le menu de navigation, toujours en utilisant la fonction adéquate pour générer le lien à partir du nom de la route (ici, `inscription`).
 </div>
 
 #### Traitement du formulaire d'inscription
@@ -398,13 +401,13 @@ $valeurChamp = $form["monChamp"]->getData();
 
     }
     ```
-4. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `proccessNewUtilisateur` (on rappelle qu'il est très facile d'extraire une interface depuis une classe concrète avec **PHPStorm** !). Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface puis mettez à jour le fichier `services.yaml` pour qu'on puisse injecter et utiliser le service `UtilisateurManager` directement avec `UtilisateurManagerInterface`.
+4. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `proccessNewUtilisateur` (on rappelle qu'il est très facile d'extraire une interface depuis une classe concrète avec **PHPStorm** !). Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface (c'est elle qu'on injectera dans les contrôleurs/services).
 
 5. Dans votre route `inscription`, faites en sorte de gérer la soumission du formulaire et de sauvegarder l'utilisateur construit à partir du formulaire dans la base de données. Cependant, **avant de sauvegarder l'utilisateur**, il faudra extraire `plainPassword` puis `fichierPhotoProfil` et enfin utiliser votre nouveau service avec sa méthode `proccessNewUtilisateur`.
 
-    N'oubliez pas aussi de prendre en charge les erreurs du formulaire, à sauvegarder comme messages flash ! 
+    N'oubliez pas aussi de prendre en charge les erreurs du formulaire, à sauvegarder comme messages flash ! En utilisant le service dédié que nous avons créé lors du précédent TD.
     
-    Enfin, lorsque l'utilisateur est enregistré, il faut ajouter un message flash (type : `success`) "Inscription réussie" (on rappelle qu'il est possible d'utiliser `addFlash` dans un contrôleur) puis le rediriger vers la route `feed` (méthode `redirectToRoute` qui retourne un objet `Response`). 
+    Enfin, lorsque l'utilisateur est enregistré, il faut ajouter un message flash (type : `success`) "Inscription réussie !" (on rappelle qu'il est possible d'utiliser `addFlash` dans un contrôleur) puis le rediriger vers la route `feed` (méthode `redirectToRoute` qui retourne un objet `Response`). 
     
     Encore une fois, vous pouvez vous inspirer (en partie) du code de votre route `feed`, pour la création d'une publication.
 
@@ -420,11 +423,11 @@ $valeurChamp = $form["monChamp"]->getData();
 
 8. Testez les différents cas d'erreurs possibles en ne respectant pas certaines contraintes (sur le login, le mot de passe, le format de l'image de profil...) et vérifiez que les messages flash d'erreur s'affichent bien.
 
-9. En modifiant `UtilisateurType`, ajoutez des contraintes "client" qui permettront de générer des attributs HTML sur les balises du formulaire pour que le navigateur vérifie certaines contraintes côté client :
+9. En modifiant `UtilisateurType`, ajoutez des contraintes "clientes" (avec `attr`, comme vous l'avez fait dans `PublicationType`) qui permettront de générer des attributs HTML sur les balises du formulaire pour que le navigateur vérifie certaines contraintes côté client :
 
     * `minlength` et `maxlength` sur le login et le mot de passe.
 
-    * `pattern` sur le mot de passe avec pour valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,30}$` (on utilise `\\d` au lieu de `\d`, car autrement, `\` est interprété comme un caractère spécial)
+    * `pattern` sur le mot de passe avec pour valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$` (on utilise `\\d` au lieu de `\d`, car autrement, `\` est interprété comme un caractère spécial)
 
     * Vous pouvez également déplacer les contraintes déjà présentes dans le code HTML correspondant au champ `fichierPhotoProfil` dans le champ dédié dans classe `UtilisateurType`. Attention, pour `required`, il se place en dehors de `attr` :
 
@@ -450,16 +453,11 @@ Concernant la **connexion**, nous n'aurons pas à créer de classe pour le formu
 Tout d'abord, on commence par créer une route, accès en `GET` et en `POST` :
 
 ```php
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-
 #[Route('/exempleConnexion', name: 'exempleConnexion', methods: ['GET', 'POST'])]
-public function connexion(AuthenticationUtils $authenticationUtils) : Response {
-    $lastUsername = $authenticationUtils->getLastUsername();
+public function connexion() : Response {
     return $this->render('monFormulaireDeConnexion.html.twig');
 }
 ```
-
-* La variable `$lastUsername` permet de conserver l'affichage du login dans le cas où le formulaire est réaffiché si les identifiants sont invalides.
 
 Ensuite, on crée le template `Twig` correspondant, contenant un formulaire de connexion :
 
@@ -473,8 +471,6 @@ Ensuite, on crée le template `Twig` correspondant, contenant un formulaire de c
 </form>
 {% endraw %}
 ```
-
-* En cas d'échec de connexion, on réaffiche le nom de l'utilisateur avec {% raw %}`{{ last_username }}`{% endraw %} (passé en argument par notre contrôleur).
 
 * La valeur de l'attribut `name` du champ de login doit être `_username`.
 
@@ -537,62 +533,70 @@ security:
 
 5. Mettez à jour le template `base.html.twig` afin d'inclure un lien vers votre page de connexion dans le menu de navigation.
 
-6. Accédez à votre page de connexion et tentez de vous connecter avec un compte existant, mais avec un mauvais mot de passe. Normalement, vous devriez rester sur le formulaire. Essayez ensuite avec un bon mot de passe, vous devriez alors être redirigé vers la page principale (et votre pseudonyme devrait apparaître dans la barre de débbogage). Nous allons gérer les différents messages informatifs plus tard.
+6. Accédez à votre page de connexion et tentez de vous connecter avec un compte existant, mais avec un mauvais mot de passe. Normalement, vous devriez rester sur le formulaire (aucun message d'erreur ne s'affiche, c'est normal pour le moment).
 
-7. Actuellement, si l'utilisateur se trompe dans son mot de passe, quand le formulaire est rechargé, le champ du login n'est pas pré-rempli. Il est possible d'améliorer cet aspect en récupérant le **dernier login avec lequel l'utilisateur a tenté de se connecter**. Pour cela, on utilise le service `AuthenticationUtils` :
+7. Actuellement, si l'utilisateur se trompe dans son mot de passe, quand le formulaire est rechargé, le champ du login n'est pas pré-remplit. Il est possible d'améliorer cet aspect en récupérant le **dernier login avec lequel l'utilisateur a tenté de se connecter**. Pour cela, on utilise le service `AuthenticationUtils` :
 
     ```php
     use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
-    $lastUsername = $authenticationUtils->getLastUsername();
+    #[Route('/exempleConnexion', name: 'exempleConnexion', methods: ['GET', 'POST'])]
+    public function connexion(AuthenticationUtils $authenticationUtils) : Response {
+        $lastUsername = $authenticationUtils->getLastUsername();
+        ....
+    }
     ```
 
     Il est alors possible de simplement passer cette donnée au template et de l'utiliser pour préciser l'attribut `value` du champ correspondant au login. Ce champ sera donc tout le temps pré-remplit, ce qui est pratique en cas d'erreur de mot de passe, mais aussi si l'utilisateur se déconnecte puis se reconnecte plus tard. Cette donnée est mémorisée dans un **cookie**.
 
     Effectuez les modifications nécessaires dans votre route `connexion` et dans le template `connexion.html.twig` pour que le champ du login soit automatiquement pré-remplit avec le dernier login avec lequel l'utilisateur a essayé de se connecter.
 
+8. Essayez maintenant de vous connecter avec un bon mot de passe, vous devriez alors être redirigé vers la page principale (et votre pseudonyme devrait apparaître dans la barre de débogage). Nous allons gérer les différents messages informatifs plus tard.
+
 </div>
 
 #### Déconnexion
 
-Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple, car il n'y a même pas de méthode de route ou de formulaire à créer.
+Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple, car il n'y a même pas de méthode de route ou de formulaire à créer. Il suffit d'éditer deux fichiers :
 
-Tout d'abord, on déclare une route **vide** dans notre contrôleur :
+* Tout d'abord, le fichier `config/packages/security.yaml` en paramétrant notre route de déconnexion avec une section nommée `logout`, un peu comme nous l'avons fait pour la connexion :
 
-```php
-#[Route('/maRouteDeconnexion', name: 'routeDeconnexion', methods: ['POST'])]
-public function routeDeconnexion(): never
-{
-    //Ne sera jamais appelée
-    throw new \Exception("Cette route n'est pas censée être appelée. Vérifiez security.yaml");
-}
-```
+    ```yaml
+    security:
+        ...
+        firewalls:
+        ...
+            main:
+                ...
+                logout:
+                    path: /cheminRouteDeconnexion
+                    target: routeRetour
+    ```
 
-Cette route ne sera jamais appelée (type de retour spécial dans ce cas : `never`) car elle sera interceptée et traitée par Symfony. Par contre, les `attributs` eux sont bien utiles et nous servent à définir la route.
+    Dans `path`, on préciser le **chemin** de la route (par exemple `/deconnexion`) et dans `target` la **route** (cette fois, pas avec son chemin, mais bien avec son nom) vers laquelle est redirigé l'utilisateur après s'être déconnecté.
 
-Ensuite, il ne reste plus qu'à éditer le fichier `config/packages/security.yaml` et préciser à Symfony quelle est notre route de déconnexion avec une section nommée `logout`, un peu comme nous l'avons fait pour la connexion :
+* Ensuite, on ajoute simplement un paramètre `methods` dans la section `_security_logout` dans le fichier `config/routes/security.yaml` :
 
-```yaml
-security:
-    ...
-    firewalls:
-       ...
-        main:
-            ...
-            logout:
-                path: routeDeconnexion
-                target: routeRetour
-```
+    ```yaml
+    _security_logout:
+        resource: security.route_loader.logout
+        type: service
+        methods: ['POST']
+    ```
 
-Dans `path`, on précise le **nom** de la route (et pas son chemin) et dans `target` la page vers laquelle est redirigé l'utilisateur après s'être déconnecté.
+    En effet, par défaut, toutes les méthodes sont autorisées pour accéder à la route de déconnexion. Dans notre cas, nous limitons cela à `POST`.
+
+Par la suite, quand on voudra faire appel à la route (par exemple, en utilisant `path` dans un template twig), on utilisera le nom de route `_logout_main`. Le `main` correspond au nom du `firewall` où nous avons paramétré la section `logout`.
+
+Nous n'avons pas beaucoup évoqué la notion de `firewall` jusqu'ici. Un `firewall` est la partie de Symfony qui permet de vous authentifier, de savoir qui vous êtes selon les parties du site (les pages) auxquelles vous tentez d'accéder. Les firewall `dev` est un "faux" firewall utilisé en local pour avoir accès aux outils de développement (entre autres) sur la page web, notamment. Par défaut, vous possédez donc un seul véritable firewall `main` qui est configuré pour traité l'accès à toutes les pages du site. Généralement, c'est amplement suffisant, mais on pourrait aussi imaginer avoir un `firewall` nommé `api` si le site proposait également une api qui permettrait d'authentifier les utilisateurs différemment, les déconnecter différemment, etc. Et il serait utilisé pour toutes les routes qui commencent par `/api/`, par exemple. Pour configurer les routes pour lequel un `firewall` est utilisé, on utilise le paramètre `pattern`. Comme vous le voyez, `main` n'en possède pas : par défaut, il permet donc de traiter toutes les routes.
 
 <div class="exercise">
 
-1. Dans le contrôleur `UtilisateurController`, ajoutez une nouvelle route `deconnexion`, ayant pour chemin `/deconnexion` accessible avec `POST`. Le corps de la fonction traitant cette route est vide et ne sera jamais appelée.
+1. Paramétrez la route de déconnexion dans le fichier `config/packages/security.yaml`. Elle doit avoir pour chemin `/deconnexion`. Après s'être déconnecté, l'utilisateur doit être redirigé sur la route `feed`.
 
-2. Précisez la route de déconnexion dans le fichier `config/packages/security.yaml`. Après s'être déconnecté, l'utilisateur doit être redirigé sur la route `feed`.
+2. Modifiez le fichier `config/routes/security.yaml` afin d'autoriser seulement la méthode `POST` lorsque la route de déconnexion est utilisée.
 
-3. Dans votre template `base.html.twig`, ajoutez le formulaire suivant dans le menu de navigation en complétant `action` de manière adéquate pour pointer sur votre route `deconnexion` :
+3. Dans votre template `base.html.twig`, ajoutez le formulaire suivant dans le menu de navigation en complétant `action` de manière adéquate pour pointer sur votre route de déconnexion (toujours en utilisant la fonction `path`, jamais directement le chemin) :
 
     ```html
     <form method="post" action="A compléter">
@@ -606,7 +610,7 @@ Dans `path`, on précise le **nom** de la route (et pas son chemin) et dans `tar
 
 #### Sécurisation d'action
 
-Bon, pour le moment, vous ne voyez aucune différence qui indique que vous êtes bien connecté ! Nous allons effectuer quelques modifications pour changer certains éléments affichés selon l'état de l'utilisateur (connecté ou non).
+Bon, pour le moment, vous ne voyez aucune différence (du point de vue d'un utilisateur normal) qui indique que vous êtes bien connecté ! Nous allons effectuer quelques modifications pour changer certains éléments affichés selon l'état de l'utilisateur (connecté ou non).
 
 Dans vos templates `Twig`, vous pouvez utiliser la fonction `is_granted(role)` pour vérifier le rôle d'un utilisateur (par exemple, dans une structure conditionnelle) et ainsi afficher ou non certaines sections.
 
@@ -685,7 +689,7 @@ Cependant, comme nous l'avons vu, dans le cadre d'un formulaire, nous pouvons re
 
 </div>
 
-#### Notification utilisateur de connexion
+#### Notification de connexion
 
 Comme notre système de connexion/déconnexion est géré par Symfony, nous ne pouvons pas ajouter de messages flash comme pour une route normale. Mais heureusement, pour cela, il y a les **événements** ! Durant le cycle de vie de l'application, certains **événements** comme la connexion ou la déconnexion de l'utilisateur peuvent être captés par le développeur afin de réaliser des actions complémentaires. Les classes qui traitent ces événements sont appelées `EventSubscriber`.
 
@@ -698,7 +702,7 @@ use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 class MonEventSubscriber {
 
-    public function __construct(/* Injection de dépendance possible ici*/){}
+    public function __construct(/* Injection de dépendances possible ici*/){}
 
     #[AsEventListener]
     public function onMonEvent(MonEvent $event) {
@@ -789,7 +793,7 @@ Cependant, gardez en mémoire l'utilisation de `IsGranted` avec une `Expression`
 
 1. Si un utilisateur déjà connecté tente d'accéder aux routes `inscription` ou `connexion`, redirigez-le vers la route `feed` (page principale).
 
-2. Vérifiez que vous êtes effectivement redirigé vers la page principale si vous tentez d'accéder à ces routes en étant connecté.
+2. Vérifiez que vous êtes effectivement redirigé vers la page principale si vous tentez d'accéder à ces routes (en modifiant directement l'URL)tout en étant connecté.
 
 </div>
 
@@ -803,25 +807,25 @@ Avec **doctrine**, pour associer deux entités, il suffit de créer un attribut 
 
 Voici la liste des attributs disponibles, qui devraient notamment vous rappeller celles utilisées avec **hibernate** en base de données en 2ème année :
 
-* `#[ORM\ManyToOne(targetEntity: Target::class, inversedBy: ...)]` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder **une instance** de l'entité ciblée. Le paramètre `inversedBy` permet de spécifier le nom de l'attribut de la classe cible qui fait référence à l'entité (où on place cette annotation). Le paramètre `targetEntity` permet de spécifier la classe cible.
+* `#[ORM\ManyToOne(inversedBy: ...)]` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder **une instance** de l'entité ciblée. Le paramètre `inversedBy` permet de spécifier le nom de l'attribut de la classe cible qui fait référence à l'entité (où on place cette annotation).
 
 On peut aussi ajouter un attribut supplémentaire `#[ORM\JoinColumn(onDelete="SET NULL")]` si on veut appliquer la stratégie de mettre l'attribut référencé à `null` lors de la suppression de l'entité référencée (au lieu de supprimer complétement la ressource qui lui est liée).
 
-* `[ORM\OneToMany](targetEntity : Target::class, mappedBy: ..., cascade: [...])` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder une **collection** de l'entité ciblée (l'attribut est de type `iterable`). Le paramètre `mappedBy` fonctionne de la même manière que `inversedBy`. Le paramètre `targetEntity` fonctionne de la même manière que l'entité précédente.
+* `[ORM\OneToMany](targetEntity: Target::class, mappedBy: ..., cascade: [...])` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder une **collection** de l'entité ciblée (l'attribut est de type `Collection`). Le paramètre `targetEntity` permet de spécifier la classe cible. Le paramètre `mappedBy` fonctionne de la même manière que `inversedBy`.
 
-* `#[OneToOne(targetEntity: Target::class, mappedBy: ...)]` : À utiliser dans une relation `1 - 1`. Dans l'autre entité, on utilise le même attribut en remplaçant `mappedBy` par `inversedBy`.
+* `#[OneToOne(mappedBy: ...)]` : À utiliser dans une relation `1 - 1`. Dans l'autre entité, on utilise le même attribut en remplaçant `mappedBy` par `inversedBy`.
 
-* `#[ManyToMany(targetEntity: Target::class, mappedBy: ...)]` : À utiliser dans une relation **plusieurs - plusieurs**. Dans l'autre entité, on utilise la même attribut en remplaçant `mappedBy` par `inversedBy`. Dans ce cas, une nouvelle table sera créée dans la base de données (table de jointure). Dans une des deux entités, au niveau de l'attribut concerné, il faut alors ajouter une autre attribut `#[JoinTable(name: 'nom_table_jointure')]` afin de nommer cette table.
+* `#[ManyToMany(targetEntity: Target::class, mappedBy: ...)]` : À utiliser dans une relation **plusieurs - plusieurs**. Dans l'autre entité, on utilise la même attribut en remplaçant `mappedBy` par `inversedBy`. Dans ce cas, une nouvelle table sera créée dans la base de données (table de jointure). Dans une des deux entités, au niveau de l'attribut concerné, il faut alors ajouter une autre attribut `#[JoinTable(name: 'nom_table_jointure')]` afin de nommer cette table. Le paramètre `targetEntity` fonctionne de la même manière que pour `OneToMany`.
 
-La configuration des attributs présentée implique un système **bi-directionnel** où l'entité A connait l'entité B et inversement. Il est bien entendu possible de faire un système unidirectionnel. Pour cela, il faut placer seulement l'attribut dans une des entités concernées, de ne pas spécifier les paramètres `mappedBy` et `inversedBy` et de rajouter l'attribut `#[JoinColumn(name: 'parent_id', referencedColumnName: 'id')]` où `parent_id` référence le nom de l'attribut "clé étrangère" (qui va être créé) et `referencedColumnName` le nom de la clé primaire de la table référencée. Il est aussi possible de créer des auto-référence (référence vers la même entité).
+La configuration des attributs présentée implique un système **bidirectionnel** où l'entité A connait l'entité B et inversement. Il est bien entendu possible de faire un système unidirectionnel. Pour cela, il faut placer seulement l'attribut dans une des entités concernées, de ne pas spécifier les paramètres `mappedBy` et `inversedBy` et de rajouter l'attribut `#[JoinColumn(name: 'parent_id', referencedColumnName: 'id')]` où `parent_id` référence le nom de l'attribut "clé étrangère" (qui va être créé) et `referencedColumnName` le nom de la clé primaire de la table référencée. Il est aussi possible de créer des auto-référence (référence vers la même entité).
 
-Attention, au niveau des attributs des relations `OneToOne` ou `ManyToOne`, une clé étrangère est générée dans la base :
+Attention, au niveau des attributs des relations `OneToOne` ou `ManyToOne`, une **clé étrangère** est générée dans la base :
 
 * Si on veut que cet attribut ne puisse pas être **null** dans la base, on ajoute un attribut `#[ORM\JoinColumn(nullable: false)]`.
 
 * Si on veut autoriser le comportement de suppression en cascade du côté de la base lors de la suppression de l'entité cible, il faut aussi spécifier le paramètre `onDelete: "CASCADE"` dans cette même attribut. Par exemple `#[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]`
 
-Vous pouvez également consulter [une documentation plus complète](https://www.doctrine-project.org/projects/doctrine-orm/en/2.14/reference/association-mapping.html).
+Vous pouvez également consulter [une documentation plus complète](https://www.doctrine-project.org/projects/doctrine-orm/en/3.2/reference/association-mapping.html).
 
 Fort heureusement, Symfony nous permet de mâcher ce travail en utilisant encore une fois la commande `make:entity` en mettant à jour notre entité cible. Il faut simplement :
 
@@ -833,19 +837,19 @@ Fort heureusement, Symfony nous permet de mâcher ce travail en utilisant encore
 
 4. Selon la relation, on précise ensuite si l'entité cible (clé étrangère) peut être nulle ou non, par exemple, dans le cas de `OneToMany`.
 
-5. On nous demande ensuite si la relation doit être bi-directionnelle, c'est-à-dire s'il faut aussi mettre à jour l'entité avec laquelle on forme une relation. Si on sélectionne oui, on nous demande aussi si les entités orphelines doivent être supprimées (par exemple dans notre cas, si on retire une publication à un auteur...).
+5. On nous demande ensuite si la relation doit être bidirectionnelle, c'est-à-dire s'il faut aussi mettre à jour l'entité avec laquelle on forme une relation. Si on sélectionne oui, on nous demande aussi si les entités orphelines doivent être supprimées (par exemple dans notre cas, si on retire une publication à un auteur...).
 
 <div class="exercise">
 
 1. Supprimez toutes les publications stockées dans votre base (car, n'ayant pas d'auteurs, cela va générer des erreurs quand on va forcer les publications à avoir un auteur...).
 
-2. En utilisant la commande `make:entity`, mettez à jour votre entité `Publication` en ajoutant une propriété `auteur` qui sera en **Utilisateur** :
+2. En utilisant la commande `make:entity`, mettez à jour votre entité `Publication` en ajoutant une propriété `auteur` qui sera un **Utilisateur** :
 
-    * Trouvez le bon type à utiliser. Si vous hésitez le type `relation` peut vous aider à choisir.
+    * Trouvez le bon type à utiliser. Si vous hésitez précisez le type `relation`, Symfony vous aidera alors à choisir.
 
     * La propriété ne peut pas être nulle.
 
-    * La relation est bi-directionnelle (on doit avoir la liste des publications côté utilisateurs). Nommez cette propriété `publications` côté Utilisateur.
+    * La relation est bidirectionnelle (on doit avoir la liste des publications côté utilisateurs). Nommez cette propriété `publications` côté Utilisateur.
 
     * Activez la suppression des entités orphelines.
 
@@ -853,12 +857,12 @@ Fort heureusement, Symfony nous permet de mâcher ce travail en utilisant encore
 
 4. Modifiez la classe `Publication` pour faire en sorte que quand un utilisateur est supprimé dans la base, ses publications soient toutes supprimées (correspondant à une contrainte `ON DELETE CASCADE`). Il vous suffit d'éditer un attribut (annotation) déjà existant...
 
-    Vous vous faites peut-être la réflexion que cette contrainte semble redondant avec la suppression des entités orphelines. En fait, `onDelete: "CASCADE"` va créer une contrainte au niveau de la base de données. L'option `orphanRemoval` quant à elle agit au niveau de l'application (de l'ORM) : si on retire la publication à l'utilisateur (depuis sa collection de publications) la publication sera supprimée, car considérée comme orpheline (dans ce contexte, l'entité ne peut pas être possédée par plusieurs entités). Mais si on supprime l'utilisateur tout court, cela ne supprimera pas les publications, car on ne retire pas vraiment la publication d'un utilisateur dans ce contexte. C'est donc pour cela qu'on ajoute aussi la contrainte `ON DELETE CASCADE`.
+    Vous vous faites peut-être la réflexion que cette contrainte semble redondant avec la suppression des entités orphelines. En fait, `onDelete: "CASCADE"` va créer une contrainte au niveau de la base de données. L'option `orphanRemoval` quant à elle agit au niveau de l'application (de l'ORM) : si on retire la publication à l'utilisateur (depuis sa collection de publications) la publication sera supprimée, car considérée comme orpheline (dans ce contexte, l'entité ne peut pas être possédée par plusieurs entités et doit forcément avoir un auteur). Mais si on supprime l'utilisateur tout court, cela ne supprimera pas les publications, car on ne retire pas vraiment la publication d'un utilisateur dans ce contexte. C'est donc pour cela qu'on ajoute aussi la contrainte `ON DELETE CASCADE`.
 
     En résumé :
 
-    * `orphanRemoval` permet de supprimer une publication si on la retire de l'utilisateur.
-    * `ON DELETE CASCADE` : permet de supprimer les publications si l'auteur (l'utilisateur) est supprimé.
+    * `orphanRemoval` permet de supprimer une publication si on la retire de l'utilisateur dans l'application (elle devient "orpheline" car elle n'est plus liée à son auteur).
+    * `ON DELETE CASCADE` : permet de supprimer les publications si l'auteur (l'utilisateur) est supprimé. Cela est directement géré au niveau de la base de données.
 
 5. Mettez à jour la structure de votre base de données avec les commandes `make:migration` et `doctrine:migrations:migrate`.
 
@@ -881,7 +885,7 @@ Du côté du template il faut, pour chaque publication :
 
 * Remplacer l'image de profil "anonyme.jpg" par l'image de profil de l'utilisateur. Cependant, s'il n'a **pas de photo de profil** (propriété `nomPhotoProfil` null) alors il faut continuer d'afficher l'image "anonyme.jpg" (image de profil "par défaut"). Pour rappel, les images de profil sont stockées dans `img/utilisateurs/uploads` et la propriété `nomPhotoProfil` donne simplement le nom de l'image enregistrée dans ce dossier.
 
-Pour le dernier point, il y a plusieurs possibilités : utiliser un "if/else". Utiliser une **ternaire** `(Condition) ? (Statement1) : (Statement2);`. Définir une variable dans le template avec `set`...
+Pour le dernier point, il y a plusieurs possibilités : utiliser un "if/else". Utiliser une **ternaire** `(Condition) ? (Statement1) : (Statement2)`. Définir une variable dans le template avec `set`...
 
 Pour rappel, si une propriété d'un objet est **nulle**, alors un test conditionnel "objet.propriete" renvoi simplement `false`.
 
@@ -905,7 +909,7 @@ Attention de bien respecter **un espace** avant et après `~`.
 
 </div>
 
-Tout fonctionne bien, mais il y a néanmoins un petit problème : jetez un œil aux requêtes SQL exécutées, en fouillant dans la barre de débogage. Si vous avez un ensemble de publications avec X auteurs différents, il y a X+1 requêtes exécutées ! Pourquoi ça ?
+Tout fonctionne bien, mais il y a néanmoins un petit problème : jetez un œil aux requêtes SQL exécutées lors du chargement du feed, en fouillant dans la barre de débogage (cliquez sur le bouton qui a une forme de base de données). Si vous avez un ensemble de publications avec X auteurs **différents**, il y a X+1 requêtes exécutées ! Pourquoi ça ?
 
 Si vous vous souvenez de vos cours de base de données du semestre 3, nous avions parlé de deux modes de chargement de données : le **lazy loading** et le **eager loading**. Le lazy loading consiste à ne charger des données que quand on en a besoin alors que le eager loading permet de charger tout d'un coup (avec une seule requête, si possible).
 
@@ -913,9 +917,9 @@ Doctrine utilise notamment une de ses stratégies au niveau des entités en rela
 
 * Quand on exécute `findAllOrderedByDate`, une première requête est exécutée pour récupérer toutes les publications, mais sans les données sur les auteurs.
 
-* Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication pour la première fois, une nouvelle requête est exécutée pour récupérer ses données (et conservées pour ne pas avoir à refaire la requête si on a plusieurs publications avec le même auteur...). Donc, une requête supplémentaire par publication.
+* Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication pour la première fois, une nouvelle requête est exécutée pour récupérer ses données (et conservées pour ne pas avoir à refaire la requête si on a plusieurs publications avec le même auteur...). Donc, une requête supplémentaire par utilisateur.
 
-Ceci est très mauvais niveau performance ! Notamment si on a beaucoup de publications. Et comme a priori, on souhaite pouvoir lire quelques données sur l'auteur à chaque fois qu'on charge une publication, il serait plus judicieux d'utiliser le **eager loading** dans ce contexte.
+Ceci est très mauvais niveau performance ! Notamment si on a beaucoup de publications avec des auteurs différents. Et comme a priori, on souhaite pouvoir lire quelques données sur l'auteur à chaque fois qu'on charge une publication, il serait plus judicieux d'utiliser le **eager loading** dans ce contexte.
 
 En utilisant le **eager loading** :
 
@@ -923,7 +927,7 @@ En utilisant le **eager loading** :
 
 * Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication, il n'y a pas de nouvelle requêtes exécutées pour récupérer ses données, elles ont déjà été chargées.
 
-Attention, cette stratégie (eager loading) est pertinente dans ce contexte, car nous savons que nous devons afficher les données de l'auteur sur chaque publication. Mais, dans d'autres contextes où ces données ne seraient pas toujours affichées, on pourrait alors préférer le lazy loading.
+Attention, cette stratégie (**eager loading**) est pertinente dans ce contexte, car nous savons que nous devons afficher les données de l'auteur sur chaque publication. Mais, dans d'autres contextes où ces données ne seraient pas toujours affichées, on pourrait alors préférer le **lazy loading** pour ne pas charger trop de données d'un seul coup (ce qui peut aussi réduire les performances inutilement, si on n'a pas besoins de lire toutes les données).
 
 Pour changer la stratégie utilisée pour récupérer les données d'une propriété, il suffit de configurer le paramètre `fetch` (avec `EAGER` ou `LAZY`) dans l'attribut gérant la relation. Par exemple :
 
@@ -936,13 +940,13 @@ private ?Entite $monEntite = null;
 
 1. Faites en sorte que l'auteur d'une publication soit chargé en mode `EAGER`.
 
-2. Rechargez la page principale et vérifiez qu'il n'y a plus qu'une requête exécutée ! Vous pouvez d'ailleurs observer le code SQL de cette requête.
+2. Rechargez la page principale et vérifiez qu'il n'y a plus qu'une requête exécutée ! Vous pouvez observer le code SQL de cette requête dans l'interface dédiée.
 
 </div>
 
 Une stratégie plus poussée nommée [EXTRA_LAZY](https://www.doctrine-project.org/projects/doctrine-orm/en/2.16/tutorials/extra-lazy-associations.html) peut aussi être utilisée dans le cadre de collections d'entités, pour ne pas tout charger d'un coup si on la manipule.
 
-Aussi, dans un site concret, on mettrait en place un système de **pagination** pour charger les publications petit à petit, pour ne pas charger tout à chaque fois (imaginez qu'il y ait 1 million de publications !). Par manque de temps, nous ne le ferons pas dans nos TDs, mais pensez-y si vous développez un site similaire dans le futur. N'oubliez pas que vous pouvez ajouter des méthodes à vos classes de repository et utiliser le [DQL](https://www.doctrine-project.org/projects/doctrine-orm/en/2.16/reference/dql-doctrine-query-language.html) pour faire des requêtes plus complexes.
+Aussi, dans un site concret, on mettrait en place un système de **pagination** pour charger les publications petit à petit, pour ne pas charger tout à chaque fois (imaginez qu'il y ait 1 million de publications !). Par manque de temps, nous ne le ferons pas dans nos TDs, mais pensez-y si vous développez un site similaire dans le futur. N'oubliez pas que vous pouvez ajouter des méthodes à vos classes de repository et utiliser le [DQL](https://www.doctrine-project.org/projects/doctrine-orm/en/3.2/reference/dql-doctrine-query-language.html) pour faire des requêtes plus complexes.
 
 ### Page d'un utilisateur
 
@@ -963,11 +967,13 @@ public function methodeExemple(string $propriete, ExempleRepository $repository)
 }
 ```
 
-Si cette méthode est bien valide, depuis sa dernière version, Symfony a introduit une méthode encore plus simple : l'attribut `#[MapEntity]`. Cet attribut se place à côté d'un paramètre type "entité" dans une méthode d'un contrôleur et permet de récupérer automatiquement l'entité avec le paramétrage de la route :
+Si cette méthode est bien valide, depuis sa dernière version, Symfony a introduit une méthode encore plus simple : nommer les attributs de la route paramétrée comme les critères de sélection utilisés lors de la requête SQL, puis laisser doctrine faire le reste.
+
+Par exemple, ce bout de code fait exactement la même chose (en arrière-plan) que le précédent :
 
 ```php
  #[Route('/route/{propriete}/test', name: 'route_exemple', methods: ["GET"])]
-public function methodeExemple(#[MapEntity] ?Exemple $exemple): Response
+public function methodeExemple(?Exemple $exemple): Response
 {
     if($exemple == null) {
         //Message d'erreur + redirection
@@ -977,9 +983,49 @@ public function methodeExemple(#[MapEntity] ?Exemple $exemple): Response
 }
 ```
 
-Dans l'exemple ci-dessus, Symfony va automatiquement utiliser le repository "ExempleRepository" et faire un appel à `findOneBy(["propriete" => $propriete])` pour placer une valeur dans `Exemple`. Le `?` (devant le type) permet d'autoriser une valeur nulle pour l'attribut.
+Dans l'exemple ci-dessus, Symfony va automatiquement utiliser le repository "ExempleRepository" (car il détecte qu'on souhaite trouver une entité `Exemple`, d'après les paramètres de la méthode) et faire un appel à `findOneBy(["propriete" => {propriete}])` (où `{propriete}` désigne la valeur de l'attribut `{propriete}` dans l'URL) afin de placer une valeur dans `Exemple`. Le `?` (devant le type) permet d'autoriser une valeur nulle pour l'attribut. 
 
-Dans le cas où on utilise `#[MapEntity]` il faut donc que le paramètre de la route porte **exactement** le même nom de la propriété visée dans l'entité et que cette propriété soit unique (pour nos utilisateurs, on pourrait donc soit utiliser l'id, soit le login, soit l'adresse email...)
+Il faut donc que le paramètre de la route porte **exactement le même nom que la propriété visée dans l'entité** et que la requête ne renvoie qu'une seule entité.
+
+Il est tout à fait possible de combiner plusieurs critères de recherche ! Par exemple, si une entité à une clé primaire composée de deux attributs (ou plus) :
+
+```php
+ #[Route('/route/{critere1}/test/{critere2}', name: 'route_exemple', methods: ["GET"])]
+public function methodeExemple(?Exemple $exemple): Response
+{
+    //Execute (en arrière-plan) : $exemple = findOneBy(["critere1" => {critere1}, "critere2" => {critere2}]);
+    ...
+}
+```
+
+Il est aussi tout à fait possible de chercher automatiquement plus d'une entité à la fois! Dans ce cas, il faut alors préciser dans la route paramétrée à quel type d'entité appartient le paramètre :
+
+```php
+ #[Route('/entreprise/{id:entreprise}/employes/{id:employe}', name: 'route_entreprise_employe', methods: ["GET"])]
+public function employeEntreprise(?Entreprise $entreprise, ?Employe $employe): Response
+{
+    /* 
+    Execute (en arrière-plan) : 
+    - $entreprise = findOneBy(["id" => {id:entreprise}]);
+    - $employe = findOneBy(["id" => {id:employe}]);
+    */
+    ...
+}
+```
+
+Bref, dans la plupart des cas, on cherche une seule entité avec un seul paramètre :
+
+```php
+ #[Route('/livres/{isbn}', name: 'get_livre', methods: ["GET"])]
+public function getLivre(?Livre $livre): Response
+{
+    /* 
+    Execute (en arrière-plan) : 
+    - $livre = findOneBy(["isbn" => {isbn}]);
+    */
+    ...
+}
+```
 
 <div class="exercise">
 
@@ -991,7 +1037,7 @@ Dans le cas où on utilise `#[MapEntity]` il faut donc que le paramètre de la r
 
 2. Créez le template `page_perso.html.twig` dans le dossier `templates/utilisateur`.
 
-    * Le contenu de cette page doit être la liste des publications de l'utilisateur. On veut le même style d'affichage que sur la page principale, vous pourrez reprendre le code de la liste des publications depuis `feed.html.twig` (et l'adapter) pour cette partie.
+    * Le contenu de cette page doit être la liste des publications de l'utilisateur. On veut le même style d'affichage que sur la page principale. Pour le moment, vous pouvez donc reprendre le code de la liste des publications depuis `feed.html.twig` (et l'adapter) pour cette partie. Ce n'est pas très optimisé, car on duplique le code. Nous allons améliorer cet aspect un peu plus tard. On rappelle que, comme on a défini la relation entre publication et utilisateur comme étant bidirectionnelle, on peut accéder à la liste des publications depuis l'utilisateur, qui possède un attribut dédié.
 
     * Importez et complétez le template suivant :
 
@@ -1084,7 +1130,7 @@ L'instruction pour inclure un template est la suivante :
 
 * Le second paramètre est optionnel et permet de passer des paramètres utilisables par le template inclus.
 
-Imaginons par exemple que je définisse le template `livres.html.twig` suivant, permettant de générer le code HTML pour présenter les détails d'un livre :
+Imaginons par exemple que je définisse le template `livres/livres.html.twig` suivant, permettant de générer le code HTML pour présenter les détails d'un livre :
 
 ```twig
 {% raw %}
@@ -1100,11 +1146,11 @@ Je peux inclure ce template dans un autre template à tout moment, en passant le
 {% raw %}
 <h1>Best-sellers de {{ top.annee }} :<h1>
 <p>Top 1 :</p>
-{{ include('livres.html.twig', {'livre' : top.livre1}) }}
+{{ include('livres/livres.html.twig', {'livre' : top.livre1}) }}
 <p>Top 2 :</p>
-{{ include('livres.html.twig', {'livre' : top.livre2}) }}
+{{ include('livres/livres.html.twig', {'livre' : top.livre2}) }}
 <p>Top 3 :</p>
-{{ include('livres.html.twig', {'livre' : top.livre3}) }}
+{{ include('livres/livres.html.twig', {'livre' : top.livre3}) }}
 {% endraw %}
 ```
 
@@ -1112,11 +1158,13 @@ Bien sûr, la modélisation pour ce problème n'est pas la meilleure, et même d
 
 Tout cela va trouver son intérêt si le template est réutilisé dans plusieurs pages différentes. Par exemple, je pourrais réutiliser dans la page illustrant les détails d'un livre. Ou alors, si j'utilise un formulaire à plusieurs endroits de mon site, je peux le placer dans un template et l'inclure là où il y a besoin.
 
-Il est intéressant de noter que le template inclus a accès à toutes les variables déjà accessibles (ou définies) par le template qui l'appelle.
+Il est intéressant de noter que le template inclus ait accès à toutes les variables déjà accessibles (ou définies) par le template qui l'appelle. 
+
+Il est d'ailleurs tout à fait possible que ce template "étende" un autre template, comme nous l'avons fait pour la plupart des templates que nous avons créé jusqu'à présent. Finalement, on peut voir l'extension de templates comme de l'héritage (et la redéfinission de blocks comme de la réécriture de méthodes) et l'utilisation d'un template à l'intérieur d'un autre template comme un appel de fonction, par exemple.
 
 <div class="exercise">
 
-1. Créez un template `publication.html.twig` dans `templates/publications` contenant le code affichant une publication.
+1. Créez un template `publication.html.twig` dans `templates/publications` contenant le code affichant une publication (vous pouvez rependre la code concerné depuis `feed.html.twig`, par exemple).
 
 2. Dans `feed.html.twig` et `page_perso.html.twig` remplacez le code contenu dans votre boucle affichant chaque publication en incluant votre nouveau template à la place. Il faudra passer chaque publication traitée en paramètre.
 
@@ -1141,7 +1189,7 @@ Il faut donc penser à vider le cache quand on fait un changement dans le mode `
 ```bash
 php bin/console cache:clear
 ```
-Ce n'est pas très contraignant, car le développeur ne travaille pas (ou peu) dans le mode `prod`. Ce mode est utilisé là où le site est hébergé publiquement, qui va plutôt subir de "grosses" mises à jour ponctuelles plutôt que plein de petites mises à jour de code toutes les minutes, comme une application en développement. Après une grosse mise à jour du site, il suffit alors de vider le cache une fois.
+Ce n'est pas très contraignant, car le développeur ne travaille pas (ou peu) dans le mode `prod`. Ce mode est utilisé là où le site est hébergé publiquement. Celui-ci va plutôt subir de "grosses" mises à jour ponctuelles plutôt que plein de petites mises à jour de code toutes les minutes, comme une application en développement. Après une grosse mise à jour du site, il suffit alors de vider le cache une fois.
 
 Pour changer d'environnement, il suffit d'éditer la variable `APP_ENV` dans le fichier `.env` (ou `.env.local`) à la racine du projet.
 
@@ -1161,9 +1209,9 @@ Ces templates seront chargé automatiquement (en mode `prod`) si une erreur surv
 
 2. Créez l'ensemble de répertoire nécessaire pour accueillir les templates de pages d'erreurs customisés.
 
-3. On va gérer trois cas : l'erreur `403` (accès refusé), l'erreur `404` (page non trouvée) et les autres erreurs (avec le template général). Créez les trois templates nécessaires. On veut que chaque templates héritent de la structure de base de notre site (avec le menu de navigation, etc...) et aient toutes pour titre "Erreur".
+3. On va gérer trois cas : l'erreur `403` (accès refusé), l'erreur `404` (page non trouvée) et les autres erreurs (avec le template général). Créez les trois templates nécessaires. On veut que chaque templates **héritent** de la structure de base de notre site (avec le menu de navigation, etc...) et aient toutes pour titre "Erreur". Donc, elles doivent étendre `base.html.twig`.
 
-    Le contenu principal de chaque page d'erreur sera assez similaire, on changera juste le titre de section et le message affiché :
+    Le contenu principal (`page_content`) de chaque page d'erreur sera assez similaire, on changera juste le titre de section et le message affiché :
 
     ```html
     <main>
@@ -1176,7 +1224,7 @@ Ces templates seront chargé automatiquement (en mode `prod`) si une erreur surv
 
     * Pour l'erreur `403`, le titre de section est "Accès refusé" et le message "Vous ne pouvez pas accéder à cette page !".
 
-    * Pour l'erreur `404`, le titre de section est "Page non trouvée !" et le message "La page demandée est introuvable !".
+    * Pour l'erreur `404`, le titre de section est "Page introuvable !" et le message "La page demandée est introuvable !".
 
     * Enfin, pour toutes les autres erreurs, le titre de section est "Erreur !" et le message "Une erreur est survenue ! Veuillez réessayer plus tard.".
 
@@ -1188,7 +1236,7 @@ Ces templates seront chargé automatiquement (en mode `prod`) si une erreur surv
 
     * Accédez à une route qui n'existe pas.
 
-    * Ajoutez une erreur de syntaxe (temporaire) dans la route `feed` ce qui devrait générer une erreur 500. Videz le cache après avoir placé (cela fera une erreur, c'est normal) puis nettoyé l'erreur de syntaxe.
+    * Ajoutez une erreur de syntaxe (temporaire) dans le code lié à la route `feed` ce qui devrait générer une erreur 500. Videz le cache après avoir placé (cela fera une erreur, c'est normal) puis nettoyé l'erreur de syntaxe.
 
     * Pour le refus d'accès, c'est un peu plus complexe, car nous n'avons pas vraiment de route protégée pour le moment. Vous pouvez essayer d'ajouter temporairement un attribut `IsGranted` sur une route, en spécifiant un rôle qui n'existe pas (par exemple, `ROLE_TEST`). Videz le cache puis tentez d'accéder à cette route. La page d'erreur devrait s'afficher. N'oubliez pas de supprimer le `IsGranted` temporaire.
 
