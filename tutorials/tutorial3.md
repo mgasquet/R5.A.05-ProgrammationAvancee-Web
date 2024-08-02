@@ -11,7 +11,7 @@ Dans ce nouveau TD, nous allons améliorer le site en rajoutant diverses fonctio
 
 Voici les nouveaux objectifs pour "The Feed" :
 
-* Ajout de fonctionnalités asynchrones avec JavaScript (pour supprimer des publications)
+* Ajout de fonctionnalités asynchrones avec JavaScript (pour supprimer des publications).
 
 * Ajout d'un système de membres "premium", vendu par le site via l'API Stripe.
 
@@ -39,15 +39,17 @@ Pour rappel, l'ajout de JavaScript à une page se passe de la même manière que
 <script defer type="text/javascript" src="chemin/fichier.js"></script>
 ```
 
+On rappelle que, dans le cadre du framework, on ne doit toujours pas utiliser directement le **chemin** du fichier, mais plutôt la fonction `asset` pour générer le bon chemin depuis un template twig.
+
 L'attribut `defer` permet de charger le fichier après que la page ait été chargée (par exemple, si le JavaScript doit aller récupérer des éléments HTML particuliers...)
 
 Nous allons commencer par importer un fichier JavaScript simple sur la page principale et la page personnelle des utilisateurs. Pour l'instant, ce fichier permettra simplement de supprimer "visuellement" une publication de la page (mais pas encore réellement, elle sera toujours là au rechargement).
 
 <div class="exercise">
 
-1. Dans le dossier `public` (où sont rangés vos assets) créez un dossier `js` et importe [le fichier suivant]({{site.baseurl}}/assets/TD3/publications.js) (clic-droit puis "Enregistrer la cible du lien...").
+1. Dans le dossier `public` (où sont rangés vos assets) créez un dossier `js` et importez [le fichier suivant]({{site.baseurl}}/assets/TD3/publications.js) (clic-droit puis "Enregistrer la cible du lien...").
 
-2. Faites en sorte de charger ce fichier JavaScript, uniquement dans les templates `feed.html.twig` et `page_perso.html.twig`. Nous allons ajouter de nouvelles pages dans le futur, et il ne faut pas que ce fichier soit chargé dans ces autres pages. Indice : il vous faudra sans doute modifier `base.html.twig` !
+2. Faites en sorte de charger ce fichier JavaScript, **uniquement dans les templates** `feed.html.twig` **et** `page_perso.html.twig`. Nous allons ajouter de nouvelles pages dans le futur, et il ne faut pas que ce fichier soit chargé dans ces autres pages. Indice : il vous faudra sans doute modifier `base.html.twig` en ajoutant un nouveau `block` redéfinissable !
 
 3. Modifiez le template `publication.html.twig` afin de rajouter le bout de code HTML suivant, juste après l'élément `<p>...</p>` contenant le message de la publication : 
 
@@ -55,13 +57,13 @@ Nous allons commencer par importer un fichier JavaScript simple sur la page prin
     <button class="delete-feedy">Supprimer</button>
     ```
 
-    Ce bouton ne doit apparaître que si l'utilisateur connecté est l'auteur de la publication ! Pour rappel, vous avez accès à la variable `app.user` dans vos templates `twig`... Attention, il faut d'abord aussi vérifier que l'utilisateur est bien connecté !
+    Ce bouton ne doit apparaître que si l'utilisateur connecté est l'auteur de la publication ! Pour rappel, vous avez accès à la variable `app.user` dans vos templates `twig`... Attention, avant d'y accéder il faut d'abord bien vérifier que l'utilisateur est bien connecté !
 
 4. Allez sur la page principale de votre site et vérifiez que :
 
     * Le bouton "Supprimer" apparait seulement sur les publications dont vous êtes l'auteur.
 
-    * Le bouton fonctionne, c'est-à-dire que la publication est retirée de la page dynamiquement.
+    * Le bouton fonctionne, c'est-à-dire que la publication est retirée de la page visuellement.
 
     Vérifiez également que tout fonctionne de même sur votre page personnelle.
 
@@ -182,10 +184,10 @@ Côté JavaScript, on utilise l'attribut `dataset` puis le nom `xxx` donné apr�
 ```javascript
 //On considère que la fonction "exemple" est attaché au bouton...
 function exemple(event) {
-    let button = event.target;
+    const button = event.target;
 
     //Contient "test"
-    let exemple = button.dataset.exempleMachin;
+    const exemple = button.dataset.exempleMachin;
 }
 ```
 
@@ -193,7 +195,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 <div class="exercise">
 
-1. Dans `PublicationController`, créez une route `deletePublication` possédant une route paramétrée `/feedy/{id}` et accessible via la méthode `DELETE`. Concrètement, il n'y a aucune donnée à lire (pas de payload, c-à-d de corps de requête) mais vous devez :
+1. Dans `PublicationController`, créez une route `deletePublication` possédant une route paramétrée `/feedy/{id}`, accessible via la méthode `DELETE` et **exposée**. Concrètement, il n'y a aucune donnée à lire (pas de payload, c-à-d de corps de requête) mais vous devez :
 
     * Récupérer la publication visée par l'identifiant donné dans la route.
 
@@ -207,7 +209,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
         * `403` si l'utilisateur n'est pas auteur de la publication (opération interdite).
         * `204` si tout se passe bien (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée)
 
-    Souvenez-vous : lors du TD2, nous avions vu l'attribut `MapEntity` qui pourrait vous être très utile ici !
+    Souvenez-vous : lors du TD2, nous avions vu une méthode très simple pour récupérer une entité préciser à partir d'une route paramétrée, sans utiliser explicitement son repository !
 
 2. En utilisant l'attribut `IsGranted`, faites en sorte que cette route soit accessible seulement aux utilisateurs connectés (possédant le rôle `ROLE_USER`). Allez consulter le TD2 si vous ne savez plus comment faire.
 
@@ -215,24 +217,50 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 4. Modifiez le template `publication.html.twig` afin d'inclure un attribut `data-publication-id` contenant l'identifiant de la publication dans les attributs du bouton de suppression.
 
-5. Dans le fichier `publications.js`, modifiez la fonction `supprimerFeedy` afin d'ajouter une requête asynchrone vers la route `deletePublication`. Vous pouvez notamment utiliser l'objet `XMLHttpRequest` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels :
+5. Dans le fichier `publications.js`, modifiez la fonction `supprimerFeedy` afin d'ajouter une requête asynchrone vers la route `deletePublication`. Vous pouvez notamment utiliser la fonction `fetch` et l'instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels (et nouvelles précisions) :
 
     ```javascript
-    //Création de l'objet
-    let xhr = new XMLHttpRequest();
+    //Comme on utilise le mot clé "await" dans le corps de la fonction, on doit rendre la fonction asynchrone.
+    //Pour cela, on utilise le mot clé "async"
+    async function maFonction() {
 
-    //La méthode utilisée (GET, POST, PUT, PATCH ou DELETE), l'URL et si la requête est asynchrone ou non.
-    xhr.open(method, URL, true);
-    xhr.onload = function () {
-        //Fonction déclenchée quand on reçoit la réponse du serveur.
-        //xhr.status permet d'accèder au code de réponse HTTP (200, 204, 403, 404, etc...)
-    };
-    //On exécute la requête
-    //On précise null s'il n'y a pas de données supplémentaires (payload) à envoyer.
-    xhr.send(...);
+        //Les "headers" de la requête : on indique le type de données qu'on envoie
+        const headers = new Headers();
+        headers.append("Content-Type", "application/json");
+
+        //Le payload contient les données (sous la forme d'un objet clé-valeur) qu'on souhaite envoyer avec la requête
+        const payload = {donnee1 : ..., donee2: ..., ...};
+
+        //On utilise le mot clé "await" pour "attendre" que la requête soit complètement éxécutée avant d'éxécuter les prochaines instructions.
+        //Par conséquent, la fonction "maFonction" doit être asynchrone pour ne pas bloquer la page.
+        //On précise l'URL de la requête.
+        const response = await fetch(URL, {
+            //La méthode utilisée (GET, POST, PUT, PATCH ou DELETE)
+            method: "...",
+            //On transforme le "payload" en chaîne de caractères.
+            body: JSON.stringify(payload),
+            headers: headers,
+        });
+
+        //Ici, on a la garantie que la requête a fini de s'éxécuter (on a un code de réponse, et éventuellement un résultat)
+        if(response.status === ...) {
+            //response.status permet d'accèder au code de réponse HTTP (200, 204, 403, 404, etc...)
+        }
+
+
+    }
+    ```
+    Comme la requête que nous souhaitons exécuter (suppression simple) n'a pas besoin de `payload`, on peut se passer de `headers` et de `body` :
+
+    ```javascript
+    async function maFonction() {
+        const response = await fetch(URL, {method: "..."});
+        if(response.status === ...) {/*...*/}
+    }
     ```
 
     Au chargement de la réponse, il faudra déclencher la suppression (visuelle) de la publication sur la page (vous avez déjà le code pour cela dans le fichier) **si et seulement si le serveur a bien supprimé la publication**.
+
 
 6. Testez que la suppression des publications fonctionne bien (ils ne réapparaissent pas après avoir rechargé la page). Si rien ne se passe, jetez un œil à la console (`F12`) pour lire les éventuels messages d'erreurs.
 </div>
@@ -265,7 +293,7 @@ Ne pas avoir de rôle ne signifie pas que nous ne pourrons pas utiliser l'attrib
 
 <div class="exercise">
 
-1. Utilisez la commande `make:entity`, afin de rajouter un attribut de type booléen nommé `premium` à la classe `Utilisateur`. Avant de mettre à jour la base de données, il faut penser à faire deux choses :
+1. Utilisez la commande `make:entity`, afin de rajouter un attribut de type `boolean` nommé `premium` à la classe `Utilisateur` qui ne doit pas pouvoir être **null** dans la base de données. Avant de mettre à jour la base de données, il faut penser à faire deux choses :
 
     * Donner la valeur `false` (au lieu de **null**) à votre propriété. Cela constitue sa valeur par défaut. Comme pour la date de publication, cette donnée doit être générée automatiquement par l'application quand un utilisateur s'inscrit. Pour la date, nous avions dû utiliser une méthode spéciale, car nous avions besoin d'utiliser un objet `DateTime`. Ici, comme c'est un booléen simple, on peut le faire directement lors de la définition de la propriété dans la classe.
 
@@ -275,11 +303,11 @@ Ne pas avoir de rôle ne signifie pas que nous ne pourrons pas utiliser l'attrib
 
 2. Modifiez le template `publication.html.twig` pour faire en sorte d'ajouter la classe `premium-login` (qui affiche le pseudonyme en doré) à l'élément `<span></span>` contenant le pseudonyme de l'auteur **si celui-ci est un membre premium**.
 
-3. Dans votre base de données, modifiez un utilisateur pour lui donner le statut premium. Observez que son pseudonyme est bien affiché différemment sur ses publications.
+3. Dans votre base de données, modifiez un utilisateur pour lui donner le statut premium (dans la base de données, 0 == `false`, 1 == `true`). Observez que son pseudonyme est bien affiché différemment sur ses publications.
 
 </div>
 
-### Longueur des publications dépendante du rôle
+### Longueur des publications dépendante du premium
 
 Nous souhaitons maintenant pouvoir fixer une limite plus grande pour le nombre de caractères autorisés sur une publication, selon si l'utilisateur est premium ou non. Pour cela, nous allons utiliser des **groupes de validation**.
 
@@ -353,7 +381,8 @@ class MessageType extends AbstractType
 {
 
     public function __construct(
-        private DateServiceInterface $dateService   // Service fictif
+        // Service fictif
+        private DateServiceInterface $dateService
     ) {}
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
@@ -365,7 +394,7 @@ class MessageType extends AbstractType
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $group = $dateService->isWeekend() ? 'message:weekend' : 'message:normal';
+        $group = $this->dateService->isWeekend() ? 'message:weekend' : 'message:normal';
         $resolver->setDefaults([
             'data_class' => Message::class,
             'validation_groups' => ['Default', $group]
@@ -391,7 +420,7 @@ $form = $this->createForm(MonType::class, $entity, [
 
 1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `publication:write:normal`.
 
-2. Modifiez la classe `PublicationType` pour activer le bon groupe selon la situation de l'utilisateur (premium ou non). Vous aurez besoin du service `Security`. Ce service vous permet de récupérer l'utilisateur courant. Attention, il faudra vérifier s'il n'est pas `null`, car le formulaire peut être généré (mais pas forcément montré) via la route `feed`, même pour un utilisateur déconnecté :
+2. Modifiez la classe `PublicationType` pour activer le bon groupe selon la situation de l'utilisateur (premium ou non). Vous aurez besoin du service `Security`. Ce service vous permet de récupérer l'utilisateur courant. Attention, il faudra vérifier s'il n'est pas `null`, car le formulaire peut être généré (mais pas forcément montré) via la route `feed`, même pour un utilisateur déconnecté (si l'utilisateur n'est pas connecté ou non premium, on utilisera le groupe `publication:wdrite:normal`) :
 
     ```php
     use Symfony\Bundle\SecurityBundle\Security;
@@ -419,46 +448,54 @@ Vous savez déjà comment définir un paramètre :
 parameters:
     serviceParameter: valeur
 ```
-Pour pouvoir l'utiliser avec twig, il suffit de l'ajouter dans la section `globals` du fichier `config/packages.twig.yaml` :
-```yaml
-#config/packages/twig.yaml
-twig:
-    ...
-    globals:
-        ...
-        twigParameter: '%serviceParameter%'
-```
+Pour pouvoir l'utiliser dans un template twig, il faudra l'injecter dans le template, depuis l'action utilisant le template dans contrôleur.
+Pour cela, il existe deux solutions :
 
-Attention à bien entourer le nom du paramètre avec `%` (dans la config twig). Cela signifie qu'on fait référence à un paramètre définir dans `services.yaml`.
+* Utiliser l'attribut `#[Autowire(...)]` que nous avons déjà utilisé lors du précédent TP (mais cette fois, dans un contrôleur au lieu d'un service) :
 
-Le paramètre devient alors accessible comme une variable normale :
+    ```php
+    #[Route('/maRoute', name: 'routeName', methods: ['GET'])]
+    public function routeExemple(#[Autowire('%nom_parametre%')] $parametre): Response
+    {
+        return $this->render('chemin/vue.html.twig', [
+            'parametre' => $parametre,
+        ]);
+    }
+    ```
 
-```twig
-{% raw %}
-{{ twigParameter }}
-{% endraw %}
-```
+* Ou bien en utilisant la fonction `getParameter` dans le corps de la fonction :
+
+    ```php
+    #[Route('/maRoute', name: 'routeName', methods: ['GET'])]
+    public function routeExemple(): Response
+    {
+        $parametre = $this->getParameter('nom_parametre');
+        return $this->render('chemin/vue.html.twig', [
+            'parametre' => $parametre,
+        ]);
+    }
+    ```
 
 <div class="exercise">
 
-1. Créez un paramètre `premium_price` qui aura la valeur `100` (100 euros). Faites en sorte de pouvoir utiliser ce paramètre dans vos templates.
+1. Créez un paramètre `premium_price` qui aura la valeur `100` (100 euros).
 
-2. Dans `templates`, créez un dossier `premium` et à l'intérieur, un template `premium-infos.html.twig` qui devra reprendre la structure habituelle de notre site. La page aura pour titre `Premium` et aura pour contenu principal la structure suivante :
+2. Créez un contrôleur `PremiumController` contenant le code d'une route `premiumInfos` qui possède pour chemin `/premium` et est seulement accessible avec la méthode `GET`. Cette route doit simplement générer et renvoyer une réponse en utilisant le template `premium/premium-infos.html.twig` (que nous allons créer juste après) en lui injectant le paramètre `premium_price`.
+
+3. Dans `templates`, créez un dossier `premium` et à l'intérieur, un template `premium-infos.html.twig` qui devra reprendre la structure habituelle de notre site (donc qui étend un certain template...). La page aura pour titre `Premium` et aura pour contenu principal la structure suivante :
 
     ```html
     <main>
         <div id="premium-infos" class="center">
             <h3>Devenez membre premium et accèdez aux avantages suivants :</h3>
             <p>Messages jusqu'à 200 caractères.</p>
-            <p>Un superbe pseudonyme doré!</p>
-            <a href=""><button id="btn-buy-premium">ACHETER MAINTENANT (prix)€</button></a>
+            <p>Un superbe pseudonyme doré !</p>
+            <a href=""><button id="btn-buy-premium">ACHETER MAINTENANT (prix €)</button></a>
         </div>
     </main>
     ```
 
-    Dans le contenu du bouton, remplacez le **prix** par le prix (actuel) du premium en utilisant le paramètre injecté dans twig.
-
-3. Créez un contrôleur `PremiumController` contenant le code d'une route `premiumInfos` qui possède pour chemin `/premium` et est seulement accessible avec la méthode `GET`. Cette route doit simplement générer et renvoyer une réponse contenant la page générée par le template défini juste avant.
+    Dans le contenu du bouton, remplacez le **prix** par le prix (actuel) du premium en utilisant le paramètre injecté dans le template.
 
 4. Dans votre template `base.html.twig`, ajoutez un lien vers la page d'infos sur le statut premium visible uniquement par les utilisateurs connectés, mais qui ne sont pas premium.
 
@@ -496,7 +533,14 @@ Dans l'exemple ci-dessus, l'âge est stocké dans l'entité représentant nos ut
 
 1. Faites en sorte que votre route `premiumInfos` soit accessible aux utilisateurs possédant le rôle `ROLE_USER`, mais pas ceux qui sont déjà premium.
 
-2. Connectez-vous à un compte premium et vérifiez que la page n'est plus accessible. Connectez-vous à un compte non-premium et vérifiez que la page est accessible.
+    Classes à importer :
+
+    ```php
+    use Symfony\Component\ExpressionLanguage\Expression;
+    use Symfony\Component\Security\Http\Attribute\IsGranted;
+    ```
+
+2. Connectez-vous à un compte premium et vérifiez que la page n'est plus accessible. Connectez-vous à un compte non-premium et vérifiez que la page est accessible (cela génère un message d'erreur détaillé en mode développement, mais en mode production, la page d'erreur que vous avez configuré lors du dernier TD sera affichée à la place).
 
 </div>
 
@@ -588,7 +632,7 @@ $paymentData = [
     'customer_email' => '...',
     'success_url' => '...',
     'cancel_url' => '...',
-    "metadata" => ["data" => '...', '...'],
+    "metadata" => ["cle" => 'valeur', '...' => '...'],
     "line_items" => [
         [
             "price_data" => [
@@ -630,19 +674,18 @@ La partie `paymentData` est un tableau contenant toutes les informations sur la 
 
 On initialise ensuite le service `Stripe` avec la clé privée (celle récupérée dans l'exercice précédent) puis on génère l'URL vers laquelle rediriger l'utilisateur.
 
-Nous allons construire un service dédié à la gestion des paiements. On aura une première méthode permettant de générer un lien de paiement pour un utilisateur donné. En plus des classes de Stripe (que vous devez simplement importer), vous aurez besoin du service `RouterInterface` permettant de générer des URLs (relatives ou absolues) à partir d'un nom de route. Son fonctionnement est similaire à la fonction `path` que nous utilisons dans nos templates `Twig` :
+Nous allons construire un service dédié à la gestion des paiements. On aura une première méthode permettant de générer un lien de paiement pour un utilisateur donné. En plus des classes de Stripe (que vous devez simplement importer), vous aurez besoin du service `UrlGeneratorInterface` permettant de générer des URLs (relatives ou absolues) à partir d'un nom de route. Son fonctionnement est similaire à la fonction `path` que nous utilisons dans nos templates `Twig` :
 
 ```php
-use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 //Pour générer une URL absolue
-$url = $router->generate(nomRoute, ["param" => ..., ], UrlGeneratorInterface::ABSOLUTE_URL)
+$url = $generator->generate(nomRoute, ["param" => ..., ], UrlGeneratorInterface::ABSOLUTE_URL)
 ```
 
 Bien sûr, si la route n'est pas paramétrable, il suffit de préciser un tableau vide comme second argument. Le dernier paramètre `UrlGeneratorInterface::ABSOLUTE_URL` permet de générer une URL absolue. Vous en aurez besoin pour générer les liens pour les paramètres `success_url` et `cancel_url`.
 
-Concernant notre clé secrète, il s'agit d'une donnée sensible à placer dans notre fichier `.env` ou `.env.local` (si on ne veut pas que la clé soit prise en compte par git). Dans un contexte réel, on pourrait aussi avoir un fichier `.env.dev` et placer la clé de test là-dedans et notre clé réelle dans `.env`. Faites **très attention** à ce que vous envoyez sur github/gitlab si votre repository est public. Pour rappel `.env` est versionné, mais pas `.env.local`. Dans le cas où vous manipuliez une véritable clé d'API, si elle se trouve dans `.env` et que votre repository est public, tout le monde pourra la récupérer (comme vous identifiants BDD, etc...).
+Concernant notre clé secrète, il s'agit d'une donnée sensible à placer dans notre fichier `.env` ou `.env.local` (si on ne veut pas que la clé soit prise en compte par git). Dans un contexte réel, on pourrait aussi avoir un fichier `.env.dev` et placer la clé de test là-dedans et notre clé réelle dans `.env`. Faites **très attention** à ce que vous envoyez sur github/gitlab si votre repository est public. Pour rappel `.env` est versionné, mais pas `.env.local`. Dans le cas où vous manipuliez une véritable clé d'API, si elle se trouve dans `.env` et que votre repository est public, tout les personnes ayant accès au repository pourront la récupérer (comme vous identifiants BDD, etc...).
 
 
 Bref, la clé pourra se déclarer comme n'importe quelle variable de ce fichier, par exemple :
@@ -651,20 +694,21 @@ Bref, la clé pourra se déclarer comme n'importe quelle variable de ce fichier,
 MA_VAR=test
 ```
 
-Ensuite, pour pouvoir l'utiliser comme paramètre dans notre application, il faut l'enregistrer dans `config/services.yaml` :
+À partir de là, comme nous l'avions fait pour le service `UtilisateurManager`, le paramètre peut facilement être injecté via le constructeur d'un service avec l'attribut `#[Autowire]` en précisant toutefois le paramètre `env` : `#[Autowire(env : '...')]`.
 
-```yaml
-#config/services.yaml
-parameters:
-    ...
-    ma_var: '%env(string:MA_VAR)%'
+Par exemple :
+
+```php
+class MonService {
+
+    public __construct(#[Autowire(env: 'MA_VAR')] private $maVar) {}
+
+}
 ```
-
-On doit utiliser la fonction `%env(...)%` et préciser le type du paramètre (par exemple `int` si c'est un nombre, `bool` pour un booléen et dans notre exemple ci-dessus, `string`). À partir de là, comme nous l'avions fait pour le service `UtilisateurManager`, le paramètre peut facilement être injecté (via un attribut, dans le constructeur).
 
 <div class="exercise">
 
-1. Dans le fichier `.env` (ou `.env.local`), créez une variable contenant la clé secrète de test puis enregistrez cette variable comme paramètre dans `config/services.yaml`.
+1. Dans le fichier `.env` (ou `.env.local`), créez une variable contenant la clé secrète de test.
 
 2. Créez un service `PaymentHandler` contenant la méthode suivante :
 
@@ -683,7 +727,7 @@ On doit utiliser la fonction `%env(...)%` et préciser le type du paramètre (pa
 
     Pensez à bien injecter tous les services/paramètres dont vous avez besoin.
 
-3. Définissez une interface `PaymentHandlerInterface` pour votre service et faites le nécessaire dans `services.yaml` pour utiliser notre service avec l'interface.
+3. Définissez une interface `PaymentHandlerInterface` pour votre service.
 
 4. Dans `PremiumController`, ajoutez une route `premiumCheckout` ayant pour chemin `/premium/checkout` et accessible en `GET` qui devra simplement **générer le lien de paiement** en utilisant notre nouveau service et rediriger l'utilisateur vers ce lien. La route ne devra être accessible qu'aux membres connectés qui ne sont pas encore membres premium (comme pour la route `premiumInfos`).
 
@@ -702,7 +746,7 @@ On doit utiliser la fonction `%env(...)%` et préciser le type du paramètre (pa
 
 5. Modifiez le template `premium-infos.html.twig` en modifiant l'élément `<a></a>` attaché au bouton afin de placer un lien vers notre nouvelle route.
 
-6. Rendez-vous sur la page d'informations du statut premium et cliquez sur le bouton. Vous devriez alors être redirigé sur Stripe. Vérifiez que le récapitulatif présenté est correct (email, prix, quantité, nom...). Vérifiez également que le bouton d'annulation vous renvoie bien sur la bonne page.
+6. Rendez-vous sur la page d'informations du statut premium et cliquez sur le bouton. Vous devriez alors être redirigé sur Stripe. Vérifiez que le récapitulatif présenté est correct (email, prix, quantité, nom...). Vérifiez également que le bouton d'annulation vous renvoie bien sur la bonne page (informations du premium).
 
 </div>
 
@@ -730,7 +774,7 @@ Dans un premier temps, nous allons voir comment installer et configurer cet outi
 
     Il s'agit de la syntaxe Linux. Sur Windows, il faut bien sur rajouter `.exe`.
 
-4. À l'étape d'après, collez votre clé secrète de test (clic-droit dans le terminal). Par sécurité, la clé n'est pas affichée (comme quand vous tapez un mot de passe dans un terminal, sous Linux), validez simplement après avoir collé la clé. On vous demande ensuite un nom pour votre machine. Un nom est proposé par défaut, vous pouvez valider ou le changer.
+4. À l'étape d'après, collez votre clé secrète de test (clic-droit pour coller dans le terminal). Par sécurité, la clé n'est pas affichée (comme quand vous tapez un mot de passe dans un terminal, sous Linux), validez simplement après avoir collé la clé. On vous demande ensuite un nom pour votre machine. Un nom est proposé par défaut, vous pouvez valider ou le changer.
 
 5. Exécutez la commande suivante :
 
@@ -813,15 +857,14 @@ $metadata = $session["metadata"];
 if(!isset($metadata["dataExemple"])) {
     throw new \Exception("dataExemple manquant...");
 }
-$dataExemple = $metadata["dataExemple"];
 
 //L'objet "paymentIntent" permet de capturer (confirmer) ou d'annuler le paiement.
 $paymentIntent = $session["payment_intent"];
 //Pour réaliser ces opérations, on a besoin d'un objet StripeClient initialisé avec notre clé secrète d'API.
 $stripe = new StripeClient(cleSecreteApi);
 
-//Pour annuler le paiement
-$stripe->paymentIntents->cancel($paymentIntent);
+//On récupère de données
+$dataExemple = $metadata["dataExemple"];
 
 //Pour "capturer" et valider le paiement
 $paymentCapture = $stripe->paymentIntents->capture($paymentIntent, []);
@@ -844,6 +887,11 @@ Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'
 1. Dans votre service `PaymentHandler`, ajoutez et complétez la méthode suivante :
 
     ```php
+    use Exception;
+
+    /**
+    * @throws Exception
+    */
     public function handlePaymentPremium(Session $session) : void {
         
     }
@@ -859,36 +907,30 @@ Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'
     
     * Sauvegarder ces modifications en base de données.
 
-    N'oubliez pas d'ajouter les injections de dépendances nécessaires dans votre service et pensez également à mettre à jour son interface.
+    N'oubliez pas d'ajouter les injections de dépendances nécessaires dans votre service. Vous aurez notamment besoin de quoi aller récupérer des utilisateurs dans la base de données, de quoi les sauvegarder, la clé d'api, le prix du premium, de quoi générer des URL... Et pensez également à mettre à jour son **interface** avec la signature de la méthode `handlePaymentPremium`.
 
-3. **Si vous utilisez le compte commun** et pas votre propre compte Stripe, nous avons un "léger" soucis à régler. En effet, comme expliqué plus tôt, vous allez recevoir les événements déclenchés par tous les autres étudiants utilisant le compte commun. Il faut donc trouver un moyen d'identifier vos requêtes de manière unique et d'ignorer celles des autres. Nous vous proposons donc les ajouts suivants :
+2. **Si vous utilisez le compte commun** et pas votre propre compte Stripe, nous avons un "léger" soucis à régler. En effet, comme expliqué plus tôt, vous allez recevoir les événements déclenchés par tous les autres étudiants utilisant le compte commun. Il faut donc trouver un moyen d'identifier vos requêtes de manière unique et d'ignorer celles des autres. Nous vous proposons donc les ajouts suivants :
 
-    * Dans la méthode `getPremiumCheckoutUrlFor`, ajoutez dans le tableau `metadata` un attribut `student_token` avec un pseudonyme que vous choisissez (assurez-vous de ne pas avoir le même qu'un autre étudiant...)
+    * Dans la méthode `getPremiumCheckoutUrlFor`, ajoutez dans le tableau `metadata` un attribut `studentToken` avec un pseudonyme ou un code que vous choisissez (assurez-vous de ne pas avoir le même qu'un autre étudiant...)
 
     * Dans la méthode `handlePaymentPremium`, vérifiez que cet attribut est bien là et possède la valeur que vous aviez configurée. Sinon, on lève une exception :
 
     ```php
     $metadata = $session["metadata"];
-    if(!isset($metadata["student_token"]) || $metadata["student_token"] !== "votre_pseudonyme") {
+    if(!isset($metadata["studentToken"]) || $metadata["studentToken"] !== "votre_code_perso") {
         throw new \Exception("Requête d'un autre étudiant...");
     }
     ```
 
     Ce bricolage permet de rejeter les requêtes qui ne vous sont pas destinées. Bien sûr, dans un cas réel, il n'y a pas de tel système à mettre en place, vous aurez votre propre compte et ne capterez pas d'événement indésirable. Il s'agit juste d'une astuce pour que le TD se passe bien si vous utilisez le compte partagé !
 
-4. Enregistrez la signature secrète que vous aviez récupéré dans le terminal comme une **variable** de l'application définie dans `.env` ou `.env.local`. Enregistrez ensuite cette variable comme paramètre dans `services.yaml` (comme vous l'aviez fait pour la clé secrète de l'API).
+3. Enregistrez la signature secrète que vous aviez récupéré dans le terminal (lors de l'exécution du client Stripe) comme une **variable** de l'application définie dans `.env` ou `.env.local`.
 
-5. Créez un nouveau contrôleur `WebhookController`. À l'intérieur, ajoutez une nouvelle route nommée `stripeWebhook` ayant pour chemin `/webhook/stripe` accessible en `POST` (Stripe envoie sa requête en `POST`). Dans le code de cette route, vous devrez vérifier la signature de la requête, puis extraire les données (l'objet "session") et enfin appeler la méthode `handlePaymentPremium` de notre service. Vous pourrez reprendre la structure du code présenté plus tôt.
+4. Créez un nouveau contrôleur `WebhookController`. À l'intérieur, ajoutez une nouvelle route nommée `stripeWebhook` ayant pour chemin `/webhook/stripe` accessible en `POST` (Stripe envoie sa requête en `POST`). Dans le code de cette route, vous devrez vérifier la signature de la requête, puis extraire les données (l'objet "session") et enfin appeler la méthode `handlePaymentPremium` de notre service. Vous pourrez reprendre la structure du code présenté plus tôt.
 
     Niveau injection de dépendance, vous devrez bien sûr injecter notre service `PaymentHandlerInterface`, mais nous devons aussi accéder à la signature secrète que nous avons défini à l'étape précédente. Pour cela, deux possibilités :
     
-    * Vous pouvez injecter ce paramètre comme dans les services, en utilisant l'attribut `#[Autowire('%parametre%')]` dans les paramètres de la méthode liée à la route.
-
-    * Ou alors, vous pouvez aussi récupérer ce paramètre dans le code de la méthode du contrôleur :
-
-    ```php
-    $param = $this->getParameter("parametre");
-    ```
+    Vous pouvez injecter ce paramètre comme dans les services, en utilisant l'attribut `#[Autowire(env: '...')]` dans les paramètres de la méthode liée à la route.
 
 </div>
 
@@ -918,12 +960,7 @@ Ainsi, il est possible d'avoirs plusieurs **webhooks** différents, pour plusieu
 
 3. Jetez un coup d'œil au terminal, si le code `200` apparaît quelque part, cela doit être bon. Attention toutefois, si vous utilisez le compte partagé, peut-être que vous verrez le résultat de la requête d'un autre étudiant qui a effectué un paiement en même temps que vous.
 
-   **Aide pour déboguer :** Si le code `400` apparaît et que vous n'arrivez pas
-   à savoir pourquoi, allez dans le terminal exécutant `stripe listen` et
-   cliquez sur le lien ressemblant à `evt_xxx`. Après connexion à Stripe, vous
-   trouverez en bas de la page dans la section *Réponses webhook CLI* la réponse
-   HTTP que vous avez envoyé à Stripe. En la déroulant, vous verrez le message
-   de l'exception qui a causé le code `400`.
+   **Aide pour déboguer :** Si vous possédez votre propre compte Stripe et que le code `400` apparaît et que vous n'arrivez pas à savoir pourquoi, allez dans le terminal exécutant `stripe listen` et cliquez sur le lien ressemblant à `evt_xxx`. Après connexion à Stripe, vous trouverez en bas de la page dans la section *Réponses webhook CLI* la réponse HTTP que vous avez envoyé à Stripe. En la déroulant, vous verrez le message de l'exception qui a causé le code `400`.
 
 4. Vérifiez sur le site que l'utilisateur est bien devenu membre premium.
 
@@ -948,6 +985,12 @@ Nous allons maintenant gérer quelques scénarios d'erreurs, où il faut donc an
 * Le paiement n'a pas pu être capturé, pour diverses raisons.
 
 Dans chaque cas, il faut **annuler le PaymentIntent** et lever une Exception (ce qui renverra donc un code 400 à Stripe).
+
+Pour **anuller* un `PaymentIntent`, on peut utiliser la méthode `cancel` :
+
+```php
+$stripe->paymentIntents->cancel($paymentIntent);
+```
 
 <div class="exercise">
 
@@ -996,7 +1039,7 @@ Ou bien en utilisation l'attribut `#[MapQueryParameter]`, dans les paramètres d
 ```php
 use Symfony\Component\HttpFoundation\JsonResponse;
 
- #[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
+#[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
 public function methodeExemple(#[MapQueryParameter] string $param1, #[MapQueryParameter] string $param2): Response
 {
     ...
@@ -1010,10 +1053,12 @@ Du côté de Stripe, il ne nous est pas possible de rentrer nous-même l'identif
 ```php
 $paymentData = [
     ...
-    'success_url' => $this->router->generate('maRoute', [], UrlGeneratorInterface::ABSOLUTE_URL).'?session_id={CHECKOUT_SESSION_ID}',
+    'success_url' => $this->urlGenerator->generate('maRoute', [], UrlGeneratorInterface::ABSOLUTE_URL).'?sessionId={CHECKOUT_SESSION_ID}',
     ...
 ];
 ```
+
+**Note** : Dans l'absolu, on aurait pu utiliser une route paramétrée, mais le service `UrlGeneratorInterface` échappe les caractères spéciaux de l'URL (comme `{` et `}`) ce qui fait que Stripe n'aurait alors pas reconnu `{CHECKOUT_SESSION_ID}` et n'aurait donc pas effectué le remplacement.
 
 Enfin, une fois l'identifiant de session récupéré, on peut vérifier l'état du paiement ainsi :
 
@@ -1047,7 +1092,7 @@ Maintenant, à vous de jouer !
     }
     ```
 
-    Mettez également à jour l'interface de ce service.
+    Mettez également à jour **l'interface** de ce service.
 
 2. Dans `PremiumController`, créez une route `premiumCheckoutConfirm` ayant pour chemin `/premium/checkout/confirm` et accessible avec `GET` seulement. Cette route a pour vocation d'être appelée avec un paramètre dans le query string, contenant l'identifiant de la session Stripe lié au paiement que l'utilisateur a effectué. Vous nommerez ce paramètre comme vous voulez (vous devrez utiliser le même nom dans la prochaine étape).
 
@@ -1066,6 +1111,12 @@ Maintenant, à vous de jouer !
 
 Voilà, notre système de membre premium est complet ! Attention toutefois, dans un contexte réel, il y aurait un autre cas d'erreur à gérer (peu probable, mais qui peut arriver) : comme dans le dernier scénario, l'utilisateur ouvre deux fois le formulaire, mais cette fois, il les valide quasi simultanément. Il est possible que Stripe envoi donc deux requêtes pour déclencher votre **webhook** quasi simultanément. Comme les deux requêtes s'exécutent alors en parallèle, sur la seconde, la vérification que l'utilisateur n'est pas déjà membre premium pourrait passer, car la première requête n'a pas fini de s'exécuter ! Dans ce cas-là, comme expliqué plus tôt, il faut utiliser un système de "verrou" pour bloquer le code de la méthode `handlePaymentPremium`. Diverses librairies vous permettent de faire cela plus ou moins facilement. En tant que développeur, vous devez réfléchir à tous les problèmes qui peuvent découler de ce genre de système !
 
+Stripe propose aussi un système d'identification qui permet de ne pas exécuter deux fois des paiements considérés identiques (même service). Il faut alors fournir un identifiant spécial qui permet à Stripe si deux paiements sont équivalents. On utilise pour cela l'attribut `idempotency_key` lors de la création du paiement, dans un tableau `$options` passé comme second paramètre de la fonction `Session::create`. Dans notre cas, on pourrait générer un identifiant unique qu'on stockerait dans les informations de l'utilisateur dans la base quand l'utilisateur clique sur le bouton de "Acheter" (sur notre site). Il s'agirait de la clé d'idempotence. Si le client re-essaye d'acheter à nouveau (avant d'avoir validé le paiement), la clé n'est pas écrasée. Quand le paiement est terminé (ou mieux, si l'utilisateur annule son mode premium, si on ajoute cette fonctionnalité) cette clé est supprimée de la base. Cela nous éviterait aussi de gérer certains cas d'erreurs que nous avons gérés plus tôt (paiement si l'utilisateur déjà premium, par exemple).
+
+De manière générale, il faudrait plutôt gérer les paiements dans des objets dédiés à part (par exemple, un objet commande, etc...). Il serait créé lors de l'intention de paiement et supprimé une fois le paiement traité. La clé d'idempotence pourrait être l'identifiant (ou une valeur unique) lié à cet objet.
+
+Bref, tout ceci n'était qu'une introduction, et nous n'avons malheureusement pas plus de temps pour aller dans le détail. Cependant, dans la mise en place réelle d'un système de paiement, il faut impérativement prendre en compte et utiliser ces systèmes de sécurisation !
+
 ## Bonus
 
 Nous allons maintenant aborder quelques sections bonus, optionnelles. Si le temps le permet, vous pouvez vous y intéresser afin d'approfondir la maîtrise de cet outil.
@@ -1077,7 +1128,7 @@ Actuellement, votre route `deletePublication` doit à peu près ressembler à ç
 ```php
 #[IsGranted('ROLE_USER')]
 #[Route('/feedy/{id}', name: 'deletePublication', options: ["expose" => true], methods: ["DELETE"])]
-public function deletePublication(#[MapEntity] ?Publication $publication, EntityManagerInterface $entityManager) : Response {
+public function deletePublication(?Publication $publication, EntityManagerInterface $entityManager) : Response {
     if($publication === null) {
         return new JsonResponse(null, 404);
     }
@@ -1095,9 +1146,9 @@ Ici, nous avons notamment besoin de vérifier que l'utilisateur est bien l'auteu
 Par exemple :
 
 ```php
-#[IsGranted(new Expression("is_granted('ROLE_USER') and subject.method()"), "monObjet")]
+#[IsGranted(attribute: new Expression("is_granted('ROLE_USER') and subject.method() == user.method()"), subject: "monObjet")]
 #[Route('/exemple/{id}', name: 'route_exemple'], methods: ["POST"])]
-public function deletePublication(#[MapEntity] Exemple $monObjet) : Response {
+public function deletePublication(Exemple $monObjet) : Response {
     ...
 }
 ```
@@ -1106,7 +1157,7 @@ Deux notes importantes :
 
 * Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode (représentant généralement une entité mappée avec `#[MapEntity]`). Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
 
-* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`) Pour rappel, `?` autorise une valeur nulle. Ici, le fait de ne pas autoriser cela générera automatiquement une réponse **404** si l'utilisateur essaye d'accèder à un objet qui n'existe pas (identifiant invalide).
+* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`) Pour rappel, `?` autorise une valeur nulle. Ici, le fait de ne pas autoriser cela générera automatiquement une réponse **404** si l'utilisateur essaye d'accéder à un objet qui n'existe pas (identifiant invalide).
 
 Normalement, vous devriez maintenant être en mesure de retravailler la logique de vérification du "propriétaire" d'une publication.
 
@@ -1234,7 +1285,7 @@ class VideoVoter extends Voter
 Enfin, dans mon contrôleur (ou ailleurs) dès que je veux contrôler l'autorisation, par exemple, quand un utilisateur accède à une vidéo, j'utilise la permission `VIDEO_VIEW` :
 
 ```php
-#[IsGranted('VIDEO_VIEW', 'video')]
+#[IsGranted(attribute: 'VIDEO_VIEW', subject: 'video')]
 #[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
 public function watchVideo(#[MapEntity] Video $video): Response
 {
@@ -1254,6 +1305,20 @@ public function watchVideo($id, VideoRepository $videoRepository): Response
 }
 ```
 
+Ou bien :
+
+```php
+#[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
+public function watchVideo($id, VideoRepository $videoRepository): Response
+{
+    $video = $videoRepository->find($id);
+    if(!$this->isGranted(`VIDEO_VIEW`, $video)) {
+        //Réponse customisée...
+    }
+    ...
+}
+```
+
 Il est aussi tout à fait possible d'utiliser cette permission avec la méthode `is_granted` dans nos templates twig.
 
 ```twig
@@ -1264,11 +1329,16 @@ Il est aussi tout à fait possible d'utiliser cette permission avec la méthode 
 {% endraw %}
 ```
 
-La commande `make:voter NomEntiteVoter` permet de générer une classe `NomEntiteVoter` contenant du code basique pour un Voter, lié à l'entité `NomEntite`. Mais encore une fois, il n'est pas obligatoire d'avoir des permissions liées spécifiquement à une entité !
+La commande suivante permet de générer une classe `NomEntiteVoter` contenant du code basique pour un **Voter**, lié à l'entité `NomEntite` :
+
+```php 
+php bin/console make:voter NomEntiteVoter
+``` 
+Cependant, encore une fois, il n'est pas obligatoire d'avoir des permissions liées spécifiquement à une entité !
 
 <div class="exercise">
 
-1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication`. Ce voter ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il en est l'auteur.
+1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication`. Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il en est l'auteur.
 
 2. Utilisez votre nouvelle permission au niveau de la route `deletePublication`.
 
