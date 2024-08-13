@@ -74,7 +74,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 1. Dans le répertoire où vous souhaitez placer le dossier du projet, exécutez la commande suivante :
 
     ```bash
-    composer create-project symfony/skeleton:"6.3.*" the_feed_api
+    composer create-project symfony/skeleton:"6.4.*" the_feed_api
     ```
 
 2. **Si vous utilisez le serveur de l'IUT** :
@@ -234,7 +234,7 @@ Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de 
     ```json
     {
         "message": "Hello world!",
-        "datePublication": "2023-04-07T21:18:27.568Z"
+        "datePublication": "2024-11-07T21:18:27.568Z"
     }
     ```
 
@@ -264,9 +264,11 @@ Dans le premier TD, nous avons vu comment générer cette date automatiquement, 
 Si on prend l'exemple suivant :
 
 ```php
+use ApiPlatform\Metadata\ApiProperty;
+
 class Exemple {
 
-    #[ApiProperty(readable : false, required: true, description: 'Description de la propriété...')]
+    #[ApiProperty(description: 'Description de la propriété...', readable: false, required: true)]
     private ?string $propriete = null;
 
 }
@@ -283,6 +285,7 @@ On trie les résultats par rapport au premier attribut spécifié puis, en cas d
 ```php
 //Quand je récupère l'ensemble des entreprises, elles sont triées de celle possédant le plus gros CA à celle possédant le plus petit CA.
 #[ApiResource(
+    ...,
     order : ["chiffreAfaire" => "DESC"]
 )]
 class Entreprise {
@@ -340,16 +343,16 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
 
 </div>
 
-Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En effet, nous ne voulons pas que les publications soient modifiables. Il faut donc interdire les méthodes `PUT` et `PATCH` ou plutôt, autoriser seulement les autres méthodes. Pour cela, il suffit d'utiliser le paramètres `operations` au niveau de l'annotation `#[ApiResource]`. Ce paramètre est une **liste** des opérations permises, sous la forme d'objets (qu'on peut d'ailleurs configurer de manière ciblée).
+Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En effet, nous ne voulons pas que les publications soient modifiables. Il faut donc interdire les méthodes `PUT` et `PATCH`, ou plutôt, autoriser seulement les autres méthodes. Pour cela, il suffit d'utiliser le paramètres `operations` au niveau de l'annotation `#[ApiResource]`. Ce paramètre est une **liste** des opérations permises, sous la forme d'objets (qu'on peut d'ailleurs configurer de manière ciblée).
 
 Les opérations possibles sont :
 
 * `GetCollection` : récupération d'un ensemble de ressources.
 * `Get` : récupération d'une ressource ciblée.
-* `Post`
-* `Put`
-* `Patch`
-* `Delete`
+* `Post` : création d'une ressource.
+* `Put` : mise à jour complète d'une ressource ciblée.
+* `Patch` : mise à jour partielle d'une ressource ciblée.
+* `Delete` : supression d'une ressource ciblée.
 
 Ainsi, la configuration suivante permet seulement l'utilisation de la méthode `Get` ciblée et `Delete` :
 
@@ -364,7 +367,7 @@ Ainsi, la configuration suivante permet seulement l'utilisation de la méthode `
 
 Petite note à part, par défaut, `GetCollection` utilise un système de pagination afin de limiter le nombre de ressources renvoyées (par défaut, 30). Il est alors possible de préciser un paramètre `page` dans le **query string** de la route, pour naviguer. Par exemple, `/api/publications` renvoie les publications de 1 à 30. Et `/api/publications?page=3` renvoie les publications de 61 à 90.
 
-Ce système est nécessaire afin de limiter les données lues côté client et ainsi charger le contenu au fur et à mesure (imaginez si vous deviez charger tout **Twitter** à chaque accès !!!). Il est possible d'augmenter le nombre de ressources renvoyées par page ou bien simplement désactiver ce système (et donc tout renvoyer à chaque fois). Par convenance dans le cadre de l'application mobile que nous allons développer, nous allons donc désactiver ce système, mais retenez bien que dans un contexte réel, il faudrait le conserver et charger le contenu petit à petit, au fil du parcours de l'utilisateur.
+Ce système est nécessaire afin de limiter les données lues côté client et ainsi charger le contenu au fur et à mesure (imaginez si vous deviez charger tout **Twitter/X** à chaque accès !!!). Il est possible d'augmenter le nombre de ressources renvoyées par page ou bien simplement désactiver ce système (et donc tout renvoyer à chaque fois). Par convenance dans le cadre de ce TP, nous allons donc désactiver ce système, mais retenez bien que dans un contexte réel, il faudrait le conserver et charger le contenu petit à petit, au fil du parcours de l'utilisateur.
 
 Pour configurer tout cela, on édite le contenu du fichier `config/packages/api_platform.yaml` (que vous aviez vidé tout à l'heure) :
 
@@ -378,7 +381,7 @@ api_platform:
 
 <div class="exercise">
 
-1. Créez le fichier `config/package/api_platform.yaml` et désactivez la pagination.
+1. Modifiez le fichier `config/package/api_platform.yaml` afin de désactiver la pagination.
 
 2. Empêchez l'utilisation des méthodes `PUT` et `PATCH` sur les publications.
 
@@ -400,13 +403,11 @@ Pour créer la ressource `Utilisateur`, nous n'allons pas nous embêter et repre
 
 1. Importez la classe `Utilisateur` dans `src/Entity` ainsi que la classe `UtilisateurRepository` dans `src/Repository` depuis le projet précédent.
 
-2. Pour le moment, supprimez la propriété `publications` et les méthodes qui lui sont liées (add, remove, get...). Nous ferons le lien entre publication et utilisateur plus tard.
+2. Pour le moment, supprimez la propriété `publications`, le bout de code correspondant dans le constructeur ainsi que les méthodes qui lui sont liées (add, remove, get...). Nous ferons le lien entre publication et utilisateur plus tard.
 
 3. Supprimez la propriété `nomPhotoProfil`, ses attributs et ses getters/setters. Nous ne gérerons pas l'upload de photo de profil dans notre API (cela est néanmoins possible !).
 
-4. Concernant le **mot de passe**, nous gérerons ça plus tard, donc pour le moment, **commentez** simplement la propriété `password`, ses attributs, ses getters/setters et la déclaration de l'implémentation de l'interface `PasswordAuthenticatedUserInterface` (au niveau du `implements`...).  
-   Il faut aussi commenter dans `UtilisateurRepository` la déclaration de
-   l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la méthode `upgradePassword`.
+4. Concernant le **mot de passe**, nous gérerons ça plus tard, donc pour le moment, **commentez** simplement la propriété `password`, ses attributs, ses getters/setters et la déclaration de l'implémentation de l'interface `PasswordAuthenticatedUserInterface` (au niveau du `implements`...). Il faut aussi commenter dans `UtilisateurRepository` la déclaration de l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la méthode `upgradePassword`.
 
 5. Faites en sorte que la propriété premium puisse être lue, mais jamais écrite.
 
@@ -422,7 +423,7 @@ Pour créer la ressource `Utilisateur`, nous n'allons pas nous embêter et repre
 
 11. Testez la modification d'un utilisateur existant avec `PATCH`, en configurant la requête correctement, sur `Postman`. Là aussi, on doit pouvoir modifier le login et l'adresse email, mais toute modification sur le statut premium est ignorée.
 
-    **Aide :** pour la méthode `PATCH`, le `payload` n'est pas au format `json`, mais au format `merge-patch+json`. On envoie le même `payload`, sauf que ce format indique à l'application qu'on souhaite mettre à jour seulement une partie de l'entité, avec les attributs spécifiés. Sur `Postman`, lorsque vous réaliserez une requête `PATCH`, il faudra préciser ce format dans votre requête en vous rendant dans la partie `Header` puis en modifiant la valeur de la clé `Content-Type` avec `application/merge-patch+json`.
+    **Aide :** pour la méthode `PATCH`, le `payload` n'est pas au format `json`, mais au format `merge-patch+json`. On envoie le même `payload`, sauf que ce format indique à l'application qu'on souhaite mettre à jour seulement une partie de l'entité, avec les attributs spécifiés. Sur `Postman`, lorsque vous réaliserez une requête `PATCH`, il faudra préciser ce format dans votre requête en vous rendant dans la partie `Headers` puis en **désactivant** la case `Content-Type` existante puis en ajoutant (en bas) un nouveau champ nommé `Content-Type` en précisant la valeur `application/merge-patch+json`.
 
 12. Testez également la méthode `GET` (récupérer tous les utilisateurs, récupérer un utilisateur précis...)
 </div>
@@ -445,27 +446,27 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
 
     * Activez la suppression des entités orphelines.
 
-    * La stratégie de suppression doit être `CASCADE` (si un utilisateur est supprimé, toutes ses publications sont supprimées...)
+2. La stratégie de suppression doit être `CASCADE` (si un utilisateur est supprimé, toutes ses publications sont supprimées...). Si vous ne vous souvenez plus comment faire, jetez un oeil à votre attribut `auteur` de la classe `Publication` du projet précédent.
 
-2. Activez le mode de chargement `EAGER` (eager loading) pour la récupération des données de l'auteur.
+3. Activez le mode de chargement `EAGER` (eager loading) pour la récupération des données de l'auteur.
 
-3. Ajoutez les attributs nécessaires pour "forcer" l'utilisateur à préciser l'auteur lorsqu'il crée une publication.
+4. Ajoutez les attributs nécessaires pour "forcer" l'utilisateur à préciser l'auteur lorsqu'il crée une publication.
 
-4. Dans votre base de données, supprimez toutes vos publications (un champ non null va être ajouté ce qui va causer des problèmes si on laisse les publications actuelles, sans auteur).
+5. Dans votre base de données, supprimez toutes vos publications (un champ non null va être ajouté ce qui va causer des problèmes si on laisse les publications actuelles, sans auteur).
 
-5. Mettez à jour votre base de données.
+6. Mettez à jour la structure de votre base de données avec les commandes adéquates.
 
-6. Videz le cache.
+7. Videz le cache.
 
-7. Sur `Postman`, vérifiez que vous obtenez un message d'erreur si vous tentez d'ajouter une publication sans préciser son auteur.
+8. Sur `Postman`, vérifiez que vous obtenez un message d'erreur si vous tentez d'ajouter une publication sans préciser son auteur.
 
-8. Maintenant, tentez d'ajouter une publication en précisant l'identifiant numérique (son id) de l'utilisateur pour la partie `auteur`. Analysez le message d'erreur.
+9. Maintenant, tentez d'ajouter une publication en précisant l'identifiant numérique (son id) de l'utilisateur pour la partie `auteur`. Analysez le message d'erreur que vous obtenez.
 
-9. La valeur à préciser pour faire référence à une autre ressource est appelé `IRI` (International Ressource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/api/...`.
+10. La valeur à préciser pour faire référence à une autre ressource est appelé `IRI` (International Ressource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veux pas créer un utilisateur lorsqu'on créé une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TP.
 
-10. Une fois le mécanisme des `IRI` compris, retentez de créer une publication en affectant un utilisateur.
+11. Une fois le mécanisme des `IRI` compris, retentez de créer une publication en affectant un utilisateur.
 
-11. Ajoutez plusieurs publications liées à un utilisateur et vérifiez que la suppression de l'utilisateur entraîne la suppression des publications qui lui sont liées.
+12. Ajoutez plusieurs publications liées à un utilisateur et vérifiez que la suppression de l'utilisateur entraîne la suppression des publications qui lui sont liées.
 
 </div>
 
@@ -477,7 +478,7 @@ Il serait donc plutôt préférable d'afficher les détails de l'utilisateur à 
 
 Quand on manipule nos ressources, il peut exister **deux types de contextes** :
 
-* La **normalisation** : quand on transforme un objet de l'application en `JSON` et qu'on le renvoie au client (requête de lecture, type GET).
+* La **normalisation** : quand on transforme un objet de l'application en `JSON` et qu'on le renvoie au client (requête de lecture, type GET, mais aussi ce qui est renvoyé après avoir créé/mis à jour une entité).
 
 * La **dénormalisation** : quand on charge un `payload` au format `JSON` et qu'on le transforme en objet de l'application (requêtes de création ou de mise à jour : POST/PUT/PATCH).
 
@@ -494,6 +495,8 @@ Un paramètre de l'annotation `#[ApiResource(...)` nommé `normalizationContext 
 Par exemple :
 
 ```php
+use Symfony\Component\Serializer\Attribute\Groups;
+
 #[ApiResource(
     ...
     normalizationContext: ["groups" => ["etudiant:read"]],
@@ -512,6 +515,8 @@ class Etudiant {
     public ?Groupe $groupe = null;
 }
 
+use Symfony\Component\Serializer\Attribute\Groups;
+
 #[ApiResource(
     ...
     normalizationContext: ["groups" => ["groupe:read"]],
@@ -524,7 +529,7 @@ class Groupe {
     #[Groups(['groupe:read'])]
     private ?string $nomGroupe = null;
 
-    public iterable $etudiants;
+    public Collection $etudiants;
 
 }
 ```
@@ -536,6 +541,8 @@ Pour les groupes, on affiche tout sauf la liste des étudiants (qui aurait étai
 Pour qu'on obtienne aussi l'identifiant et le nom du groupe quand on lit les données d'un étudiant, il faut d'abord préciser le groupe `etudiant:read` au niveau de la propriété `groupe` et il faut ensuite ajouter le groupe `etudiant:read` sur chaque propriété de la classe `Groupe` qu'on souhaite afficher quand on rend le groupe d'un utilisateur : 
 
 ```php
+use Symfony\Component\Serializer\Attribute\Groups;
+
 #[ApiResource(
     ...
     normalizationContext: ["groups" => ["etudiant:read"]],
@@ -555,6 +562,8 @@ class Etudiant {
     public ?Groupe $groupe = null;
 }
 
+use Symfony\Component\Serializer\Attribute\Groups;
+
 #[ApiResource(
     ...
     normalizationContext: ["groups" => ["groupe:read"]],
@@ -567,7 +576,7 @@ class Groupe {
     #[Groups(['groupe:read', 'etudiant:read'])]
     private ?string $nomGroupe = null;
 
-    public iterable $etudiants;
+    public Collection $etudiants;
 
 }
 ```
@@ -575,8 +584,10 @@ class Groupe {
 On aurait aussi pu préciser directement le groupe `groupe:read` dans l'attribut `normalizationContext` de la classe `Etudiant` :
 
 ```php
+use Symfony\Component\Serializer\Attribute\Groups;
+
 #[ApiResource(
-    ...
+    ...,
     normalizationContext: ["groups" => ["etudiant:read", "groupe:read"]],
 )]
 class Etudiant {
@@ -594,8 +605,10 @@ class Etudiant {
     public ?Groupe $groupe = null;
 }
 
+use Symfony\Component\Serializer\Attribute\Groups;
+
 #[ApiResource(
-    ...
+    ...,
     normalizationContext: ["groups" => ["groupe:read"]],
 )]
 class Groupe {
@@ -606,7 +619,7 @@ class Groupe {
     #[Groups(['groupe:read'])]
     private ?string $nomGroupe = null;
 
-    public iterable $etudiants;
+    public Collection $etudiants;
 
 }
 ```
@@ -614,8 +627,10 @@ class Groupe {
 Si à l'inverse on avait voulu les détails de chaque étudiant d'un groupe (quand on lit le groupe) :
 
 ```php
+use Symfony\Component\Serializer\Attribute\Groups;
+
 #[ApiResource(
-    ...
+    ...,
     normalizationContext: ["groups" => ["etudiant:read"]],
 )]
 class Etudiant {
@@ -632,8 +647,10 @@ class Etudiant {
     public ?Groupe $groupe = null;
 }
 
+use Symfony\Component\Serializer\Attribute\Groups;
+
 #[ApiResource(
-    ...
+    ...,
     normalizationContext: ["groups" => ["groupe:read"]],
 )]
 class Groupe {
@@ -645,7 +662,7 @@ class Groupe {
     private ?string $nomGroupe = null;
 
     #[Groups(['groupe:read'])]
-    public iterable $etudiants;
+    public Collection $etudiants;
 
 }
 ```
@@ -668,7 +685,7 @@ Si vous avez bien compris ce mécanisme, à vous de jouer !
 
 </div>
 
-Nous avons défini `normalizationContext` de manière globale (pour toutes les opérations de la ressource) mais il est aussi possible de le définir pour une opération précise (dans `new Get()`, `new Post()`, etc...)
+Nous avons défini `normalizationContext` de manière globale (pour toutes les opérations de la ressource) mais il est aussi possible de le définir pour une opération précise (dans les paramètres de `new Get()`, `new Post()`, etc...)
 
 ### Publications d'un utilisateur
 
@@ -681,6 +698,8 @@ Par exemple : `/utilisateurs/2/publications` : les publications de l'utilisateur
 Pour cela, rien de plus simple : il suffit de configurer une **nouvelle opération** `GetCollection` avec un chemin personnalisé (il est possible d'avoir plusieurs fois la même opération si les chemins sont différents). Il faut préciser un **template d'URL** et des **variables** afin d'aller chercher la ressource au bon endroit.
 
 ```php
+use ApiPlatform\Metadata\Link;
+
 #[ApiResource(
     operations: [
         ...,
@@ -693,7 +712,7 @@ Pour cela, rien de plus simple : il suffit de configurer une **nouvelle opérati
                     /* La propriété qui contient la ressource ciblée dans la classe cible */
                     fromProperty: 'nom_propriete',
                     /* La classe cible dont on veut récupérer une instance à partir de l'identifiant  */
-                    fromClass: Target::class
+                    fromClass: Cible::class
                 )
             ],
         ),
@@ -732,7 +751,7 @@ class Etudiant {
 
 <div class="exercise">
 
-1. En ajoutant une nouvelle opération `GetCollection` dans `Publication`, faites en sorte d'ajouter une route qui permet d'obtenir la liste des publications d'un utilisateur précis.
+1. En ajoutant une **nouvelle opération** `GetCollection` dans `Publication`, faites en sorte d'ajouter une route qui permet d'obtenir la liste des publications d'un utilisateur précis.
 
 2. Videz le cache.
 
@@ -790,6 +809,8 @@ On respecte la notion de **stateless** car le serveur ne garde aucune informatio
 
 Néanmoins, si ce token venait à être dérobé, alors on pourrait usurper un utilisateur. C'est pour cela que les `JWT` ont une date d'expiration (généralement, 3600 secondes, mais on peut mettre plus). Pour éviter que l'utilisateur n'ait à se reconnecter manuellement lors de l'expiration, il faut alors mettre en place tout un système de rafraîchissement que nous aborderons dans une section bonus de ce TD.
 
+La manière dont est stocké le token côté client est également très importante ! Nous verrons les différentes problématiques de sécurités liées à cet aspect, et quelle est la manière considérée la plus "propre" et la plus sécurisée pour stocker et transmettre le `JWT`.
+
 ### Prise en charge des utilisateurs
 
 Tout abord, nous allons devoir intégrer nos utilisateurs au système d'authentification de `Symfony` pour que par la suite, ils puissent être vérifiés et récupérés automatiquement lors de l'envoi des identifiants au serveur.
@@ -812,17 +833,17 @@ Dans le projet précédent, cette section avait était générée automatiquemen
 
 Si vous vous souvenez bien, dans le formulaire de création de l'utilisateur, il y avait un champ `plainPassword` qui ne faisait pas partie de l'entité et qui était **haché** puis placé dans la propriété `password`. Mais comment faire cela, alors que nous n'avons pas de formulaire ni de contrôleur pour gérer ce comportement ?
 
-Pour la question du champ `plainPassword`, c'est très simple : il suffit de la placer dans la classe `Utilisateur` (comme propriété de la classe) mais ne pas placer d'attribut `#[ORM\Column]` dessus. Ainsi, la propriété pourra être utilisée dans le payload mais ne sera pas enregistré dans la base de données. On interdira l'écriture du champ `password` par l'utilisateur, car cela sera géré par l'application (pour rappel, `password` contient le mot de passe haché).
+Pour la question du champ `plainPassword`, c'est très simple : il suffit de la placer dans la classe `Utilisateur` (comme propriété de la classe) mais ne pas placer d'attribut `#[ORM\Column]` dessus. Ainsi, la propriété pourra être utilisée dans le payload mais ne sera pas enregistrée dans la base de données. On interdira l'écriture du champ `password` par l'utilisateur, car cela sera géré par l'application (pour rappel, `password` contient le mot de passe haché).
 
 Enfin, pour pouvoir transformer `plainPassword` en mot de passe haché, nous allons utiliser une classe particulière appelée `StateProcessor`.
 
 Sur API Platform, il existe deux types de classes importantes : Les `StateProcessor` et les `StateProvider`.
 
-* Une classe de type `StateProcessor` est une sorte de service qui est appelé après avoir reçu et vérifié le `payload` lors d'une requête de création ou de mise à jour. Elle a pour but d'effectuer des traitements avant l'enregistrement en base de données.
+* Une classe de type `StateProcessor` est un **service** qui est appelé après avoir reçu et vérifié le `payload` lors d'une requête de création ou de mise à jour. Elle a pour but d'effectuer des traitements avant l'enregistrement en base de données.
 
-* Une classe de type `StateProvider` va permettre à l'inverse d'appliquer des modifications aux données récupérées lors d'une opération `GET`.
+* Une classe de type `StateProvider` va permettre à l'inverse d'appliquer des modifications aux données récupérées lors d'une opération type `GET` (lecture de données), avant de les transmettre au client.
 
-Il est bien entendu possible d'injecter des services (et paramètres) dans ces classes. Il est notamment possible d'accéder au **processeur** utilisé par API Platform pour poursuivre le traitement normal après (ou avant) avoir appliqué nos modifications.
+Il est bien entendu possible d'injecter d'autres services (et paramètres) dans ces classes. Il est notamment possible d'accéder au **processeur** par défaut utilisé par API Platform pour poursuivre le traitement normal après (ou avant) avoir appliqué nos modifications (notre "logique métier"). Par exemple, le "traitement normal" opéré par le processeur d'API Platform lors d'une requête POST est de persister l'entité en base de données avec Doctrine.
 
 Dans notre cas, il nous faut donc un `StateProcessor` afin de hacher le mot de passe avant de sauvegarder l'utilisateur dans la base de données.
 
@@ -843,11 +864,14 @@ class MonStateProcessor implements ProcessorInterface {
     )
     {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         //$data est l'entité qu'on manipule (par exemple, une Publication, un Utilisateur...)
         //$operation est l'opération exécutée (GET, POST, ...)
         //$uriVariables contient les éventuelles variables paramétrés dans le chemin de la route
+
+        //On retourne la donnée après modification
+        return $data;
     }
 
 }
@@ -864,15 +888,16 @@ class MonStateProcessor implements ProcessorInterface {
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor
+        //Autres services....
     )
     {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): void
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         //Modification des données de $data
-
+        $data->setPropriete(...);
         //Sauvegarde en base
-        $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
 
 }
@@ -916,32 +941,31 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
    +            provider: app_user_provider
    ```
 
-1. Dans votre classe `Utilisateur`, décommentez la propriété `password`, ses getters/setters ainsi que la déclaration d'implémentation de l'interface `PasswordAuthenticatedUserInterface`. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API).  
-   Il faut aussi décommenter dans `UtilisateurRepository` la déclaration de
-   l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la
-   méthode `upgradePassword`.
+3. Dans votre classe `Utilisateur`, décommentez la propriété `password`, ses getters/setters ainsi que la déclaration d'implémentation de l'interface `PasswordAuthenticatedUserInterface`. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API). Il faut aussi décommenter dans `UtilisateurRepository` la déclaration de l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la méthode `upgradePassword`.
 
-2. Ajoutez une propriété `$plainPassword` de type `string` à la classe `Utilisateur` (ainsi que ses getters/setters). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété. Cette propriété ne doit jamais pouvoir être lue par l'utilisateur (jamais normalisée).
+4. Ajoutez une propriété `$plainPassword` de type `?string` à la classe `Utilisateur` (ainsi que ses getters/setters). Pour le `getter`, précisez bien le type de retour `?string` (pour autoriser les valeurs nulles). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété (sous forme d'attributs). N'oubliez pas d'importer les classes correspondantes. Aussi, en utilisant un autre attribut (provenant d'API Platform), faites en sorte que cette propriété ne puisse jamais pouvoir être lue par les utilisateurs (jamais affichée/normalisée quand on renvoi une ressource type utilisateur).
 
-3. Modifiez la méthode `eraseCredentials` afin que celle-ci mette `plainPassword` à **null**. En effet, par mesure de sécurité, comme cette propriété est stockée dans la classe utilisateur et non pas dans un formulaire, elle va être enregistré dans la session. Il faut donc posséder une méthode afin de "vider" cette information sensible après l'avoir utilisé.
+5. Modifiez la méthode `eraseCredentials` afin que celle-ci mette `plainPassword` à **null**. En effet, par mesure de sécurité, comme cette propriété est stockée dans la classe utilisateur et non pas dans un formulaire, elle va être enregistré dans la session. Il faut donc posséder une méthode afin de "vider" cette information sensible après l'avoir utilisé.
 
-4. Créez un **state processor** nommé `UtilisateurProcessor` qui devra hacher le mot de passe de l'utilisateur (`plainPassword`), puis l'affecter à `password`. Il faut ensuite utiliser `eraseCredentials` afin de supprimer les informations sensibles. Enfin, il faut reprendre le traitement normal d'API Platform pour sauvegarder l'entité en base. 
+6. Créez un **state processor** nommé `UtilisateurProcessor` qui devra hacher le mot de passe de l'utilisateur (`plainPassword`), puis l'affecter à `password`. Il faut ensuite utiliser `eraseCredentials` afin de supprimer les informations sensibles. Enfin, il faut reprendre le traitement normal d'API Platform pour sauvegarder l'entité en base. 
 
     * Vous pouvez réutiliser le bout de code (voir la méthode complète) définie dans la classe `UtilisateurManager` du projet précédent. Il vous faudra donc aussi injecter et utiliser le service `UserPasswordHasherInterface`.
 
-5. Utilisez votre `UtilisateurProcessor` comme processeur de l'opération `POST` sur l'entité `Utilisateur`.
+    * **Attention** : lorsque vous utilisez la commande `make:state-processor`, le type de retour de la fonction `process` est `void`. Changez plutôt cela en `mixed`.
 
-6. Videz le cache.
+7. Utilisez votre `UtilisateurProcessor` comme processeur de l'opération `POST` sur l'entité `Utilisateur`.
 
-7.  Synchronisez vos changements avec la base de données.
+8. Videz le cache.
 
-8.  Créez un utilisateur, depuis Postman. Il faudra bien préciser le `plainPassword` cette fois. Allez vérifier ensuite, dans votre base, que le mot de passe est bien haché.
+9. Synchronisez vos changements avec la base de données.
 
-9.  Modifiez votre `UtilisateurProcessor` de manière à ne pas tenter de hacher le mot de passe s'il n'est pas transmis (s'il est **null**, donc). Cela va nous permettre d'utiliser le même processeur pour la création et la mise à jour (mais on aurait aussi pu en faire deux distincts). Affectez donc aussi `UtilisateurProcessor` comme processeur de l'opération `PATCH`.
+10. Créez un utilisateur, depuis Postman. Il faudra bien préciser le `plainPassword` cette fois. Allez vérifier ensuite, dans votre base, que le mot de passe est bien haché.
 
-10. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien, c'est-à dire que si le mot de passe est précisé, il est bien re-haché.
+11. Modifiez votre `UtilisateurProcessor` de manière à ne pas tenter de hacher le mot de passe s'il n'est pas transmis (s'il est **null**, donc). Cela va nous permettre d'utiliser le même processeur pour la création et la mise à jour (mais on aurait aussi pu en faire deux distincts). Lors de la mise à jour du profil, un utilisateur ne souhaite pas forcément modifier son mot de passe, mais s'il le fait, il faut bien le ré-hacher. Affectez donc aussi `UtilisateurProcessor` comme processeur de l'opération `PATCH`.
 
-    Attention, pour rappel, il faut utiliser le **Content-Type** `application/merge-patch+json` pour faire un `PATCH`. Quant au `payload`, on met un *JSON* classique dans *Body* > *Raw (JSON)*.   
+12. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien, c'est-à dire que quand le mot de passe est précisé, il est bien re-haché.
+
+    Attention, pour rappel, il faut utiliser un nouveau champ **Content-Type** `application/merge-patch+json` dans les `Headers` de la requête pour faire un `PATCH`. Quant au `payload`, on met un *JSON* classique dans *Body* > *Raw (JSON)*.
 
 </div>
 
@@ -977,7 +1001,7 @@ Attention, ces groupes sont différents de ceux utilisés dans `normalizationCon
 
 2. Videz le cache puis vérifiez que vous pouvez mettre à jour l'utilisateur sans préciser le mot de passe.
 
-3. Utilisez vos groupes de validation sur les attributs des autres propriétés (login et adresse email) afin qu'ils soient obligatoire lors de la création, mais pas lors de la mise à jour (en fait, c'est le cas par défaut lors d'un PATCH, car les valeurs de ces attributs existent déjà dans les données de l'utilisateur et ne sont pas nulles, mais préciser ces groupes permet plus de clarté). Videz le cache.
+3. Utilisez vos groupes de validation sur les attributs `Assert\NotBlank` et `Assert\NotNull` des autres propriétés (login et adresse email) afin qu'ils soient obligatoire lors de la création, mais pas lors de la mise à jour (en fait, c'est le cas par défaut lors d'un PATCH, car les valeurs de ces attributs existent déjà dans les données de l'utilisateur et ne sont pas nulles, mais préciser ces groupes permet plus de clarté). Videz le cache.
 
 </div>
 
@@ -991,9 +1015,7 @@ Au niveau d'une propriété, il suffit de rajouter le `groupe` (dans l'annotatio
 
 ```php
 
-//Si 'entite:create' et 'entite:update' sont des groupes de dénormalisation.
-
-//La propriété n'est pas ignorée
+//Si 'entite:create' ou 'entite:update' sont des groupes de dénormalisation actifs, la propriété n'est pas ignorée
 #[Groups(['entite:read', 'entite:create', 'entite:update'])]
 private ?string $prop1 = null;
 
@@ -1017,7 +1039,7 @@ Par exemple :
 
 <div class="exercise">
 
-1. En utilisant deux nouveaux groupes : `utilisateur:create` et `utilisateur:update`, faites en sorte que le login soit ignoré dans le cadre d'une requête `PATCH`. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actifs (`login`, `plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale (mais vous pouvez quand même préciser ses groupes).
+1. En utilisant deux nouveaux groupes : `utilisateur:create` et `utilisateur:update`, faites en sorte que le **login** soit ignoré dans le cadre d'une requête `PATCH` s'il est envoyé dans le **payload** de la requête. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actifs (`plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour, `login` seulement créé). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale.
 
 2. Videz le cache. Tentez de mettre à jour le login d'un utilisateur (avec `PATCH`). Vous devriez constater que le login n'a pas été mis à jour !
 
@@ -1105,7 +1127,89 @@ Pour se connecter, on devra donc envoyer un `payload` de la forme :
 7. Sur le site [https://jwt.io/](https://jwt.io/), tentez de décoder ce jeton et observez l'information qu'il contient.
 </div>
 
-En plus du **login** de l'utilisateur, on aimerait ajouter son **identifiant**, son **adresse email** et son statut **premium** dans le `JWT` (pour pouvoir le lire côté client). Pour cela, on peut créer une classe qui permettra de détecter l'événement de création du `JWT` et d'y ajouter l'identifiant.
+Tout fonctionne correctement ? Parfait ! Cependant, nous allons tout casser ! En effet, de nos jours, renvoyer directement le `JWT` dans le corps de la réponse n'est pas une très bonne pratique, dans de nombreux cas (notamment si votre **API** est utilisée au travers d'une application cliente sur navigateur). Il faut bien comprendre que quelqu'un qui possède votre **token** peut usurper votre identité jusqu'à son expiration. Il faut donc limiter au maximum les risques que cela se produise.
+
+Cette fois, le problème vient du client, et plus précisément des applications qui tournent sur un navigateur web (avec un framework javascript par exemple, comme nous le ferons dans les prochains TDs). Le problème est de savoir où et comment stocker le JWT. Il y a plusieurs options :
+
+* Dans une **variable** simple. Mais celle-ci sera supprimée si la page est rechargée, ce n'est donc pas idéal du tout (l'utilisateur devra se reconnecter...)
+
+* Dans le `sessionStorage` qui est un objet qui permet d'enregistrer des couples clé/valeurs qui persistent si la page est rechargée (mais pas si le navigateur est redémarré).
+
+* Dans le `localStorage` qui est similaire mais dont les données sont aussi conservées si le navigateur est redémarré.
+
+Jusqu'à il y a quelques années (et encore un peu aujourd'hui), beaucoup d'applications utilisaient la démarche suivante :
+
+* L'API génère le `JWT` et l'envoi dans la réponse de la requête (ce que vous avez actuellement).
+
+* Le client (navigateur web) stocke le `JWT` dans le `localStorage` et l'envoi à chaque requête où cela est nécessaire. De plus, comme on peut décoder le `JWT` (qui ne contient aucune information sensible), on peut connaître la date d'expiration du token et agir en conséquence.
+
+Cependant, ce système était fortement vulnérable à un type d'attaque bien connue : l'attaque `XSS` (Cross-site Scripting). cette attaque consiste à exploiter une vulnérabilité du site pour introduire un script malveillant qui sera exécuté par le navigateur d'une victime (ou pire, tous les utilisateurs). Cette attaque est par exemple possible si certaines informations fournies par l'utilisateur ne sont pas correctement échappées par l'application et traitées comme du code. 
+
+Un attaquant pourrait par exemple envoyer des informations (par exemple, quand il rentre sa biographie sur son profil) contenant un bout de code javascript qui irait lire le `JWT` dans le `localStorage` et l'enverrai ailleurs, sur un espace accessible par l'attaquant. Toutes les personnes qui consulteraient la biographie en question exécuteraient alors (sans le savoir) ce script, et leur token serait donc envoyé à l'attaquant. Par la suite, ce dernier pourra donc usurper les identités des utilisateurs dont il a récupéré le token.
+
+Le danger vient donc du fait que n'importe quel script `javascript` puisse acceder et lire dans `localStorage`. Si le contenu du `JWT` n'est pas sensible en soi, le `JWT` en lui-même est utilisé pour vous identifier. Il faut donc absolument éviter de le stocker dans un endroit potentiellement vulnérable.
+
+Pour palier à ce problème, une nouvelle approche a été choisie : utiliser des **cookies sécurisés**. Plus précisent des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stoker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
+
+* **secure** : le cookie n'est envoyé que si la requête est chiffré (**https**).
+* **httpOnly** : le cookie n'est pas accessible dans le **javascript**. Il sera envoyé automatiquement à chaque requête vers le serveur, mais à aucun moment un script pourra lire ses données. Cela élimine le risque de se le faire voler en cas d'attaque XSS.
+* L'attribut **SameSite** permet de définir si le cookie doit être envoyé ou non selon le site où est émis la requête vers le serveur. Cela permet notamment d'éviter les attaques **CSRF** dont nous allons parler juste après.
+
+Une attaque **CSRF** (Cross-site Request Forgery) consiste à faire envoyer une requête vers un serveur (une API) à l'utilisateur, mais depuis un autre site. L'idée est que le site en question contienne un script javascript qui émet la requête. Il faut ensuite faire en sorte que l'utilisateur que l'on souhaite piéger se rende sur ce site. La requête sera alors envoyée depuis le navigateur du client, comme si c'était lui qui était à l'initiative de la requête. Alors, même avec un cookie **secure** et en **httpOnly**, dans ce cas, l'attaquant pourra exécuter des actions sous notre identité. Notez cette fois que l'attaquant ne récupère pas notre `JWT`. Il utilise notre identité à travers notre navigateur.
+
+Pour contrer cela, on paramètre l'attribut `Same-Site` du cookie, avec une des deux valeurs suivantes :
+
+* `Same-Site: Strict` : le cookie n'est envoyé que si l'adresse du serveur de destination est la même que celle du site depuis lequel est émise la requête. Et cela pour toutes les opérations (**GET**, **POST**, etc...). Par exemple, si je me trouve sur le site `https://monsite.fr/home` que je possède un cookie lié au site `monsite.fr` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie sera envoyé. Par contre, si je me trouve sur le site `https://pas-un-site-suspect-du-tout.arnaque/home` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie ne sera pas envoyé.
+
+* `Same-Site: Lax` : même chose sauf pour les opérations type `GET` si la requête mène vers le même site que celui associé au cookie. Par exemple, si on clique sur un lien depuis un site externe. Imaginons le scénario suivant : vous êtes connecté sur le site `https://monsite.fr/`. Sur la page d'accueil, vous vous attendez donc à avoir un rendu en mode "connecté", avec un bouton "profil", "déconnexion", etc. Avec le mode `Strict`, si vous cliquez sur le lien `https://monsite.fr/` depuis un autre site (par exemple, depuis un mail), la page apparaîtra comme si vous étiez déconnecté. Avec le mode `Lax`, le cookie sera envoyé et vous verrez la page comme si vous étiez connecté. Le mode `Lax` est le mode choisi par défaut.
+
+* Il existe une troisième valeur possible `Same-Site: None` : autorise tout (le cookie est envoyé même si la requête est émise depuis un site différent). Cela ne nous intéresse donc pas.
+
+Il reste important de noter que, même avec tout cela, on est toujours exposé "en partie" aux attaques `XSS` : si un script malveillant est présent sur le site et exécuté par l'utilisateur, l'attaquant ne pourra plus récupérer le token de l'utilisateur, mais pourra tout de même exécuter des actions sous son identité. On ne règle donc que la moitié du problème. Pour le reste, c'est au développeur de s'assurer de ne pas introduire ce genre de faille et de mettre en place des mécanismes de sécurité supplémentaires.
+
+Tout cela semble compliqué et fastidieux à configurer! Mais pas de panique, un simple paramétrage d'API Platform permet de générer et placer un cookie **secure**, **htppOnly** avec l'attribut **SameSite: Lax** dans la réponse de la requête d'authentification. Par défaut, le token sera alors supprimé du **corps** (`JSON`) de la réponse.
+
+Pour cela, il faut modifier le fichier `config/packages/lexik_jwt_authentication.yaml` en ajoutant les sections suivantes :
+
+```yaml
+#config/packages/lexik_jwt_authentication.yaml
+lexik_jwt_authentication:
+
+    # Création automatique du cookie contenant le JWT
+    set_cookies:
+        BEARER: ~
+
+    # Pour que l'application recherche le JWT dans les cookies
+    token_extractors:
+        cookie:
+            enabled: true
+            #Nom du cookie
+            name: BEARER
+```
+
+Naturellement, le **cookie** stockant le token a la même date d'expiration que le `JWT`.
+
+<div class="exercise">
+
+1. Modifiez le fichier `lexik_jwt_authentication.yaml` afin de changer la gestion du `JWT` dans la réponse de la requête d’authentification.
+
+2. Sur `Postman`, identifiez-vous de nouveau. Cette-fois, le corps de la réponse devrait être vide. Cliquez sur le bouton **Cookies** (sous le bouton **Send**). Vous devriez observer le `JWT` stocké sous le nom de `Bearer`.
+
+</div>
+
+Lorsqu'on se connecte, l'application cliente aimerait potentiellement connaître certaines informations :
+
+* Notre login/identifiant, pour l'afficher sur l'interface, ou afficher une page type "mon profil".
+
+* La date d'expiration du token, pour pouvoir mettre en place le rafraîchissement (section bonus du TD) et/ou déconnecter automatiquement l'utilisateur.
+
+Comme nous n'envoyons plus le `JWT`, l'application cliente n'a donc plus accès à ces informations (qu'elle aurait pu obtenir en decodant le `JWT`). On peut alors envisager plusieurs solutions :
+
+* Avoir une route dédiée qui donne les informations de l'utilisateur courant. L'idée est que le serveur décode les informations contenues dans le JWT et les renvoient en réponse. Ensuite, le client peut stocker ces ifnormaitons dans des variables temporaires et utiliser la route en question à chaque rechargement.
+
+* Directement renvoyer les informations utiles lors de la connexion et les stocker dans le `localSotrage`. il n'y a pas de problème ici, car on ne stocke pas d’informations sensibles, ou bien le `JWT`. Même en cas de faille `XSS`, les données récupérées ne seront pas intéressantes et exploitables.
+
+Nous allons donc choisir la deuxième option et faire en sorte d'ajouter des informations concernant l'utilisateur dans le corps de la réponse. On aimerait ajouter son **identifiant**, son **login**, son **adresse email**, son statut **premium** et la **date d'expiration** du `JWT`. Pour cela, on peut créer une classe qui permettra de détecter l'événement d’authentification et d'ajouter des informations dans le corps de la réponse.
 
 Voici cette classe :
 
@@ -1131,13 +1235,49 @@ class JWTCreatedListener
 }
 ```
 
-Le but de la méthode `onJWTCreated` est de capter l'événement de création du token. L'événement `$event` nous permet d'utiliser diverses méthodes :
+```php
+namespace App\EventListener;
 
-* `getData` : renvoie le `payload` du token sous la forme d'un tableau clé-valeur associatif. Il est donc possible d'y insérer des données comme dans un tableau associatif classique, en associant la donnée à un nom (une clé).
 
-* `getUser` : renvoie l'objet `Utilisateur` correspondant au token. Il est donc possible de récupérer son id et de l'insérer dans le `payload`.
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
 
-* `setData` permet de réaffecter le contenu du `payload` du token.
+class AuthenticationSuccessListener
+{
+    public function __construct(
+        //Service permettant de décoder un JWT (entre autres)
+        private JWTTokenManagerInterface $jwtManager
+        )
+    {}
+
+    /**
+     * @param AuthenticationSuccessEvent $event
+     */
+    public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
+    {
+        $data = $event->getData();
+        $user = $event->getUser();
+
+        //Insertion de données de l'utilisateur ici - A compléter
+        $data['attribut'] = $user->getXXX();
+        
+        //Récupération des donnés contenues de le JWT - A compléter
+        //On décode le jwt qui est déjà encodé, à ce stade, afin de récupérer les informations qui nous intéressent.
+        $jwt = $this->jwtManager->parse($data['token']);
+        $data['token_exp'] = $jwt['???'];
+
+        $event->setData($data);
+    }
+}
+```
+
+Le but de la méthode `onAuthenticationSuccessResponse` est de capter l'événement déclenché quand l'utilisateur s'est correctement authentifié (bon login/mot de passe). L'événement `$event` nous permet d'utiliser diverses méthodes :
+
+* `getData` : renvoie le tableau clé-valeur associatif qui sera converti en objet `JSON` dans le corps de la réponse. Il est donc possible d'y insérer des données comme dans un tableau associatif classique, en associant la donnée à un nom (une clé).
+
+* `getUser` : renvoie l'objet `Utilisateur` correspondant au token. Il est donc possible de récupérer certaines valeurs de ses propriétés et de l'insérer dans `data`.
+
+* `setData` permet de réaffecter le contenu du corps de la réponse.
 
 Une fois la classe créée, il faut l'enregistrer en tant que receveuse de l'événement dans le fichier `config/services.yaml` :
 
@@ -1148,21 +1288,21 @@ services:
     ...
 
     # Nom personnalisé
-    jwt_created_listener:
+    acme_api.event.authentication_success_listener:
         # Classe prenant en charge l'événement
-        class: App\EventListener\JWTCreatedListener
-        # Précision de l'evenement à capter
+        class: App\EventListener\AuthenticationSuccessListener
+        # Précision de l’événement à capter
         tags:
-            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
 ```
 
 <div class="exercise">
 
-1. Créez un dossier `EventListener` dans `src` et ajoutez la classe `JWTCreatedListener` telle que définie ci-dessus puis complétez-la afin d'enregistrer l'identifiant, l'adresse email et le statut premium de l'utilisateur dans le payload.
+1. Créez un dossier `EventListener` dans `src` et ajoutez la classe `AuthenticationSuccessListener` telle que définie ci-dessus puis complétez-la afin d'enregistrer l'identifiant, le login, l'adresse email et le statut premium de l'utilisateur ainsi que la date d'expiration du `JWT` dans la réponse de la requête.
 
 2. Éditez le fichier `config/services.yaml` pour enregistrer ce gestionnaire d'événement.
 
-3. Videz le cache puis tentez de vous authentifier de nouveau. Décodez le nouveau `JWT` obtenu et vérifiez que les informations supplémentaires sont bien présentes.
+3. Videz le cache puis tentez de vous authentifier de nouveau. Vous devriez observer les nouvelles informations dans le corps de la réponse.
 
 </div>
 
@@ -1197,7 +1337,7 @@ On a aussi accès à d'autres variables :
 
 * `user` : représente l'instance de l'utilisateur connecté.
 
-* `object` : représente l'instance de la ressource en cours d'accès ou de modification.
+* `object` : représente l'instance de la ressource en cours d'accès ou de modification (on a donc accès à ses méthodes).
 
 Si l'objet ciblé a un lien avec l'utilisateur, il est alors possible de comparer un attribut de l'objet avec l'utilisateur, par exemple.
 
@@ -1219,6 +1359,12 @@ Dans cet exemple :
 
 * L'utilisateur ne peut consulter l'objet que si celui n'est pas privé, ou s'il en est le propriétaire, ou s'il est admin.
 
+Le paramètre `securityMessage` permet de customiser le message d'erreur.
+
+```php
+new Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user", securityMessage: "...")
+```
+
 <div class="exercise">
 
 1. Faites en sorte que seuls les utilisateurs authentifiés puissent créer des publications.
@@ -1227,21 +1373,15 @@ Dans cet exemple :
 
 3. Faites en sorte que seul l'utilisateur concerné puisse modifier ou supprimer son compte.
 
-3. Videz le cache.
+4. Videz le cache.
 
-4. Tentez d'accéder à une des routes sécurisées et vérifiez que l'accès vous est refusé.
+5. Sur `Postman`, supprimez le cookie `BEARER` contenant le `JWT` si celui-ci est toujours présent (bouton `Cookies` puis la croix à côté du cookie, pour le supprimer).
 
-   **Aide :** Pour pouvoir accéder à une route sécurisée, il faut vous authentifier auprès du serveur en lui envoyant le `JWT` dans les `Headers` de la requête. Pour faire cela sur `Postman`, suivez ces étapes :
+6. Tentez d'accéder à une des routes sécurisées. Vous obtenez normalement un message d'erreur.
 
-    * Dans l'onglet de la requête, rendez-vous dans `Authorization`.
+7. Reconnectez-vous (afin d'obtenir de nouveau le cookie contenant le `JWT`) puis réessayez de soumettre la requête de création d'une publication. Cela devrait fonctionner !
 
-    * Dans `TYPE`, sélectionnez `Bearer Token`.
-
-    * Dans `Token`, placez le JWT que vous avez obtenu en vous authentifiant (re-authentifiez vous si nécessaire).
-
-5. Réessayez de soumettre la requête de création d'une publication, cela devrait fonctionner !
-
-6. Essayer de supprimer une publication qui ne vous appartient pas et un compte qui ne vous appartient pas (cela ne doit pas fonctionner). Et vérifiez qu'à l'inverse, vous pouvez effectivement supprimer vos propres publications (celles du compte auquel vous êtes connectés), et que vous pouvez aussi modifier vos propres informations...
+8. Essayer de supprimer une publication qui ne vous appartient pas et un compte qui ne vous appartient pas (cela ne doit pas fonctionner). Et vérifiez qu'à l'inverse, vous pouvez effectivement supprimer vos propres publications (celles du compte auquel vous êtes connectés), et que vous pouvez aussi modifier vos propres informations...
 
 </div>
 
@@ -1255,11 +1395,11 @@ En plus du même `ProcessorInterface` que vous avez utilisé auparavant (pour sa
 
 <div class="exercise">
 
-1. Créez le **state processor** `PublicationProcessor`. Injectez les services qu'il faut et complétez la classe afin d'affecter l'utilisateur comme auteur de la publication traitée.
+1. Créez le **state processor** `PublicationProcessor`. Injectez les services qu'il faut et complétez la classe afin d'affecter l'utilisateur comme auteur de la publication traitée. Après avoir affecté l'utilisateur à la publication, il faudra poursuivre le traitement "normal" en utilisant le processeur d'API Platform. Attention à bien modifier le type de retour fonction `process` en `mixed` si vous utilisez la commande dédiée pour créer la classe.
 
 2. Au niveau de la classe `Publication`, spécifiez votre nouveau processeur au niveau de la méthode `POST`.
 
-3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également les attributs `NotBlank` et `NotNull` que vous aviez sans doute placé précédemment sur cette propriété.
+3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également les attributs `NotBlank` et `NotNull` (ou bien le paramètre `required` dans l'attribut `#[ApiProperty]`) que vous aviez sans doute placé précédemment sur cette propriété.
 
 4. Videz le cache puis tentez de créer une nouvelle publication (toujours en attachant votre `JWT` dans la requête). Vérifiez alors que la publication est bien créée et que l'auteur a bien été affecté par rapport à l'utilisateur représenté par le `JWT` que vous utilisez.
 
@@ -1320,7 +1460,7 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
 
 4. Dans votre base de données, rendez un utilisateur premium (en changeant manuellement la propriété). Sinon, si vous aviez fait la section à propos des commandes lors du dernier, vous pouvez les importer et les utiliser!
 
-5. Videz le cache. Sur Postman, utilisez le JWT d'un compte non premium et vérifiez que l'erreur apparaît bien si vous faites un message dépassant 50 caractères. Vérifiez également que l'erreur n'apparait pas si vous faites la même chose sur un compte premium (mais que dans ce cas, la limite à 200 est toujours présente).
+5. Videz le cache. Sur Postman, utilisez le JWT d'un compte non premium et vérifiez que l'erreur apparaît bien si vous faites un message dépassant 50 caractères. Vérifiez également que l'erreur n’apparaît pas si vous faites la même chose sur un compte premium (mais que dans ce cas, la limite à 200 est toujours présente).
 
 </div>
 
@@ -1346,19 +1486,19 @@ Normalement, vous avez toutes les connaissances nécessaires pour implémenter c
 
 </div>
 
-### Token de rafraichissement
+### Token de rafraîchissement
 
-Plus tôt, dans la partie consacrée aux **JWT**, nous avions évoqué le **système de rafraichissement** pour permettre une plus grande sécurité. La logique est la suivante :
+Plus tôt, dans la partie consacrée aux **JWT**, nous avions évoqué le **système de rafraîchissement** pour permettre une plus grande sécurité. La logique est la suivante :
 
 * Les JWT émis par l'application suite à l'authentification ont une faible durée de vie (3600 secondes par défaut). Ainsi, on limite les risques en cas de vol. En effet, les JWT ne sont stockés nulle part. Il n'y a pas vraiment moyen de les rendre invalide. Seule la date d'expiration définie le moment où le token n'est plus utilisable.
 
-* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraichissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, 1 mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraichir notre JWT, en transmettant le token de rafraichissement. Un nouveau JWT est transmis et la durée de vie du token de rafraichissement est réinitialisé (à son max). Côté serveur, on peut aussi supprimer les tokens de rafraichissement si besoin (et ainsi "déconnecter" l'utilisateur réellement).
+* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraîchissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, 1 mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraîchir notre JWT, en transmettant le token de rafraîchissement. Un nouveau JWT est transmis et la durée de vie du token de rafraîchissement est réinitialisé (à son max). Côté serveur, on peut aussi supprimer les tokens de rafraîchissement si besoin (et ainsi "déconnecter" l'utilisateur réellement).
 
-Contrairement au JWT, le token de rafraichissement peut être gardé de manière plus sécurisée et n'est pas transmis à chaque requête. Si un client n'est pas actif pendant une longue période (par exemple, 1 semaine) il ne sera pas déconnecté, mais quand il retournera sur l'application, son JWT sera renouvelé grâce au token de rafraichissement. Au bout d'une trop longue période d'inactivité (1-2 mois) l'utilisateur sera déconnecté par sécurité, à cause de l'expiration de son token de rafraichissement. Comme les tokens sont stockés dans la base de données, si un utilisateur se fait compromettre, il suffit de supprimer le token de rafraichissement.
+Contrairement au JWT, le token de rafraîchissement peut être gardé de manière plus sécurisée et n'est pas transmis à chaque requête. Si un client n'est pas actif pendant une longue période (par exemple, 1 semaine) il ne sera pas déconnecté, mais quand il retournera sur l'application, son JWT sera renouvelé grâce au token de rafraîchissement. Au bout d'une trop longue période d'inactivité (1-2 mois) l'utilisateur sera déconnecté par sécurité, à cause de l'expiration de son token de rafraîchissement. Comme les tokens sont stockés dans la base de données, si un utilisateur se fait compromettre, il suffit de supprimer le token de rafraîchissement.
 
 Pour mettre en place tout cela, nous allons nous servir du bundle `JWTRefreshTokenBundle`. La configuration est assez simple.
 
-* Tout d'abord, on crée l'entité suivante, qui correspond à l'entité gérant les tokens de rafraichissement (car ils sont stockés dans notre BDD) :
+* Tout d'abord, on crée l'entité suivante, qui correspond à l'entité gérant les tokens de rafraîchissement (car ils sont stockés dans notre BDD) :
 
 ```php
 namespace App\Entity;
@@ -1378,14 +1518,14 @@ class RefreshToken extends BaseRefreshToken
 }
 ```
 
-* Ensuite, on crée les différentes routes liées au rafraichissement, dans le fichier `config/routes.yaml` :
+* Ensuite, on crée les différentes routes liées au rafraîchissement, dans le fichier `config/routes.yaml` :
 
 ```yaml
-#Route pour rafraichir notre JWT
+#Route pour rafraîchir notre JWT
 api_refresh_token:
     path: /api/token/refresh
 
-#Route pour invalider notre token de rafraichissement (le supprimer). utile pour se "déconnecter" réellement.
+#Route pour invalider notre token de rafraîchissement (le supprimer). Utile pour se "déconnecter" réellement.
 api_token_invalidate:
     path: /api/token/invalidate
 ```
