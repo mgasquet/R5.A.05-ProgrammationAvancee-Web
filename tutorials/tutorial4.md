@@ -1401,7 +1401,7 @@ En plus du même `ProcessorInterface` que vous avez utilisé auparavant (pour sa
 
 3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également les attributs `NotBlank` et `NotNull` (ou bien le paramètre `required` dans l'attribut `#[ApiProperty]`) que vous aviez sans doute placé précédemment sur cette propriété.
 
-4. Videz le cache puis tentez de créer une nouvelle publication (toujours en attachant votre `JWT` dans la requête). Vérifiez alors que la publication est bien créée et que l'auteur a bien été affecté par rapport à l'utilisateur représenté par le `JWT` que vous utilisez.
+4. Videz le cache puis connectez-vous (si ce n'est pas déjà fait, c'est à dire si vous ne possédez pas le cookie **BEARER** contenant le `JWT`) et tentez de créer une nouvelle publication. Le JWT sera automatiquement envoyé au serveur avec la requête, dans un cookie. Vérifiez alors que la publication est bien créée et que l'auteur a bien été affecté par rapport à l'utilisateur représenté par le `JWT` que vous utilisez.
 
 </div>
 
@@ -1427,14 +1427,14 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
     {
     }
 
-    public function __invoke(object $object): array|GroupSequence
+    public function __invoke(object $object): array
     {
         //$object correspond à l'entité (Publication, Utilisateur...)
         //On peut vérifier que l'objet traité est bien du type attendu...
         assert($object instanceof Exemple);
 
         //On décide du (ou des) groupe(s) à ajouter...
-        $group = "..."
+        $group = "...";
 
         //On retourne un tableau avec le groupe "Default" et le (ou les) groupe(s) ajoutés
         return ['Default', $group];
@@ -1466,7 +1466,7 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
 
 ### Vérification du mot de passe avant mise à jour
 
-L'assertion `#[UserPassword]` (placé au-dessus d'une propriété) permet de vérifier que la chaîne de caractère (en clair) correspond au mot de passe de l'utilisateur, lors de la phase de validation.
+L'attribut `#[UserPassword]` (placé au-dessus d'une propriété) permet de vérifier que la chaîne de caractère (en clair) correspond au mot de passe actuel de l'utilisateur, lors de la phase de validation.
 
 Nous souhaitons créer un système pour que quand un utilisateur souhaite mettre à jour son profil, il soit obligé de préciser une propriété `currentPlainPassword` dans le payload afin de valider son identité (et seulement pour la mise à jour !).
 
@@ -1474,11 +1474,11 @@ Normalement, vous avez toutes les connaissances nécessaires pour implémenter c
 
 <div class="exercise">
 
-1. Créez une propriété `currentPlainPassword` dans la classe `Utilisateur` (propriété non stockée en base). Ajoutez aussi les getters/setters nécessaires.
+1. Créez une propriété `currentPlainPassword` dans la classe `Utilisateur` (propriété **non stockée en base**, comme `plainPassword`). Ajoutez aussi les getters/setters nécessaires.
 
-2. En utilisant cette nouvelle propriété, l'assertion `#[UserPassword]` et les connaissances acquises dans ce TD, faites en sorte que lors d'une mise à jour (PATCH) l'utilisateur soit obligé de confirmer son mot de passe via la propriété `currentPlainPassword` (afin de valider son identité avant d'effectuer la mise à jour). 
+2. En utilisant cette nouvelle propriété, l'attribut `#[UserPassword]` et les connaissances acquises dans ce TD, faites en sorte que lors d'une mise à jour (PATCH) l'utilisateur soit obligé de confirmer son mot de passe via la propriété `currentPlainPassword` (afin de valider son identité avant d'effectuer la mise à jour). 
    
-   Vous n'avez pas besoin de quitter la classe `Utilisateur` ou créer de nouvelles classes. Attention, cette propriété ne doit pas être utilisée lors de la création de l'entité, ou de sa lecture.
+   Vous n'avez pas besoin de quitter la classe `Utilisateur` ou créer de nouvelles classes. Attention, **cette propriété ne doit pas être utilisée lors de la création de l'entité, ou de sa lecture**. Vous pouvez configurer `#[UserPassword]` comme les autres assertions (en utilisant le paramètre `groups`, par exemple).
 
 3. Dans la méthode `eraseCredentials` mettez aussi `currentPlainPassword` à **null**.
 
@@ -1492,9 +1492,11 @@ Plus tôt, dans la partie consacrée aux **JWT**, nous avions évoqué le **syst
 
 * Les JWT émis par l'application suite à l'authentification ont une faible durée de vie (3600 secondes par défaut). Ainsi, on limite les risques en cas de vol. En effet, les JWT ne sont stockés nulle part. Il n'y a pas vraiment moyen de les rendre invalide. Seule la date d'expiration définie le moment où le token n'est plus utilisable.
 
-* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraîchissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, 1 mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraîchir notre JWT, en transmettant le token de rafraîchissement. Un nouveau JWT est transmis et la durée de vie du token de rafraîchissement est réinitialisé (à son max). Côté serveur, on peut aussi supprimer les tokens de rafraîchissement si besoin (et ainsi "déconnecter" l'utilisateur réellement).
+* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraîchissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, 1 mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraîchir notre JWT, en transmettant le token de rafraîchissement. Un nouveau JWT est transmis et la durée de vie du token de rafraîchissement est soit réinitialisé (durée de vie remise au maximum), ou alors, un nouveau token de rafraîchissement est émis. Côté serveur, on peut aussi supprimer les tokens de rafraîchissement si besoin (et ainsi "déconnecter" l'utilisateur réellement).
 
-Contrairement au JWT, le token de rafraîchissement peut être gardé de manière plus sécurisée et n'est pas transmis à chaque requête. Si un client n'est pas actif pendant une longue période (par exemple, 1 semaine) il ne sera pas déconnecté, mais quand il retournera sur l'application, son JWT sera renouvelé grâce au token de rafraîchissement. Au bout d'une trop longue période d'inactivité (1-2 mois) l'utilisateur sera déconnecté par sécurité, à cause de l'expiration de son token de rafraîchissement. Comme les tokens sont stockés dans la base de données, si un utilisateur se fait compromettre, il suffit de supprimer le token de rafraîchissement.
+Contrairement au JWT, le token de rafraîchissement peut être gardé de manière plus sécurisée et n'est pas transmis à chaque requête. Si un client n'est pas actif pendant une longue période (par exemple, une semaine) il ne sera pas déconnecté, mais quand il retournera sur l'application, son JWT sera renouvelé grâce au token de rafraîchissement. Au bout d'une trop longue période d'inactivité (par exemple, plusieurs mois) l'utilisateur sera déconnecté par sécurité, à cause de l'expiration de son token de rafraîchissement. Comme les tokens sont stockés dans la base de données, si un utilisateur est compromis, il suffit de supprimer le token de rafraîchissement.
+
+La sécurisation de ce token est aussi primordiale, car il permet d'obtenir de nouveaux JWTs de manière illimitée (pendant toute la durée de vie du token). Ici aussi, il est alors judicieux de s'orienter vers un stockage **dans un cookie sécurisé** (comme nous l'avons fait pour le `JWT` d'authentification), plutôt que de renvoyer directement le token dans le corps de la réponse.
 
 Pour mettre en place tout cela, nous allons nous servir du bundle `JWTRefreshTokenBundle`. La configuration est assez simple.
 
@@ -1514,7 +1516,7 @@ use Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken as BaseRefreshToken;
 #[ORM\Table(name: 'refresh_tokens')]
 class RefreshToken extends BaseRefreshToken
 {
-    //Pas besoin de propriété particulières.
+    //Pas besoin de propriété(s) particulière(s).
 }
 ```
 
@@ -1530,7 +1532,7 @@ api_token_invalidate:
     path: /api/token/invalidate
 ```
 
-* Après, on édite le fichier `security.yaml` afin de paramétrer notre système de rafraichissement et nos deux nouvelles routes :
+* Après, on édite le fichier `security.yaml` afin de paramétrer notre système de rafraîchissement et nos deux nouvelles routes :
 
 ```yaml
 security:
@@ -1546,24 +1548,27 @@ security:
                 path: api_token_invalidate
 ```
 
-* Enfin, dans `config/packages`, on crée le fichier `gesdinet_jwt_refresh_token.yaml` pour configurer le bundle et indiquer quelle classe correspond au token de rafraichissement :
+* Enfin, dans `config/packages`, on crée le fichier `gesdinet_jwt_refresh_token.yaml` pour configurer le bundle et indiquer quelle classe correspond au token de rafraîchissement :
 
 ```yaml
 #config/packages/gesdinet_jwt_refresh_token.yaml
 gesdinet_jwt_refresh_token:
-    #Classe du token de rafraichissement
+    #Classe représentant le token de rafraîchissement
     refresh_token_class: App\Entity\RefreshToken
-    #Pour que la durée de vie du token de rafraichissement soit réinitialisée (à son max) après chaque utilisation
+    #Pour que la durée de vie du token de rafraîchissement soit réinitialisée (à son maximum) après chaque utilisation
     ttl_update: true
+    #Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de la renvoyé dans le corps de la réponse.
+    cookie:
+        enabled: true
     #Le firewall (section définie dans security.yaml) paramétrant notre système de déconnexion / d'invalidation de token.
     logout_firewall: main
 ```
 
 Maintenant, quand vous vous authentifierez avec la route `/api/auth`, vous obtiendrez votre `token` (JWT) habituel ainsi qu'un token `refresh_token`. Vous pourrez alors l'utiliser dans le payload des routes suivantes :
 
-* `/api/token/refresh` (en POST) : rafraichit votre JWT et réinitialise la durée de vie du token de rafraichissement.
+* `/api/token/refresh` (en POST) : rafraîchit votre JWT et réinitialise la durée de vie du token de rafraîchissement.
 
-* `/api/token/invalidate` (en POST) : supprime le token de rafraichissement. L'utilisateur sera donc "déconnecté" quand son JWT arrivera à expiration (il peut aussi détruire son JWT côté client, mais ici on s'assure que le dernier JWT transmis ne pourra pas être renouvelé).
+* `/api/token/invalidate` (en POST) : supprime le token de rafraîchissement. L'utilisateur sera donc "déconnecté" quand son JWT arrivera à expiration (il peut aussi détruire son JWT côté client, mais ici on s'assure que le dernier JWT transmis ne pourra pas être renouvelé).
  
 On a aussi accès à quelques commandes utiles, comme :
 
@@ -1572,7 +1577,7 @@ php bin/console gesdinet:jwt:clear
 php bin/console gesdinet:jwt:revoke TOKEN
 ```
 
-La première commande permet de supprimer tous les tokens de rafraichissement ayant expiré. La seconde permet de révoquer un token précis (par exemple, si le compte de l'utilisateur est compromis).
+La première commande permet de supprimer tous les tokens de rafraîchissement ayant expiré. La seconde permet de révoquer un token précis (par exemple, si le compte de l'utilisateur est compromis).
 
 Maintenant, à vous de jouer!
 
@@ -1595,27 +1600,33 @@ Maintenant, à vous de jouer!
     ];
     ```
 
-3. Créez l'entité `RefreshToken` (vous pouvez directement copié le code présenté plus tôt).
+3. Créez l'entité `RefreshToken` (vous pouvez directement copier le code présenté plus tôt).
 
 4. Remplissez les différents fichiers de configurations : `routes.yaml`, `security.yaml`, `gesdinet_jwt_refresh_token.yaml`.
 
 5. Videz le cache.
 
-6. Mettez à jour la structure de votre base de données.
+6. Mettez à jour la structure de votre base de données en utilisant les commandes adéquates.
 
 7. Testez votre nouveau système :
 
-    * Authentifiez-vous et vérifiez que vous obtenez bien un `refresh_token` en plus de votre token habituel.
+    * Authentifiez-vous et vérifiez que vous obtenez bien un `refresh_token` dans vos **cookies** en plus de votre token habituel.
 
-    * Testez la route permettant de rafraichir votre JWT (vous obtenez un nouveau token).
+    * Testez la route permettant de rafraîchir votre JWT. Dans vos cookies, vous pourrez alors constater que le cookie `BEARER` contenant le `JWT` d'authentification est mis à jour.
 
-    * Testez la route permettant d'invalider votre token. Normalement, si vous essayez après cela de rafraîchir votre JWT, il doit y avoir une erreur.
+    * Testez la route permettant d'invalider votre token. Il doit alors aussi disparaître de vos **cookies**. Normalement, si après cela vous essayez de rafraîchir votre JWT, il doit y avoir une erreur.
+
+    * Vous pouvez aussi observer la table gérant les **tokens de rafraîchissement** dans votre base de données.
 
 </div>
 
+Dans l'absolu, nous pourrions aussi inclure (lors de l'authentification ou du rafraîchissement) des informations sur le token de rafraîchissement (notamment, sa date d'expiration). Cependant, dans l'absolu, le client n'en a pas vraiment besoin. S'il essaye de rafraîchir le `JWT` alors que le token de rafraîchissement a expiré, le serveur renverra une erreur `401` (Unauthorized) et le client sera alors au courant que le token a expiré. A l'inverse, pour le `JWT` d'authentification, il est essentiel que le client connaisse la date d'expiration afin d'utiliser le token de rafraîchissement au moment opportun.
+
+Si toutefois on a vraiment besoin de donner certaines informations du jwt au client (dans le corps de la réponse `JSON`), on peut alors adapter la classe `AuthenticationSuccessListener` et décoder le token de rafraîchissement qui est associé à la clé `refresh_token` dans `$data`.
+
 ### Utiliser les voters
 
-Si vous avez complété la section bonus du TD précédent concernant les **permisisons avancées** et les **voters**, sachez que vous pouvez aussi les utiliser ici.
+Si vous avez complété la section bonus du TD précédent concernant les **permissions avancées** et les **voters**, sachez que vous pouvez aussi les utiliser ici.
 
 Dans le paramètre `security` de chaque opération, il suffit de préciser la permission dans la fonction `is_granted` et l'objet `object` (si besoin de vérifier la permission par rapport à un objet précis, comme le propriétaire, etc.) :
 
@@ -1635,11 +1646,11 @@ Dans le paramètre `security` de chaque opération, il suffit de préciser la pe
 
 2. Mettez à jour la permission de l'opération `DELETE` pour utiliser la permission définie dans votre **voter**.
 
-3. Créez un nouveau **voter** nommé `UtilisateurVoter` et traitant la permission `UTILISATEUR_EDIT` (qui sera utilisé à la fois pour la mise à jour et la suppression). Cette permission est accordée à un utilisateur connecté qui soit administrateur (`ROLE_ADMIN`) soit lui-même l'objet cible de cette permission.
+3. Créez un nouveau **voter** nommé `UtilisateurVoter` et traitant la permission `UTILISATEUR_EDIT` (qui sera utilisé à la fois pour la mise à jour et la suppression). Cette permission est accordée à un utilisateur connecté qui est soit administrateur (`ROLE_ADMIN`) soit lui-même l'objet cible de cette permission.
 
 4. Mettez à jour les permissions des opérations `PATCH` et `DELETE` pour utiliser votre nouvelle permission, issue de votre **voter**.
 
-5. Videz le cache et testez que les permissions fonctionnent bien (mêmes tests que dans l'exercice que nous avions effectué dans la partie "sécurité de ce TD).
+5. Videz le cache et vérifiez que les permissions fonctionnent bien (mêmes tests que dans l'exercice que nous avions effectué dans la partie "sécurité" de ce TD).
 
 6. Si vous voulez, vous pouvez également ajouter une permission `PUBLICATION_CREATE` dans votre `PublicationVoter`. La permission est accordée si l'utilisateur est connecté (donc possède `ROLE_USER`). Cela permet de centraliser cette permission et la changer si besoin, dans le futur. Attention toutefois dans la méthode `support`, il faut autoriser que l'objet traité soit **null** en modifiant légèrement la condition (dans une opération de création, la publication n'existe pas encore...).
 
