@@ -11,6 +11,8 @@ La seconde partie de la découverte de ce framework va se concentrer sur la gest
 
 Enfin, dans une seconde partie, nous effectuerons quelques finitions sur le site comme ajouter des auteurs pour les publications et des pages personnelles pour les utilisateurs. Nous verrons aussi comment **inclure** d'autres templates dans un template Twig et enfin, nous personnaliserons nos pages d'erreur.
 
+**On rappelle que les commandes doivent être exécutées à l'intérieur de votre conteneur Docker.**
+
 ## Barre de débogage
 
 Vous avez sans doute remarqué une barre d'outil s'affichant sur chaque page de votre application (si elle ne s'affiche pas, il faut cliquer sur le logo Symfony, en bas à droite). Cette barre s'affiche car nous sommes dans un environnement de développement (nous en reparlerons plus tard). Cette barre est très utile car elle nous fournit beaucoup d'informations :
@@ -351,11 +353,18 @@ $valeurChamp = $form["monChamp"]->getData();
 
 <div class="exercise">
 
-1. Si vous travaillez sur une machine locale sous Linux ou macOS, vous devrez surement donner certaines permissions (notamment l'écriture de fichiers) à votre serveur web. Pour cela, exécutez les [commandes listées ici](https://symfony.com/doc/current/setup/file_permissions.html#1-using-acl-on-a-system-that-supports-setfacl-linux-bsd) en remplaçant le `var` par le chemin du répertoire de votre projet (par exemple, en précisant `.` de manière relative, si vous éxécutez ces commandes à la racine du projet). Sur les machines de l'IUT, normalement, vous avez déjà donné les permissions nécessaires (pour le serveur de l'IUT) au début du TD1.
+1. Dans `public/img/utilisateurs`, créez un dossier `uploads`.
 
-2. Dans le fichier `config/services.yaml`, ajoutez un paramètre `dossier_photo_profil` ayant pour valeur : `'%kernel.project_dir%/public/img/utilisateurs/uploads'`. La partie `%kernel.project_dir%` désigne la racine du projet. C'est un paramètre défini par Symfony (notez qu'en utilisant `%` on peut utiliser la valeur d'autres paramètres pour construire un autre paramètre, comme c'est le cas ici.).
+2. En vous plaçant à la racine du projet, donnez les droits nécessaires au serveur pour qu'il puisse créer et éditer des fichiers à l'intérieur de ce dossier :
 
-3. Dans le dossier `src/Service`, créez et complétez la classe suivante :
+    ```
+    setfacl -R -m u:www-data:rwx ./public/img/utilisateurs/uploads
+    setfacl -R -m d:u:www-data:rwx ./public/img/utilisateurs/uploads
+    ```
+
+3. Dans le fichier `config/services.yaml`, ajoutez un paramètre `dossier_photo_profil` ayant pour valeur : `'%kernel.project_dir%/public/img/utilisateurs/uploads'`. La partie `%kernel.project_dir%` désigne la racine du projet. C'est un paramètre défini par Symfony (notez qu'en utilisant `%` on peut utiliser la valeur d'autres paramètres pour construire un autre paramètre, comme c'est le cas ici.).
+
+4. Dans le dossier `src/Service`, créez et complétez la classe suivante :
 
     ```php
     namespace App\Service;
@@ -401,9 +410,9 @@ $valeurChamp = $form["monChamp"]->getData();
 
     }
     ```
-4. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `proccessNewUtilisateur` (on rappelle qu'il est très facile d'extraire une interface depuis une classe concrète avec **PHPStorm** !). Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface (c'est elle qu'on injectera dans les contrôleurs/services).
+5. Comme nous l'avions fait pour `FlashMessageHelper`, définissez une interface `UtilisateurManagerInterface` contenant la signature de `proccessNewUtilisateur` (on rappelle qu'il est très facile d'extraire une interface depuis une classe concrète avec **PHPStorm** !). Ensuite, faites le nécessaire pour que `UtilisateurManager` implémente cette interface (c'est elle qu'on injectera dans les contrôleurs/services).
 
-5. Dans votre route `inscription`, faites en sorte de gérer la soumission du formulaire et de sauvegarder l'utilisateur construit à partir du formulaire dans la base de données. Cependant, **avant de sauvegarder l'utilisateur**, il faudra extraire `plainPassword` puis `fichierPhotoProfil` et enfin utiliser votre nouveau service avec sa méthode `proccessNewUtilisateur`.
+6. Dans votre route `inscription`, faites en sorte de gérer la soumission du formulaire et de sauvegarder l'utilisateur construit à partir du formulaire dans la base de données. Cependant, **avant de sauvegarder l'utilisateur**, il faudra extraire `plainPassword` puis `fichierPhotoProfil` et enfin utiliser votre nouveau service avec sa méthode `proccessNewUtilisateur`.
 
     N'oubliez pas aussi de prendre en charge les erreurs du formulaire, à sauvegarder comme messages flash ! En utilisant le service dédié que nous avons créé lors du précédent TD.
     
@@ -411,7 +420,7 @@ $valeurChamp = $form["monChamp"]->getData();
     
     Encore une fois, vous pouvez vous inspirer (en partie) du code de votre route `feed`, pour la création d'une publication.
 
-6. Testez d'inscrire un utilisateur en respectant les différentes contraintes et en précisant une image de profil. Vérifiez que :
+7. Testez d'inscrire un utilisateur en respectant les différentes contraintes et en précisant une image de profil. Vérifiez que :
 
     * Vous êtes bien redirigé vers la page principale et le message flash "Inscription réussie" apparaît.
 
@@ -419,11 +428,11 @@ $valeurChamp = $form["monChamp"]->getData();
 
     * L'image de profil a bien été uploadée dans le dossier `public/img/utilisateurs/uploads`.
 
-7. Tentez d'inscrire un nouvel utilisateur, sans image de profil (cela doit fonctionner).
+8. Tentez d'inscrire un nouvel utilisateur, sans image de profil (cela doit fonctionner).
 
-8. Testez les différents cas d'erreurs possibles en ne respectant pas certaines contraintes (sur le login, le mot de passe, le format de l'image de profil...) et vérifiez que les messages flash d'erreur s'affichent bien.
+9. Testez les différents cas d'erreurs possibles en ne respectant pas certaines contraintes (sur le login, le mot de passe, le format de l'image de profil...) et vérifiez que les messages flash d'erreur s'affichent bien.
 
-9. En modifiant `UtilisateurType`, ajoutez des contraintes "clientes" (avec `attr`, comme vous l'avez fait dans `PublicationType`) qui permettront de générer des attributs HTML sur les balises du formulaire pour que le navigateur vérifie certaines contraintes côté client :
+10. En modifiant `UtilisateurType`, ajoutez des contraintes "clientes" (avec `attr`, comme vous l'avez fait dans `PublicationType`) qui permettront de générer des attributs HTML sur les balises du formulaire pour que le navigateur vérifie certaines contraintes côté client :
 
     * `minlength` et `maxlength` sur le login et le mot de passe.
 
@@ -805,7 +814,7 @@ Maintenant, il ne reste plus qu'à finaliser notre site, notamment en reliant no
 
 Avec **doctrine**, pour associer deux entités, il suffit de créer un attribut faisant référence à une autre classe et utiliser les attributs nécessaires pour préciser le sens et la cardinalité de cette association. Il est aussi possible de paramétrer la stratégie en cas de suppression (mettre à `null` les colonnes faisant référence ou bien supprimer les entités associées...).
 
-Voici la liste des attributs disponibles, qui devraient notamment vous rappeller celles utilisées avec **hibernate** en base de données en 2ème année :
+Voici la liste des attributs disponibles, qui devraient notamment vous rappeler celles utilisées avec **hibernate** en base de données en 2ème année :
 
 * `#[ORM\ManyToOne(inversedBy: ...)]` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder **une instance** de l'entité ciblée. Le paramètre `inversedBy` permet de spécifier le nom de l'attribut de la classe cible qui fait référence à l'entité (où on place cette annotation).
 

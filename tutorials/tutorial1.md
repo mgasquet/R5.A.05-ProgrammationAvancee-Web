@@ -9,9 +9,21 @@ lang: fr
 
 **Petite note à l'attention des étudiants du parcours IAMSI** : le TD fait parfois référence au **cours de complément web** de l'année dernière, car nous revenons sur certaines notions, technologies et concepts déjà abordés dans ce cours. Malheureusement, de votre côté, vous n'avez pas eu ce cours spécifique au parcours **RACDV**. Mais pas de panique ! Le TD a été aussi pensé pour vous et ces notions sont réexpliquées complètement. Simplement, là où certaines sections feront office de rappel pour le parcours **RACDV**, dans votre cas, cela sera une découverte. Donc, ne vous en faites pas s'il est fait mention de ce cours de l'année dernière. Ce TD a été conçu pour être accessible par tous !
 
+## Mise en place de l’environnement de développement avec Docker
+
+Afin de simplifier la mise en place de l'environnement de développement en évitant les divers problèmes de compatibilité selon votre machine ou votre système d'exploitation, le travail sur les différents TPs s'effectuera au traves d'un **conteneur Docker** configuré adéquatement et possédant tous les outils dont vous aurez besoin.
+
+<div class="exercise">
+
+Allez sur la page du [dépôt du conteneur Docker](https://gitlabinfo.iutmontp.univ-montp2.fr/progweb-but3/docker), et faites le tutoriel d’installation et de configuration (instructions au niveau du fichier `README.md`). Vous ne devez normalement pas y passer plus de 30 minutes.
+
+</div>
+
+**Toutes les commandes citées dans ce TP (et les prochains) devront être exécutées dans le conteneur du serveur web.**
+
 ## Introduction
 
-L'année dernière, dans le cadre du cours de **complément web**, vous avez étudié et mis en pratique les notions essentielles afin de construire un **framework** web. Nous nous sommes notamment intéressé aux notions de conteneur à injection de dépendances (conteneur IoC), aux design patterns et globalement aux outils utiles permettant de rendre notre framework simple d'utilisation et hautement paramétrable.
+L'année dernière, dans le cadre du cours de **complément web** (pour le parcours RACDV), vous avez étudié et mis en pratique les notions essentielles afin de construire un **framework** web. Nous nous sommes notamment intéressé aux notions de conteneur à injection de dépendances (conteneur IoC), aux design patterns et globalement aux outils utiles permettant de rendre notre framework simple d'utilisation et hautement paramétrable.
 
 Mais concrètement, qu'est-ce qu'un **framework** ? Un framework est un "cadre de développement" fournissant une architecture et des outils permettant de créer une application (dans notre cas une application web, mais il en existe aussi pour d'autres types de logiciels). Un framework est composé de différentes briques logicielles et est généralement construit de manière à favoriser les bonnes pratiques de conception (utilisation de patterns, architecture organisée en couche, faible couplage, principes SOLID...). La sécurité (basique) de l'application est généralement assurée sans action du développeur (par exemple, pour le web, protection par défaut contre l'injection SQL, le CSRF, la faille XSS...).
 
@@ -71,63 +83,35 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
 <div class="exercise">
 
-1. Si vous êtes sur **votre machine personnelle**, il faudra bien entendu avoir installé **composer** : [téléchargement sur le site](https://getcomposer.org/download/). Il est possible que vous l'ayez déjà installé l'année dernière.
+1. Depuis le terminal (dans le conteneur docker), assurez vous d'être bien placé dans `/var/www/html`.
 
-2. Pour le placement du dossier du projet, vous avez **trois choix**, selon votre situation :
-
-    * Si vous souhaitez utiliser le serveur de l'IUT : rendez-vous dans le dossier `public_html` pour que votre projet soit accessible publiquement au travers du serveur `webinfo`.
-
-    * Si vous êtes sur votre machine avec un serveur Web local (`XAMPP`, `apache`, `Wamp`, `UwAmp`, `Mamp`). Il faudra simplement créer le projet dans un dossier accessible par votre serveur.
-
-    * Si vous êtes sur votre machine sans serveur local mais avec **PHP installé**, vous pourrez créer le dossier n'importe où et utiliser le **serveur local de Symfony** à télécharger [ici](https://github.com/symfony-cli/symfony-cli/releases/).
-
-      Dans la version tout en haut de la page, cliquez sur le bouton `Assets` afin d'afficher toutes les versions et sélectionnez celle
-      correspondant à votre système d'exploitation (généralement, `symfony-cli_windows_386.zip` pour Windows, `symfony-cli_darwin_all.tar.gz` pour macOS, et `symfony-cli_linux_386.tar.gz` pour Linux). 
-
-      Vous placerez le fichier `symfony` contenu dans l'archive dans le dossier du projet, une fois créé. Nous verrons comment utiliser ce serveur plus tard.
-
-3. Dans le répertoire où vous souhaitez placer le dossier du projet, exécutez les commandes suivantes :
+2. Exécutez les commandes suivantes :
 
     ```bash
-    composer create-project symfony/skeleton:"6.4.*" nom_projet
-    cd nom_projet
+    composer create-project symfony/skeleton:"6.4.*" the_feed
+    cd the_feed
     composer require webapp
     ```
 
-   Remplacez `nom_projet` par ce que vous souhaitez (par exemple, `the_feed`). Il se peut que composer vous demande de faire un choix concernant Docker, tapez simplement "n".
+   Il se peut que composer vous demande de faire un choix concernant Docker, tapez simplement "n".
 
    Cet ensemble de commandes crée les fichiers de base de votre projet et télécharge les briques logicielles essentielles pour le développement d'un site web.
 
-4. Aussi, **si vous travaillez sur le serveur web de l'IUT**, assurez-vous qu'il dispose de tous les droits nécessaires par rapport à votre dossier `public_html` :
+3. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à executer depuis la racine du projet) :
 
    ```bash
-   setfacl -R -m u:www-data:rwx ~/public_html
-   setfacl -R -m d:u:www-data:rwx ~/public_html
+   setfacl -R -m u:www-data:rwx .
+   setfacl -R -m d:u:www-data:rwx .
    ```
+   On rappelle encore une fois qu'il faut exécuter ces commandes dans le terminal qui s'exécute dans votre conteneur docker.
 
-   Il peut y avoir quelques permissions non accordées, ce n'est pas grave.
+   Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
 
-5. Ouvrez le répertoire du projet (`the_feed`) avec votre **IDE** favori (de préférence, `PHPStorm`).
+4. Sur votre machine, ouvrez le répertoire du projet (`the_feed`) avec votre **IDE** favori (de préférence, `PHPStorm`). Celui-ci se trouve dans le dossier partagé `shared/public_html` (là où vous avez installé le conteneur docker).
 
-6. Téléchargez le {% endraw %}[fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess){% raw %}, renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
+5. Téléchargez le {% endraw %}[fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess){% raw %}, renommez-le `.htaccess` et placez-le dans le sous-dossier `public` du projet.
 
-7. Si vous travaillez sur le serveur de l'iut, téléchargez aussi un {% endraw %}[deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2){% raw %}, renommez-le `.htaccess` et placez-le à la racine de votre projet. Le rôle de ce fichier est capital, car il permet de protéger vos fichiers de configuration pour qu'ils ne soient pas lisibles par tout le monde ! (par exemple, éviter d'exposer le mot de passe BDD...). Cela est dû au fait que votre projet soit hébergé dans une sous-partie du serveur web de l'iut, ce qui n'arrivera donc pas dans un hébergeur normal, avec un nom de domaine qui pointera directement sur votre dossier `public`.
-
-8. Testez que votre projet a bien été initialisé en vous rendant à l'adresse correspondant à votre situation :
-
-    * Sur le serveur de l'IUT : [https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/](https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/)
-
-    * Ou bien sur votre serveur local : [http://localhost/chemin_dossier_projet/public/](http://localhost/chemin_dossier_projet/public/)
-
-    * Ou bien en utilisant le serveur de `Symfony` : placez le fichier `symfony` issu de l'archive téléchargé précédemment dans le dossier du projet puis exécutez la commande `./symfony serve`. Le serveur est alors accessible à cette adresse : [http://localhost:8000/](http://localhost:8000/). Si vous souhaitez utiliser `https` à la place de `http`, il faut d'abord exécuter (une seule fois) la commande `./symfony serve:ca:install`.
-    
-    Pour la dernière option, sous `macOS`, il est possible que vous ayez le message d'erreur suivant : "impossible d'ouvrir Symfony car le développeur ne peut pas être vérifié". 
-    
-    Dans ce cas :
-
-    1. Allez dans "préférences système" / "sécurité et confidentialité" / "général".
-    2. Cliquez sur le cadenas pour déverrouiller la fenêtre.
-    3. Dans "Autoriser les applications téléchargées de App Store et développeurs identifiés" cliquez sur le bouton "Autoriser quand même" pour débloquer l'utilisation de Symfony.
+6. Testez que votre projet a bien été initialisé en vous rendant à l'adresse [https://localhost/the_feed/public](https://localhost/the_feed/public)
 
 </div>
 
@@ -135,7 +119,7 @@ Vous devriez maintenant voir la page par défaut de Symfony, signe que tout est 
 
 Comme vous pouvez le constater, il y a **beaucoup** de fichiers qui ont été générés. Au lieu de tous vous les présenter dans une section dédiée, nous parlerons plutôt de chaque fichier/dossier utile individuellement quand nous aurons besoin de l'utiliser.
 
-Quand vous uploaderez votre projet sur git, certains dossiers comme `vendor` (contenant les librairies importées) ou bien le cache du site seront ignorés. Pour installer un projet déjà existant (chez vous, sur une autre machine) il suffit d'exécuter la commande suivante à la racine du projet :
+Quand vous uploaderez votre projet sur git, certains dossiers comme `vendor` (contenant les librairies importées) ou bien le cache du site seront ignorés. Pour installer un projet déjà existant (chez vous, sur une autre machine, dans un autre conteneur docker...) il suffit d'exécuter la commande suivante à la racine du projet :
 
 ```bash
 composer install
@@ -222,7 +206,7 @@ public function methodeExemple(): Response
 }
 ```
 
-* Le premier paramètre correspond au sous-chemin à partir de la racine de votre site web. Dans l'exemple ci-dessus, si par exemple votre projet est hébergé sur `http://monsite.com`, alors cela correspond à l'url `http://monsite.com/public/exemple` (dans un cas réel, on pointerait directement le nom de domaine sur le sous-dossier "public" du projet, et pas à sa racine, ce qui donnerait alors directement `http://monsite.com/exemple`. C'est aussi le cas si vous utilisez le serveur local de symfony).
+* Le premier paramètre correspond au sous-chemin à partir de la racine de votre site web. Dans l'exemple ci-dessus, si par exemple votre projet est hébergé sur `https://monsite.com`, alors cela correspond à l'url `https://monsite.com/public/exemple` (dans un cas réel, on pointerait directement le nom de domaine sur le sous-dossier "public" du projet, et pas à sa racine, ce qui donnerait alors directement `https://monsite.com/exemple`.
 
 * Le second paramètre `name` correspond au nom de la route. Celui-ci doit être **unique** dans toute l'application (pas deux routes avec le même nom). Ce nom de route est très important, car on pourra l'utiliser au lieu du chemin pour rediriger l'utilisateur, ou bien générer des URLs dans nos pages HTML.
 
@@ -309,13 +293,13 @@ public function methodeExempleGet(): Response
 
 <div class="exercise">
 
-1. En utilisant la commande `make:controller` (à la racine du projet), créez un contrôleur nommé `DemoController`.
+1. En utilisant la commande `make:controller` (à la racine du projet), créez un contrôleur nommé `DemoController`. On rappelle (une dernière fois) que les commandes doivent être exécutées dans le terminal s’exécutant dans votre conteneur docker !
 
 2. Supprimez la méthode d'exemple générée par défaut dans votre nouveau contrôleur.
 
 3. Créez une méthode ayant une route visant le chemin `/hello`, nommée `hello_get` et autorisant seulement la méthode `GET`. Cette méthode doit renvoyer "Hello world" à l'utilisateur. Testez votre route sur votre site.
 
-4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site (`http://adressedusite/public/hello/Paul` ou bien simplement `http://adressedusite/hello/Paul` si vous utilisez le serveur de symfony).
+4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site (`https://adressedusite/public/hello/Paul` ou bien simplement `https://adressedusite/hello/Paul` si vous utilisez le serveur de symfony).
 
 </div>
 
@@ -567,6 +551,27 @@ DATABASE_URL=sgbd://username:password@ip:port/nom_base
 
 La partie `sgbd` correspond au SGBD utilisé : `mysql`, `postgres`, `sqlite`, `oracle`, etc...
 
+Vous aurez remarqué que votre **conteneur Docker** est divisé en deux sous-conteneurs :
+
+* Le conteneur du serveur web dans lequel vous exécutez les commandes.
+
+* Un conteneur **mysql** qui permet de gérer diverses bases de données.
+
+Si vous jetez un œil au fichier `compose.yaml` vous observerez que le service `mysql` est nommé `db`. Une autre ligne dans le service `server` indique une dépendance avec le service `db`. (section `depends_on`). Concrètement, cela veut dire que, dans le conteneur du serveur web, le service de base de données est accessible via le nom d'hôte `db` (qui se traduit par un certaine ip). Au lieu d'utiliser une `ip`, on utilisera donc le nom d'hôte `db` dans la configuration de `DATABASE_URL`.
+
+Par rapport au nom d'utilisateur et au mot de passe, le service `db` est configuré pour avoir un utilisateur `root` dont le mot de passe est `root`. Le port utilisé est `3306`.
+
+En résumé, pour utiliser le service de base de données inclut dans le multi-conteneur docker au travers du conteneur du serveur Web, on peut utiliser la configuration suivante :
+
+```yaml
+DATABASE_URL=mysql://root:root@db:3306/nom_base
+```
+
+Bien sûr, dans d'autres contextes, cette configuration devra être adaptée.
+
+Sur la machine hôte (donc votre machine, hors du conteneur) le service est **exposé** via le port `3306`. On n'y accède pas via `db` mais directement via `localhost` (ou `127.0.0.1`). Cela sera utile pour visualiser et interagir avec la base au travers d'une interface (avec `PhpStorm`, `DataGrip` ou `DBeaver`) comme nous le ferons juste après.
+
+<!--
 Si vous utilisez la base `MySQL` de l'IUT, la configuration sera donc
 `DATABASE_URL=mysql://login_iut:password@webinfo.iutmontp.univ-montp2.fr:3316/login_iut` en remplaçant `login_iut` et `password` avec vos identifiants (ceux utilisés sur `phpMyAdmin`), bien entendu. Si vous êtes sur votre machine personnelle (et que vous utilisez donc votre propre SGBD), généralement, le port MySQL est plutôt 3306.
 
@@ -579,17 +584,21 @@ Si vous êtes sur votre machine et que vous souhaitez utiliser une base de donn�
 - url: '%env(resolve:DATABASE_URL)%'
 + url: '%env(DATABASE_URL)%' 
 ```
+-->
 
-Si la base de données n'existe pas déjà, il faut la créer. Vous n'avez pas
-besoin de le faire si vous utilisez la base de l'IUT. Sur votre machine personnelle, c'est peut-être nécessaire. Si vous avez besoin de créer la BD, exécutez la commande suivante :
+Une fois l'adresse de la base de données configurée, il faut la créer. Pour cela, il suffit d’exécuter une commande :
 
 ```bash
 php bin/console doctrine:database:create
 ```
 
+Si tout va bien, un message indique que la base a été créée.
+
 Ensuite, il faut générer et exécuter une **migration**. Une migration est un fichier généré par doctrine contenant les requêtes nécessaires pour mettre à jour la structure de la base de données et aussi annuler ces modifications, si besoin ! Chaque migration est stockée dans un dossier dédié, ce qui permet de conserver un historique. Globalement, on peut dire que les migrations fournissent un gestionnaire de version de la structure de la base de données (comme un `git` pour la BD). 
 
+<!-->
 **ATTENTION** : si vous effectuez votre première migration (par exemple, sur un nouveau projet) sur une base de données déjà existante (contenant des anciennes tables/données) cela va **écraser toutes les données** !. Si vous travaillez en local, pas de problème, il suffit de créer une nouvelle base et de travailler sur celle-ci. Cependant, si vous travaillez sur votre unique base MySQL de l'IUT, pensez à **exporter vos données** (s'il en reste de l'année dernière et qu'elles sont importantes) et à vider votre base. Il est possible de paramétrer `doctrine` afin d'ignorer certaines tables selon une expression régulière, mais nous ne verront pas cela dans le cadre de ce TD.
+-->
 
 Pour générer puis exécuter une migration, on utilise les deux commandes suivantes :
 
@@ -600,19 +609,43 @@ php bin/console doctrine:migrations:migrate
 
 On doit effectuer une migration dès que l'ont créé ou que l'on modifie une entité existante (nom des attributs, assertions de type `ORM` modifiés...) afin de garder la structure de la base de données à jour.
 
+Afin de visualiser votre base de données et interagir avec, deux solutions s'offrent à vous :
+
+* Si vous utilisez `PHPStorm`, vous pouvez cliquez sur le bouton `Database` dans la barre latérale droite, puis ajouter une nouvelle connexion `MySQL` :
+
+    {% endraw %}
+    ![database-phpstorm-1]({{site.baseurl}}/assets/TD1/database-phpstorm-1.PNG)
+    {% raw %}
+
+    Ensuite, il faut configurer la connexion comme suit :
+
+    {% endraw %}
+    ![database-phpstorm-2]({{site.baseurl}}/assets/TD1/database-phpstorm-2.PNG)
+    {% raw %}
+
+* Sinon, vous pouvez utiliser un autre logiciel de gestion de bases de données : `DataGrip`, `DBeaver`, etc.
+
+    La configuration est :
+
+    * **IP** : `localhost`
+
+    * **Utilisateur** : `root`
+
+    * **Mot de passe** : `root`
+
+    * **Port** : `3306`
+
+    * **Nom de la base** : `the_feed` (ou autre si vous aviez mis un autre nom)
+
 <div class="exercise">
 
-1. Configurez le paramètre `DATABASE_URL` dans le fichier `.env` (remplacez celui déjà présent) afin de connecter votre application à votre base de données.
+1. Configurez le paramètre `DATABASE_URL` dans le fichier `.env` (remplacez celui déjà présent) afin de connecter votre application à votre service de base de données. Donenz le nom que vous souhaitez à votre base (par exemple, `the_feed`).
 
-2. Deux scénarios :
-
-    * Si (et seulement si) vous utilisez une base de données en local (sur votre machine), exécutez la commande `doctrine:database:create` afin de créer la base de données.
-
-    * Si vous utilisez votre base de données de l'IUT, **videz-la complétement** s'il reste des tables et/ou données de l'année dernière. Exportez-les avant, si besoin.
+2. Exécutez la commande `doctrine:database:create` afin de créer la base de données.
 
 3. Utilisez les commandes nécessaires afin de créer et d'exécuter votre première migration.
 
-4. Connectez-vous à l'interface de gestion de votre SGBD ([phpMyAdmin de webinfo](https://webinfo.iutmontp.univ-montp2.fr/my/) pour l'iut) et observez. Vous devriez trouver votre nouvelle table `publication`!
+4. Connectez-vous à l'interface de gestion de votre SGBD (avec `PHPStorm` ou un autre logiciel) et observez. Vous devriez trouver votre nouvelle table `publication`!
 
 </div>
 
@@ -865,7 +898,7 @@ Avec cette configuration, dès que le contrôleur est chargé, le repository ser
 
 <div class="exercise">
 
-1. Accédez à l'espace d'administration de votre base de données (phpMyAdmin par exemple) et ajoutez quelques publications avec des dates différentes.
+1. Éditez votre base de données (via `PHPStorm` ou autre) en ajoutant quelques publications avec des dates différentes.
 
 2. Modifiez le code associé à votre route `feed` (dans `PublicationController`) : supprimez vos "fausses" publications de tests et à la place, récupérez le tableau de publications directement depuis la base de données, en utilisant `PublicationRepository`.
 
@@ -893,7 +926,7 @@ Dans votre contrôleur, vous avez sans doute utilisé la méthode `findAll`, hor
     }
     ```
 
-    Pour rappel : `PublicationRespository`, grâce  àl'héeritage, possède les méthodes `find`, `findAll`, etc.
+    Pour rappel : `PublicationRespository`, grâce à l'héritage, possède les méthodes `find`, `findAll`, etc.
 
 </div>
 
@@ -1634,7 +1667,7 @@ Une petite dernière section supplémentaire à l'attention du parcours **RACDV*
 
  * Symfony réécrit l'URL pour appeler toujours le script de base public/index.php en transmettant l'information de l'URL relative. En utilisant le serveur de **Symfony**, cela se fait tout seul, sinon, le fichier `.htaccess` du dossier `public` est utilisé. Vous aviez vous-même inclut un fichier similaire pour obtenir le même comportement, dans votre framework "maison".
 
- * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]`. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration) comme vous faisiez l'année dernière. Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manière de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Laravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques librairies). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
+ * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]` comme nous le faisions (à terme) l'année dernière. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration). Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manière de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Laravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques librairies). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
  
  Fait amusant : si vous êtes amené à utiliser **Laravel**, vous pourrez constater que le framework importe le routeur de Symfony et l'étend ! Et c'est une bonne chose : on évite de réinventer la roue.
 
@@ -1642,11 +1675,11 @@ Une petite dernière section supplémentaire à l'attention du parcours **RACDV*
 
  * La majeure partie de la technologie `twig` (syntaxe, blocs...) a été vue l'année dernière.
 
- * Nous avions créé une extension pour `twig` permettant d'ajouter deux fonctions : `asset` pour récupérer les assets (images, fichiers...) de notre application et `route` pour générer le lien d'une route à partir de son nom (et éventuellement ses paramètres). Ici, Symfony inclut directement ces fonctions avec `asset` et `path` (à la place de `route`).
+ * Nous avions  ajouté deux fonctions à `twig` : `asset` pour récupérer les assets (images, fichiers...) de notre application et `route` pour générer le lien d'une route à partir de son nom (et éventuellement ses paramètres). Ici, Symfony inclut directement ces fonctions avec `asset` et `path` (à la place de `route`).
 
- * Le fichier de configuration `config/services.yaml` est assez proche du fichier de configuration du conteneur de services que certains d'entre vous aviez codé (si vous étiez allé au bout du TD SAE portant sur les tests, au semestre 4). Nous avions aussi codé un équivalent de ce fichier sous la forme d'une classe de configuration PHP.
+ * Le fichier de configuration `config/services.yaml` est très proche du fichier de configuration du conteneur de services que certains d'entre vous aviez codé (lors du TD4 de complément web, au semestre 4). Nous avions aussi codé un équivalent de ce fichier sous la forme d'une classe de configuration PHP.
 
- * La notion d'injection de dépendances et le concept de dépendre d'interfaces plutôt que de classes concrètes a aussi été abordé lors du TD SAE sur les tests. Cela permet à votre application d'être plus modulable et plus facilement testable ! Nous avions utilisé un **conteneur IoC** afin d'enregistrer et configurer toutes nos dépendances et les injecter de manière adéquate dans chaque classe (nous avions d'ailleurs utilisé celui de Symfony, donc c'est le même qui gère tout cela en arrière-plan ici aussi).
+ * La notion d'injection de dépendances et le concept de dépendre d'interfaces plutôt que de classes concrètes a aussi été abordé lors du TD4 de complément web. Cela permet à votre application d'être plus modulable et plus facilement testable ! Nous avions utilisé un **conteneur IoC** afin d'enregistrer et configurer toutes nos dépendances et les injecter de manière adéquate dans chaque classe (nous avions d'ailleurs utilisé celui de Symfony, donc c'est le même qui gère tout cela en arrière-plan ici aussi).
 
  * Nous avions déjà vu la syntaxe des constructeurs avec visibilité devant les arguments, afin de déclarer un attribut (comme nous le faisons dans `FlashMessageHelper`, par exemple).
 

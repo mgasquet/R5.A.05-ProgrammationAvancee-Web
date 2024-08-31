@@ -23,6 +23,8 @@ Puis, en bonus :
 
 * Ajout de commandes.
 
+**On rappelle que les commandes doivent être exécutées à l'intérieur de votre conteneur Docker** à l'exception des commandes liées au logiciel client **Stripe** (dont nous allons parler dans ce TP, mais cela sera précisé en temps voulu).
+
 ## JavaScript et fonctionnalités asynchrones
 
 L'année dernière, vous avez découvert la possibilité d'avoir certaines fonctionnalités dîtes asynchrones afin d'effectuer des actions et recevoir des réponses sans avoir besoin de quitter la page courante, afin de rendre votre site plus dynamique. C'est d'ailleurs la logique au cœur des frameworks réactifs (Vue.js, Angular, React) qui seront abordés dans de prochains TPs.
@@ -740,7 +742,7 @@ class MonService {
      #[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
     public function methodeExemple(): Response
     {
-        return $this->redirect("http://coucou.com");
+        return $this->redirect("https://coucou.com");
     }
     ```
 
@@ -758,15 +760,15 @@ Mais, dans le cas où vous développez votre application sur un serveur local (l
 
 Cet outil est connecté à votre compte Stripe à distance et, dès qu'un paiement est reçu, l'événement est transmis à votre machine, au niveau de l'outil qui s'occupera alors de transmettre la requête vers l'adresse précisée. Comme votre outil tourne en local, sur votre machine, il est donc possible d'accéder à des adresses locales, comme `localhost` !
 
-Dans un premier temps, nous allons voir comment installer et configurer cet outil.
+Dans un premier temps, nous allons voir comment installer et configurer cet outil. Nous n'allons pas l'installer dans notre conteneur, mais plutôt directement sur votre machine. Exceptionnellement, les commandes liées à `stripe` devront donc être exécutées dans un terminal sur votre machine, et pas dans le conteneur.
 
 <div class="exercise">
 
-1. Suivez les instructions pour [télécharger Stripe CLI](https://stripe.com/docs/stripe-cli?locale=fr-FR#install) sur votre machine, selon votre système d'exploitation.
+1. Suivez les instructions pour [télécharger Stripe CLI](https://stripe.com/docs/stripe-cli?locale=fr-FR#install) sur votre machine (et pas sur le **conteneur**), selon votre système d'exploitation.
 
 2. Une fois l'exécutable de Stripe extrait, placez le n'importe où sur votre machine (par exemple dans un dossier **Stripe**).
 
-3. Ouvrez un terminal dans le répertoire où se trouve l'exécutable puis exécutez la commande suivante :
+3. Ouvrez un terminal (sur votre machine, pas dans le **conteneur**) dans le répertoire où se trouve l'exécutable puis exécutez la commande suivante :
 
     ```bash
     ./stripe login --interactive
@@ -939,13 +941,13 @@ Tout est prêt pour finaliser notre système de paiement ! Avant de traiter les 
 Pour que Stripe utilise notre **webhook**, nous devons lui indiquer l'URL à laquelle il se trouve. Pour le mode "test", cela se fait donc avec le client que vous avez utilisé plus tôt, en ligne de commandes. Il suffit d'exécuter la commande suivante :
 
 ```bash
-./stripe listen --forward-to http://exemple.com
+./stripe listen --forward-to https://exemple.com
 ```
 
 Par défaut, nous écoutons **tous les événements** en lien avec notre compte Stripe. Pour filtrer et n'utiliser que celui qui nous intéresse pour ce webhook, on utilise l'option `--events` :
 
 ```bash
-./stripe listen --events=checkout.session.completed --forward-to http://exemple.com
+./stripe listen --events=checkout.session.completed --forward-to https://exemple.com
 ```
 
 Ici, dès que l'événement correspondant à la validation du formulaire de paiement est émis, Stripe enverra une requête à l'adresse précisée (à travers notre machine, car le client est connecté à notre compte).
@@ -954,7 +956,7 @@ Ainsi, il est possible d'avoirs plusieurs **webhooks** différents, pour plusieu
 
 <div class="exercise">
 
-1. Utilisez la commande `listen` du client Stripe en précisant l'URL pointant vers la route de votre site correspondant au **webhook** créé lors de l'exercice précédent (quelque chose comme `http://adressedusite/webhook/stripe`).
+1. Utilisez la commande `listen` du client Stripe en précisant l'URL pointant vers la route de votre site correspondant au **webhook** créé lors de l'exercice précédent (quelque chose comme `https://adressedusite/webhook/stripe`).
 
 2. Testez d'acheter du mode premium (comme tout à l'heure, en utilisant une [carte bancaire de test](https://stripe.com/docs/testing?locale=fr-FR#cards)).
 
@@ -1014,7 +1016,7 @@ L'idée est la suivante :
 
 * Quand l'utilisateur est redirigé, on extrait l'identifiant depuis l'URL, on récupère les données de la session grâce à son identifiant, puis celles du paiement afin de vérifier son état. Si le paiement a bien été confirmé, on affiche un message de confirmation, sinon, on affiche un message d'erreur.
 
-Pour rappel, le **query string** est la partie de l'URL contenant des paramètres supplémentaires : `http://exemple.com/route?param1=exemple&param2=exemple`
+Pour rappel, le **query string** est la partie de l'URL contenant des paramètres supplémentaires : `https://exemple.com/route?param1=exemple&param2=exemple`
 
 Cela diffère de nos routes "paramétrée" où les paramètres font parties de la route en elle-même.
 

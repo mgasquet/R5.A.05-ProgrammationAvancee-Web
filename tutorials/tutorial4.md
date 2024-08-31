@@ -37,7 +37,7 @@ Pour manipuler ces ressources, on utilise les méthodes `HTTP` suivantes :
 
 * `POST` : Crée une ressource dans l'ensemble désignée par la route avec les informations fournies dans le corps de la requête.
 
-* `PUT` : Remplace complétement la ressource désignée par la route avec les informations fournies dans le corps de la requête (tous les attributs nécessaires doivent donc être spécifiés, comme pour `POST`). On écrase l'ancienne ressource avec la nouvelle.
+* `PUT` : Remplace complètement la ressource désignée par la route avec les informations fournies dans le corps de la requête (tous les attributs nécessaires doivent donc être spécifiés, comme pour `POST`). On écrase l'ancienne ressource avec la nouvelle.
 
 * `PATCH` : Met à jour partiellement les données de la ressource désignée par la route avec les informations fournies dans le corps de la requête (seul les attributs qui ont besoin d'être mis à jour doivent être spécifiés).
 
@@ -59,6 +59,8 @@ Dans les requêtes de type **création / modification** (`POST`, `PUT`, `PATCH`)
 
 En plus de cela, une `API REST` doit être **sans état** (stateless), c'est-à-dire que le serveur **ne doit pas stocker d'informations sur l'état du client**. Donc, par exemple, l'utilisation d'une session est interdite. À la place, le client peut stocker des données sous la forme de `token` qui peuvent être lus et vérifiés par le serveur. C'est notamment grâce à ce système qu'on pourra authentifier nos utilisateurs et ajouter de la sécurité sur certaines routes.
 
+**On rappelle que les commandes doivent être exécutées à l'intérieur de votre conteneur Docker.**
+
 ## Mise en place avec Symfony
 
 Pour développer le plus simplement possible notre **API**, nous allons utiliser un outil appelé **API Platform** exploitable au travers de **Symfony**.
@@ -77,11 +79,11 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
     composer create-project symfony/skeleton:"6.4.*" the_feed_api
     ```
 
-2. **Si vous utilisez le serveur de l'IUT** :
+2. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
 
-    * Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
-
+    <!--
     * Téléchargez un [deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2), renommez-le `.htaccess` et placez-le à la racine de votre projet (protège contre la lecture de vos fichiers de configuration, contenant vos mots de passes et autres informations confidentielles...).
+    -->
 
 3. Installez maintenant la librairie spécifique à API Platform :
 
@@ -93,12 +95,20 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
         Répondez `n` (no) à la question demandée.
 
-    * Une fois l'installation terminée, supprimez le **contenu** du fichier `config/packages/api_platform.yaml`. Ce fichier de configuration a été généré avec un paramétrage par défaut, mais nous n'avons pas besoin de tout cela pour le moment. Nous irons l'éditer proprement plus tard. 
+    * Une fois l'installation terminée, supprimez le **contenu** du fichier `config/packages/api_platform.yaml` (son contenu, pas le fichier en, lui-même!). Ce fichier de configuration a été généré avec un paramétrage par défaut, mais nous n'avons pas besoin de tout cela pour le moment. Nous irons l'éditer proprement plus tard.
 
-4. Nous allons maintenant configurer la base de données dans le fichier `.env` :
+4. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter depuis la racine du projet) :
 
-    * Si vous êtes en local, configurez la base que vous voulez, mais ne réutilisez pas celle précédente (par exemple, nommez la base `the_feed_api`).
+   ```bash
+   setfacl -R -m u:www-data:rwx .
+   setfacl -R -m d:u:www-data:rwx .
+   ```
 
+   Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
+
+5. Nous allons maintenant configurer la base de données dans le fichier `.env`. Configurez donc une nouvelle base (nouveau nom) et ne réutilisez pas celle précédente (par exemple, nommez la base `the_feed_api`).
+
+    <!-->
     * Si vous souhaitez utiliser une des bases de données mises à disposition à l'IUT, nous allons éviter de réutiliser votre unique base MySQL, pour ne pas effacer le travail effectué sur le site. À la place, nous allons utiliser une base de données locale, stockée dans un fichier, avec **SQLite** :
 
         ```bash
@@ -106,26 +116,28 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
         ```
 
     **Attention**, si vous comptez déposer votre projet sur un repository git **public**, utilisez plutôt un fichier `.env.local` à la place, qui ne sera ignoré lors des commits (pour ne pas exposer vos mots de passe).
+    -->
 
-5. Exécutez la commande suivante afin de créer la base :
+6. Exécutez la commande suivante afin de créer la base :
 
     ```bash
     php bin/console doctrine:database:create
     ```
 
+<!--
 6. Si vous utilisez une base **SQLite** (par exemple, sur les machines de l'IUT), la base sera générée dans un fichier **data.db** placé dans le dossier **var** du projet. Pour visualiser et manipuler le contenu de cette base, vous ne pouvez pas simplement éditer le fichier. Néanmoins, comme vous êtes maintenant professionnel et que vous maîtrisez votre **IDE** (PHPStorm) nous allons pouvoir nous en servir pour manipuler la base à travers une interface intégrée :
 
     * Cliquez sur l'onglet **Databases** à droite de PHPStorm afin d'ouvrir le panneau de gestion des bases de données.
 
-    * Effectuez un clic droit sur ce panneau puis **New** → **Datasource** → **SQLite**.
+    * Effectuez un clic droit sur ce panneau puis **New** → **Data source** → **SQLite**.
 
     * Au niveau du champ **File**, cliquez sur les trois petits points (...) pour rechercher un fichier dans le système. Sélectionnez votre fichier **data.db** situé dans le dossier **var** de votre projet.
 
     * En bas de la fenêtre, cliquez sur le bouton pour télécharger le driver nécessaire (si cela vous est demandé) puis validez le tout.
 
-    * Votre base de données apparait dans le panneau. Vos tables seront placées dans **data.db** → **main** → **tables**.
+    * Votre base de données apparaît dans le panneau. Vos tables seront placées dans **data.db** → **main** → **tables**.
 
-    * Après une mise à jour de la structure de votre BDD, effectuez un clic droit sur **data.db** (dans le paneau) puis **refresh**.
+    * Après une mise à jour de la structure de votre BDD, effectuez un clic droit sur **data.db** (dans le panneau) puis **refresh**.
 
     * Si vous êtes à l'IUT, donnez les droits nécessaires au serveur web pour qu'il puisse manipuler votre fichier de BDD :
 
@@ -135,14 +147,14 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
     ```
 
     Il est important de noter que vous pouvez manipuler n'importe quelle base de données via cet outil de PHPStorm ! Même votre base MySQL, par exemple.
-
+-->
 7. En vous rendant dans le dossier du projet, videz le cache :
 
     ```bash
     php bin/console cache:clear
     ```
 
-8. Rendez-vous sur votre site à l'adresse : [https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/](https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/). Adaptez l'URL selon votre situation (avec le serveur local de `Symfony`, il ne faut pas mettre le "public" dans l'URL). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
+8. Rendez-vous sur votre site à l'adresse : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
 
 </div>
 
@@ -205,7 +217,7 @@ Tout est en place pour faire nos premières requêtes ! Nous pouvons manipuler
 
 <div class="exercise">
 
-1. Rechargez la page web de présentation de l'API : [https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/](https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/) (à adapter selon votre situation).
+1. Rechargez la page web de présentation de l'API : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/).
 
 2. Explorez la documentation des différentes méthodes proposées. Vous pouvez même envoyer des requêtes avec le bouton `Try it out`.
 
@@ -213,7 +225,7 @@ Tout est en place pour faire nos premières requêtes ! Nous pouvons manipuler
 
 Pour aller déclencher notre `API`, nous n'allons pas directement utiliser l'interface web proposée par `API Platform`, mais plutôt un logiciel nommé `Postman` (nous l'avions rapidement abordé dans les TDs de complément web l'an dernier).
 
-Ce logiciel va permettre de paramétrer et d'envoyer des requêtes de manière interactive et de visualiser le résultat très simplement. À l'IUT, il est installé sur vos machines, chez-vous, vous pouvez le télécharger [ici](https://www.postman.com/downloads/?utm_source=postman-home).
+Ce logiciel va permettre de paramétrer et d'envoyer des requêtes de manière interactive et de visualiser le résultat très simplement. Sur les machines de l'IUT, il est déjà installé, chez-vous, vous pouvez le télécharger [ici](https://www.postman.com/downloads/?utm_source=postman-home).
 
 Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de ce logiciel !
 
@@ -225,7 +237,7 @@ Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de 
 
     * Dans la liste déroulante du choix des méthodes, sélectionnez `POST`.
 
-    * Juste à côté, le champ permet de rentrer l'URL de la ressource à viser. Par exemple (à adapter) : [https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/publications](https://webinfo.iutmontp.univ-montp2.fr/~votre_login/chemin_dossier_projet/public/api/publications) (pour Linux/macOS, il faut descendre un peu plus bas sur la page)
+    * Juste à côté, le champ permet de rentrer l'URL de la ressource à viser. Par exemple : [https://localhost/the_feed_api/public/api/publications](https://localhost/the_feed_api/public/api/publications) (pour Linux/macOS, il faut descendre un peu plus bas sur la page)
 
     * Comme mentionné plus tôt, avec les requêtes de **création / modification**, nous avons besoin d'un `payload` au format `JSON`. Pour le configurer, rendez-vous dans `Body` puis sélectionnez l'option `raw` et enfin, à droite, sélectionnez `JSON` dans la liste déroulante (à la place de `Text`).
 
@@ -238,7 +250,7 @@ Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de 
     }
     ```
 
-3. Cliquez sur "**Send**" et observez le résultat. La publication devrait vous être renvoyée (avec son identifiant) ! Ajoutez-en quelques autres.
+3. Cliquez sur **Send**. L'application envoie une alerte, car nous utilisons un certificat auto-signé pour pouvoir proposer `https` sur notre serveur web. Acceptez d'utiliser ce certificat "non sécurisé" et poursuivez la requête. Observez le résultat : la publication devrait vous être renvoyée (avec son identifiant) ! Ajoutez-en quelques autres.
 
 4. Ouvrez un nouvel onglet et faites en sorte de récupérer la liste de toutes les publications (il n'y a pas de `payload` à mettre dans ce cas...).
 
@@ -1053,7 +1065,9 @@ Par exemple :
 
 Maintenant, il ne nous reste plus qu'à mettre en place un système de connexion afin de délivrer un `JWT` qui permettra de nous identifier auprès du serveur, à chaque requête. Pour cela, nous allons utiliser le bundle `jwt-authentication-bundle`.
 
+<!--
 **Si vous êtes en local**, il faudra activer l'extension **sodium** dans votre fichier `php.ini`. Trouvez la ligne `;extension=sodium` dans votre fichier et enlevez `;` afin de décommenter l'extension.
+-->
 
 Afin d'activer l'authentification de nos utilisateurs, il nous faut une route dédiée. Pour la déclarer, nous pouvons utiliser le fichier `config/routes.yaml` :
 
@@ -1122,7 +1136,7 @@ Pour se connecter, on devra donc envoyer un `payload` de la forme :
 
 5. Videz le cache.
 
-6. En utilisant `Postman`, envoyez une requête `POST` à la route `/api/auth` (à adapter avec votre URL) en précisant un `payload` de connexion d'un utilisateur de votre application (avec un login / mot de passe valide). Vous devriez obtenir un `JWT` !
+6. En utilisant `Postman`, envoyez une requête `POST` à la route [https://localhost/the_feed_api/public/api/auth](https://localhost/the_feed_api/public/api/auth) en précisant un `payload` de connexion d'un utilisateur de votre application (avec un login / mot de passe valide). Vous devriez obtenir un `JWT` !
 
 7. Sur le site [https://jwt.io/](https://jwt.io/), tentez de décoder ce jeton et observez l'information qu'il contient.
 </div>
@@ -1402,6 +1416,27 @@ En plus du même `ProcessorInterface` que vous avez utilisé auparavant (pour sa
 3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également les attributs `NotBlank` et `NotNull` (ou bien le paramètre `required` dans l'attribut `#[ApiProperty]`) que vous aviez sans doute placé précédemment sur cette propriété.
 
 4. Videz le cache puis connectez-vous (si ce n'est pas déjà fait, c'est à dire si vous ne possédez pas le cookie **BEARER** contenant le `JWT`) et tentez de créer une nouvelle publication. Le JWT sera automatiquement envoyé au serveur avec la requête, dans un cookie. Vérifiez alors que la publication est bien créée et que l'auteur a bien été affecté par rapport à l'utilisateur représenté par le `JWT` que vous utilisez.
+
+</div>
+
+### Autorisation d'envoi d'informations d'authentification
+
+Afin que le navigateurs acceptent d'envoyer des informations d'authentification pour les requêtes sécurisées (donc, votre `JWT`), il faut modifier la configuration de l'API afin qu'elle ajoute une en-tête `Access-Control-Allow-Credentials` à **true** (sinon, le navigateur refusera de traiter la requête).
+
+Pour cela, rien de plus simple : il suffit d'ajouter un paramètre dans le fichier `config/packages/nelmio_cors.yaml` :
+
+```yaml
+#config/packages/nelmio_cors.yaml
+nelmio_cors:
+    defaults:
+        allow_credentials: true
+        ...
+    ...
+```
+
+<div class="exercise">
+
+Éditez le fichier de configuration du bundle `nelmio_cors.yaml` afin d'ajouter le paramètre `allow_credentials`. Cela nous sera utile lorsque vous développerez le client en `Vue.js` qui se servira de cette API pour proposer un **front-end** à l'application.
 
 </div>
 
