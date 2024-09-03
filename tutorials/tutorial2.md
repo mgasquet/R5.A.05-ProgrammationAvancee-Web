@@ -358,8 +358,7 @@ $valeurChamp = $form["monChamp"]->getData();
 2. En vous plaçant à la racine du projet, donnez les droits nécessaires au serveur pour qu'il puisse créer et éditer des fichiers à l'intérieur de ce dossier :
 
     ```
-    setfacl -R -m u:www-data:rwx ./public/img/utilisateurs/uploads
-    setfacl -R -m d:u:www-data:rwx ./public/img/utilisateurs/uploads
+    chown -R root:www-data ./public/img/utilisateurs/uploads
     ```
 
 3. Dans le fichier `config/services.yaml`, ajoutez un paramètre `dossier_photo_profil` ayant pour valeur : `'%kernel.project_dir%/public/img/utilisateurs/uploads'`. La partie `%kernel.project_dir%` désigne la racine du projet. C'est un paramètre défini par Symfony (notez qu'en utilisant `%` on peut utiliser la valeur d'autres paramètres pour construire un autre paramètre, comme c'est le cas ici.).
@@ -1198,6 +1197,13 @@ Il faut donc penser à vider le cache quand on fait un changement dans le mode `
 ```bash
 php bin/console cache:clear
 ```
+
+Ou bien :
+
+```bash
+php bin/console c:c
+```
+
 Ce n'est pas très contraignant, car le développeur ne travaille pas (ou peu) dans le mode `prod`. Ce mode est utilisé là où le site est hébergé publiquement. Celui-ci va plutôt subir de "grosses" mises à jour ponctuelles plutôt que plein de petites mises à jour de code toutes les minutes, comme une application en développement. Après une grosse mise à jour du site, il suffit alors de vider le cache une fois.
 
 Pour changer d'environnement, il suffit d'éditer la variable `APP_ENV` dans le fichier `.env` (ou `.env.local`) à la racine du projet.

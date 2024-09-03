@@ -100,8 +100,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 4. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter depuis la racine du projet) :
 
    ```bash
-   setfacl -R -m u:www-data:rwx .
-   setfacl -R -m d:u:www-data:rwx .
+   chown -R root:www-data .
    ```
 
    Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
@@ -142,8 +141,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
     * Si vous êtes à l'IUT, donnez les droits nécessaires au serveur web pour qu'il puisse manipuler votre fichier de BDD :
 
     ```bash
-    setfacl -R -m u:www-data:rwx ~/public_html/the_feed_api
-    setfacl -R -m d:u:www-data:rwx ~/public_html/the_feed_api
+    chown -R root:www-data ~/public_html/the_feed_api/var/data.db
     ```
 
     Il est important de noter que vous pouvez manipuler n'importe quelle base de données via cet outil de PHPStorm ! Même votre base MySQL, par exemple.
@@ -164,6 +162,12 @@ Retenez donc bien cette commande :
 
 ```bash
 php bin/console cache:clear
+```
+
+Ou bien, sa version abrégée :
+
+```bash
+php bin/console c:c
 ```
 
 ## Les publications

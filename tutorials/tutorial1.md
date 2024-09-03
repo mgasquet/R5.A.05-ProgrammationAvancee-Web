@@ -97,11 +97,10 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
    Cet ensemble de commandes crée les fichiers de base de votre projet et télécharge les briques logicielles essentielles pour le développement d'un site web.
 
-3. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à executer depuis la racine du projet) :
+3. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à executer **depuis la racine du projet**) :
 
    ```bash
-   setfacl -R -m u:www-data:rwx .
-   setfacl -R -m d:u:www-data:rwx .
+   chown -R root:www-data .
    ```
    On rappelle encore une fois qu'il faut exécuter ces commandes dans le terminal qui s'exécute dans votre conteneur docker.
 
@@ -412,6 +411,18 @@ Dans l'exemple donné plus tôt avec la méthode `render` de symfony, j'ai accè
 ### Pages simples
 
 Pour vérifier que vous avez bien compris le fonctionnement basique de twig et comment l'utiliser avec Symfony, nous allons faire quelques petits exercices simples.
+
+Parfois, après plusieurs changements dans un template, **il se peut qu'au rechargement de la page, les modifications ne soient pas visibles immédiatement** (cela est dû à la gestion du cache, notamment avec le conteneur docker que nous utilisons). Si cela vous arrive, vous pouvez exécuter la commande suivante à la racine du projet pour régler le problème :
+
+```bash
+php bin/console cache:clear
+```
+
+Ou, en abrégé :
+
+```bash
+php bin/console c:c
+```
 
 <div class="exercise">
 
