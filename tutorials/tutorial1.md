@@ -23,11 +23,11 @@ Allez sur la page du [dépôt du conteneur Docker](https://gitlabinfo.iutmontp.u
 
 ## Introduction
 
-L'année dernière, dans le cadre du cours de **complément web** (pour le parcours RACDV), vous avez étudié et mis en pratique les notions essentielles afin de construire un **framework** web. Nous nous sommes notamment intéressé aux notions de conteneur à injection de dépendances (conteneur IoC), aux design patterns et globalement aux outils utiles permettant de rendre notre framework simple d'utilisation et hautement paramétrable.
+L'année dernière, dans le cadre du cours de **complément web** (pour le parcours RACDV), vous avez étudié et mis en pratique les notions essentielles afin de construire un **framework** web. Nous nous sommes notamment intéressés aux notions de conteneur à injection de dépendances (conteneur IoC), aux design patterns et globalement aux outils utiles permettant de rendre notre framework simple d'utilisation et hautement paramétrable.
 
 Mais concrètement, qu'est-ce qu'un **framework** ? Un framework est un "cadre de développement" fournissant une architecture et des outils permettant de créer une application (dans notre cas une application web, mais il en existe aussi pour d'autres types de logiciels). Un framework est composé de différentes briques logicielles et est généralement construit de manière à favoriser les bonnes pratiques de conception (utilisation de patterns, architecture organisée en couche, faible couplage, principes SOLID...). La sécurité (basique) de l'application est généralement assurée sans action du développeur (par exemple, pour le web, protection par défaut contre l'injection SQL, le CSRF, la faille XSS...).
 
-La plupart des frameworks utilisent généralement un `ORM` permettant de gérer simplement la couche "stockage" d'une application. Nous avions notamment utilisé l'`ORM` *Hibernate* basé sur `Java` dans le cours de programmation des bases de données du semestre 3. 
+La plupart des frameworks utilisent un `ORM` permettant de gérer simplement la couche "stockage" d'une application. Nous avions notamment utilisé l'`ORM` *Hibernate* basé sur `Java` dans le cours de programmation des bases de données du semestre 3. 
 
 On parle de "cadre" car afin de coder son application, le développeur va devoir respecter le fonctionnement imposé par le framework et utiliser ses outils, ce qui l'empêche de dériver en proposant une conception et une manière de développer hors du "cadre" imposé. Et c'est une bonne chose car, sans s'en rendre compte, le développeur utilise de bonnes pratiques, ce qui augmente la maintenabilité et la lisibilité de son programme. De plus, le code d'un programme développé sous un framework précis sera rapidement compréhensible par un autre développeur connaissant aussi cette même technologie.
 
@@ -61,7 +61,7 @@ Nous avons donc fait le choix de plutôt vous apprendre à utiliser Symfony par 
 
 Cependant, pas de panique, il y a beaucoup de similitudes entre Symfony et Laravel (même certaines choses identiques !). Une fois un framework maîtrisé, il vous sera facile de passer à l'autre.
 
-Symfony permet de créer des sites web classiques en mode "server-rendering" (génération de la page web du côté du serveur, comme ce que vous faisiez jusqu'ici), des API REST et même des briques logicielles (appelées `bundles`) à intégrer à Symfony, pour lui ajouter de nouvelles fonctionnalités.
+Symfony permet de créer des sites web classiques en mode "server-side rendering" (génération de la page web du côté du serveur, comme ce que vous faisiez jusqu'ici), des API REST et même des briques logicielles (appelées `bundles`) à intégrer à Symfony, pour lui ajouter de nouvelles fonctionnalités.
 
 Ce framework utilise (par défaut) l'ORM `Doctrine` (syntaxe assez similaire à Hibernate, en JAVA). Concernant les templates (génération de pages HTML), il utilise `Twig` que vous avez déjà utilisé l'année dernière dans le cadre du cours de complément web.
 
@@ -134,7 +134,7 @@ Dans cette première section, nous allons voir comment créer des contrôleurs, 
 
 Symfony propose diverses commandes qui permettent d'initialiser (voir de créer en quasi-totalité) des classes de certaines catégories (entités, contrôleurs, formulaires...) et de la placer au bon endroit dans l'architecture de l'application. Ces commandes doivent s'exécuter **à la racine du projet**;
 
-Toutes les commandes de Symfony s'exécutent via un script `PHP` nommé **command** se trouvant dans le sous-dossier **bin**. On utilise donc le programme `php` (généralement à partir de la racine du projet) pour exécuter ce script. Il suffit ensuite de préciser le nom de la commande (de Symfony) souhaitée et d'éventuels paramètres et/ou options.
+Toutes les commandes de Symfony s'exécutent via un script `PHP` nommé **console** se trouvant dans le sous-dossier **bin**. On utilise donc le programme `php` (généralement à partir de la racine du projet) pour exécuter ce script. Il suffit ensuite de préciser le nom de la commande (de Symfony) souhaitée et d'éventuels paramètres et/ou options.
 
 ```bash
 php bin/console macommande param1 param2 --option1 --option2
@@ -177,7 +177,7 @@ Pour rappel, le **routing** est le fait d'associer un chemin du site (par exempl
 
 Pour créer une route avec Symfony, nous utilisons une fonctionnalité introduite depuis PHP 8 : les **attributs** (on retrouvera parfois le terme d'**annotations** pour désigner les attributs, qui était l'ancienne façon de faire...)
 
-Les **attributs** sont des informations que nous allons ajouter à un élément de l'application : une fonction, une classe entière, une propriété de la classe... Ce sont des méta-données et des règles qui vont pouvoir être lues (ici par le Framework) interprétées et utilisées pour configurer notre application. Ces attributs sont aussi paramétrables.
+Les **attributs** sont des informations que nous allons ajouter à un élément de l'application : une fonction, une classe entière, une propriété de la classe... Ce sont des méta-données et des règles qui vont pouvoir être lues (ici par le framework) interprétées et utilisées pour configurer notre application. Ces attributs sont aussi paramétrables.
 
 Un attribut se présente ainsi :
 
@@ -191,11 +191,11 @@ Lors de l'utilisation de l'application, les différentes briques qui composent S
 
 #### Arguments nommés en PHP
 
-Vous aurez remarqué que ce constructeur utilise une syntaxe un peu particulière pour son initialisation. En fait, depuis **PHP 8**, nous ne sommes pas obligés de préciser les paramètres d'une fonction dans l'ordre (cela inclut les constructeurs). On peut directement indiquer le nom du paramètre souhaité (même si celui-ci se trouve, par exemple en 3ᵉ position) et lui associer sa valeur. Ce mécanisme est appelé **arguments nommés** et est similaire à ce qu'il est possible de faire en **python**, notamment. Plus d'informations sur [la documentation officielle](https://www.php.net/manual/fr/functions.arguments.php#functions.named-arguments).
+Vous aurez remarqué que le constructeur de `ClasseAttribut` utilise une syntaxe un peu particulière pour son initialisation. En fait, depuis **PHP 8**, nous ne sommes pas obligés de préciser les paramètres d'une fonction dans l'ordre (cela inclut les constructeurs). On peut directement indiquer le nom du paramètre souhaité (même si celui-ci se trouve, par exemple en 3ᵉ position) et lui associer sa valeur. Ce mécanisme est appelé **arguments nommés** et est similaire à ce qu'il est possible de faire en **python**, notamment. Plus d'informations sur [la documentation officielle](https://www.php.net/manual/fr/functions.arguments.php#functions.named-arguments).
 
 #### Attribut pour le routage
 
-Afin de relier une route à une méthode d'un contrôleur avec Symfony, il suffit donc d'ajouter l'attribut suivant, au-dessus de la méthode désirée :
+Afin de relier une route à une méthode d'un contrôleur avec Symfony, il suffit donc d'ajouter l'attribut `Route` suivant, au-dessus de la méthode désirée :
 
 ```php
  #[Route('/exemple', name: 'route_exemple', methods: ["GET", "POST", ...])]
@@ -278,7 +278,7 @@ public function methodeExempleGet($id, $nom): Response
 
 Je peux par exemple déclencher cette route/méthode avec le chemin `/exemple/2/coucou/test`, ce qui affectera `$id` à "2" et `$nom` à "test".
 
-Dans un premier temps, vous allez faire un contrôleur simple ne renvoyant pas encore de pages HTML, seulement du texte brut. Pour cela, il vous suffira de renvoyer un objet Response :
+Dans un premier temps, vous allez faire un contrôleur simple ne renvoyant pas encore de pages HTML, seulement du texte brut. Pour cela, il vous suffira de renvoyer un objet `Response` :
 
 ```php
  #[Route('/exemple', name: 'route_exemple_get', methods: ["GET"])]
@@ -298,7 +298,7 @@ public function methodeExempleGet(): Response
 
 3. Créez une méthode ayant une route visant le chemin `/hello`, nommée `hello_get` et autorisant seulement la méthode `GET`. Cette méthode doit renvoyer "Hello world" à l'utilisateur. Testez votre route sur votre site.
 
-4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site (`https://adressedusite/public/hello/Paul` ou bien simplement `https://adressedusite/hello/Paul` si vous utilisez le serveur de symfony).
+4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site `https://adressedusite/public/hello/Paul` (ou bien simplement `https://adressedusite/hello/Paul` si vous utilisez le serveur de Symfony).
 
 </div>
 
@@ -325,7 +325,7 @@ public function methodeExempleGet(): Response
 
 * Le second paramètre est un **tableau associatif** qui permet de passer des données nommées directement au template, qui pourra alors les utiliser directement pour générer la page HTML. Ce paramètre est **optionnel**. On ne le spécifie donc pas s'il n'y a pas de paramètres à passer au template.
 
-Chaque paramètre passé au template est accessible sous le même nom dans le template (le "nom" correspond à la valeur de la clé associée à la donnée dans le tableau associatif). Dans l'exemple précédent, dans le template, on a alors accès à deux variables `param1` et `param2`.
+Chaque paramètre passé au template est accessible sous le même nom dans le template (le "nom" correspond à la valeur de la clé associée à la donnée dans le tableau associatif). Dans l'exemple précédent, on a alors accès dans le template à deux variables `param1` et `param2`.
 
 Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates (vous pouvez aller rapidement sur cette partie si vous vous souvenez bien des cours de l'année dernière)
 
@@ -351,7 +351,7 @@ Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates 
 
     ```twig
     {% set exemple = "coucou" %}
-    <p>{{exemple}}</p>
+    <p>{{ exemple }}</p>
     ```
 
 * La structure conditionnelle `if` permet de ne générer une partie du document que si une condition est remplie :
@@ -365,7 +365,7 @@ Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates 
 * Il est bien sûr possible de construire des conditions complexes avec les opérateurs : `not`, `and`, `or`, `==`, `<`, `>`, `<=`, `>=`, etc... par exemple :
 
     ```twig
-    {% if test and (not (user.getName() == 'Smith') or user.getAge() <= 20) %}
+    {% if test and (not (user.name == 'Smith') or user.age <= 20) %}
     Code HTML....
     {% endif %}
     ```
@@ -382,9 +382,9 @@ Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates 
 
     ```twig
     <ul>
-    {% for key, value in tab %}
-    <li>{{ key }} = {{ value }}</li>
-    {% endfor %}
+      {% for key, value in tab %}
+      <li>{{ key }} = {{ value }}</li>
+      {% endfor %}
     <ul>
     ```
 
@@ -458,9 +458,9 @@ Ajouter une nouvelle route `courses` dans votre `DemoController` (en GET, avec l
 
 ### Messages flash
 
-Vous souvenez-vous du mécanisme des **messages flash** ? Pour rappels, il s'agit de messages informatifs stockés dans la session de l'utilisateur et affichés après chargement de la page. On peut s'en servir, par exemple, pour afficher un message d'erreur lié à un formulaire. Ou pour notifier l'utilisateur que son inscription est complète. Ces messages sont effacés une fois qu'ils ont été lus (ils ne seront donc pas ré-affichés).
+Vous souvenez-vous du mécanisme des **messages flash** ? Pour rappel, il s'agit de messages informatifs stockés dans la session de l'utilisateur et affichés après chargement de la page. On peut s'en servir, par exemple, pour afficher un message d'erreur lié à un formulaire. Ou pour notifier l'utilisateur que son inscription est complète. Ces messages sont effacés une fois qu'ils ont été lus (ils ne seront donc pas ré-affichés) : c'est le sens de *flash*.
 
-De ce côté, Symfony a tout prévu ! Il vous suffit d'appeler cette méthode dans une de vos méthodes dans votre contrôleur :
+De ce côté, Symfony a tout prévu ! Il vous suffit d'appeler la méthode `addFlash` dans votre contrôleur :
 
 ```php
  #[Route('/exemple', name: 'route_exemple_get', methods: ["GET"])]
@@ -476,7 +476,7 @@ public function methodeExempleGet(): Response
 
 * Le second paramètre est le message à afficher.
 
-Côté `twig`, il n'y a pas besoin de passer explicitement les messages en paramètres template. Ils sont directement accessibles de la manière suivante :
+Côté `twig`, il n'y a pas besoin de passer explicitement les messages en paramètres template lors du `render()`. Ils sont directement accessibles via `app.flashes()` de la manière suivante :
 
 ```twig
 {% for flashMsg in app.flashes(type) %}
@@ -528,7 +528,7 @@ En plus de générer la classe de l'entité, un fichier de **repository** est é
 
 </div>
 
-Dans votre nouvelle classe `Publication`, vous remarquerez les fameux `attributs` PHP au-dessus de la classe et de chaque propriété. Ces annotations de type `ORM` fixent les règles relatives à la base de données. C'est ces informations que `Doctrine` va lire pour créer et maintenir les différentes tables de votre base de données. Il est aussi indiqué quel repository est lié à cette entité.
+Dans votre nouvelle classe `Publication`, vous remarquerez les fameux `attributs` PHP au-dessus de la classe et de chaque propriété. Ces annotations de type `ORM` fixent les règles relatives à la base de données. Ce sont ces informations que `Doctrine` va lire pour créer et maintenir les différentes tables de votre base de données. Il est aussi indiqué quel repository est lié à cette entité.
 
 De manière globale :
 
@@ -536,7 +536,7 @@ De manière globale :
 
 * L'attribut `#[ORM\Id]` permet d'indiquer une propriété faisant partie de la clé primaire.
 
-* L'attribut `#[ORM\GeneratedValue]` permet de demander à la base de données de générer automatiquement la valeur ce cette colonne, par exemple, pour un entier en mode `AUTO_INCREMENT`.
+* L'attribut `#[ORM\GeneratedValue]` permet de demander à la base de données de générer automatiquement la valeur de cette colonne, par exemple, pour un entier en mode `AUTO_INCREMENT`.
 
 Concernant la classe `PublicationRepository`, vous remarquerez que celle-ci est plutôt vide pour le moment, hormis quelques exemples commentés. En fait, toutes les opérations génériques du `CRUD` sont déjà prises en charge par la classe mère `ServiceEntityRepository` et un autre service appelé `EntityManagerInterface`. On peut néanmoins ajouter des méthodes plus spécifiques si besoin. Dans ce cas, nous ne codons pas les requêtes avec du `SQL`, mais avec un langage dérivé appelé le `DQL` (doctrine query langage). Cependant, les outils de base doctrine permettent déjà de faire des requêtes assez précises avec très peu de lignes de code.
 
@@ -552,7 +552,7 @@ Nous allons maintenant nous intéresser au fichier `.env` situé à la racine de
 
 Chaque variable est définie ainsi : `valeur="donnee"`
 
-Il est aussi possible de créer un fichier `.env.local` où vous pouvez définir mes mêmes variables ou bien écraser les variables déjà définies dans `.env`. Ce fichier n'est pas versionné (sur git), il peut donc servir si votre configuration locale change, d'un environnement de travail à l'autre, ou d'un développeur à l'autre. Par exemple, si chaque développeur travaille avec une base de données en local, il vaudrait mieux placer la configuration de la base de données dans le fichier `.env.local`. Dans notre cas, nous allons seulement travailler sur `.env`.
+Il est aussi possible de créer un fichier `.env.local` où vous pouvez définir les mêmes variables ou bien écraser les variables déjà définies dans `.env`. Ce fichier n'est pas versionné (sur git), il peut donc servir si votre configuration locale change, d'un environnement de travail à l'autre, ou d'un développeur à l'autre. Par exemple, si chaque développeur travaille avec une base de données en local, il vaudrait mieux placer la configuration de la base de données dans le fichier `.env.local`. Dans notre cas, nous allons seulement travailler sur `.env`.
 
 Nous nous intéressons au paramètre `DATABASE_URL`. Globalement, il se configure comme suit :
 
@@ -568,7 +568,7 @@ Vous aurez remarqué que votre **conteneur Docker** est divisé en deux sous-con
 
 * Un conteneur **mysql** qui permet de gérer diverses bases de données.
 
-Si vous jetez un œil au fichier `compose.yaml` vous observerez que le service `mysql` est nommé `db`. Une autre ligne dans le service `server` indique une dépendance avec le service `db`. (section `depends_on`). Concrètement, cela veut dire que, dans le conteneur du serveur web, le service de base de données est accessible via le nom d'hôte `db` (qui se traduit par un certaine ip). Au lieu d'utiliser une `ip`, on utilisera donc le nom d'hôte `db` dans la configuration de `DATABASE_URL`.
+Si vous jetez un œil au fichier `compose.yaml` vous observerez que le service `mysql` est nommé `db`. Une autre ligne dans le service `server` indique une dépendance avec le service `db` (section `depends_on`). Concrètement, cela veut dire que, dans le conteneur du serveur web, le service de base de données est accessible via le nom d'hôte `db` (qui se traduit par un certaine IP). Au lieu d'utiliser une `IP`, on utilisera donc le nom d'hôte `db` dans la configuration de `DATABASE_URL`.
 
 Par rapport au nom d'utilisateur et au mot de passe, le service `db` est configuré pour avoir un utilisateur `root` dont le mot de passe est `root`. Le port utilisé est `3306`.
 
@@ -607,7 +607,7 @@ Si tout va bien, un message indique que la base a été créée.
 
 Ensuite, il faut générer et exécuter une **migration**. Une migration est un fichier généré par doctrine contenant les requêtes nécessaires pour mettre à jour la structure de la base de données et aussi annuler ces modifications, si besoin ! Chaque migration est stockée dans un dossier dédié, ce qui permet de conserver un historique. Globalement, on peut dire que les migrations fournissent un gestionnaire de version de la structure de la base de données (comme un `git` pour la BD). 
 
-<!-->
+<!--
 **ATTENTION** : si vous effectuez votre première migration (par exemple, sur un nouveau projet) sur une base de données déjà existante (contenant des anciennes tables/données) cela va **écraser toutes les données** !. Si vous travaillez en local, pas de problème, il suffit de créer une nouvelle base et de travailler sur celle-ci. Cependant, si vous travaillez sur votre unique base MySQL de l'IUT, pensez à **exporter vos données** (s'il en reste de l'année dernière et qu'elles sont importantes) et à vider votre base. Il est possible de paramétrer `doctrine` afin d'ignorer certaines tables selon une expression régulière, mais nous ne verront pas cela dans le cadre de ce TD.
 -->
 
@@ -618,14 +618,14 @@ php bin/console make:migration
 php bin/console doctrine:migrations:migrate
 ```
 
-On doit effectuer une migration dès que l'ont créé ou que l'on modifie une entité existante (nom des attributs, assertions de type `ORM` modifiés...) afin de garder la structure de la base de données à jour.
+On doit effectuer une migration dès que l'on crée ou que l'on modifie une entité existante (nom des attributs, assertions de type `ORM` modifiés...) afin de garder la structure de la base de données à jour.
 
 Afin de visualiser votre base de données et interagir avec, deux solutions s'offrent à vous :
 
 * Si vous utilisez `PHPStorm`, vous pouvez cliquez sur le bouton `Database` dans la barre latérale droite, puis ajouter une nouvelle connexion `MySQL` :
 
     {% endraw %}
-    ![database-phpstorm-1]({{site.baseurl}}/assets/TD1/database-phpstorm-1.PNG)
+    ![database-phpstorm-1]({{site.baseurl}}/assets/TD1/database-phpstorm-1.png)
     {% raw %}
 
     Ensuite, il faut configurer la connexion comme suit :
