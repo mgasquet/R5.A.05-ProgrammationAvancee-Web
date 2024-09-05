@@ -956,7 +956,7 @@ Ainsi, il est possible d'avoirs plusieurs **webhooks** différents, pour plusieu
 
 <div class="exercise">
 
-1. Utilisez la commande `listen` du client Stripe en précisant l'URL pointant vers la route de votre site correspondant au **webhook** créé lors de l'exercice précédent (quelque chose comme `https://adressedusite/webhook/stripe`).
+1. Utilisez la commande `listen` du client Stripe en précisant l'URL pointant vers la route de votre site correspondant au **webhook** créé lors de l'exercice précédent (quelque chose comme [https://localhost/the_feed/public/webhook/stripe](https://localhost/the_feed/public/webhook/stripe)).
 
 2. Testez d'acheter du mode premium (comme tout à l'heure, en utilisant une [carte bancaire de test](https://stripe.com/docs/testing?locale=fr-FR#cards)).
 
