@@ -205,7 +205,7 @@ public function methodeExemple(): Response
 }
 ```
 
-* Le premier paramètre correspond au sous-chemin à partir de la racine de votre site web. Dans l'exemple ci-dessus, si par exemple votre projet est hébergé sur `https://monsite.com`, alors cela correspond à l'url `https://monsite.com/public/exemple` (dans un cas réel, on pointerait directement le nom de domaine sur le sous-dossier "public" du projet, et pas à sa racine, ce qui donnerait alors directement `https://monsite.com/exemple`.
+* Le premier paramètre correspond au sous-chemin à partir de la racine de votre site web. Dans l'exemple ci-dessus, si par exemple votre projet est hébergé sur `https://monsite.com`, alors cela correspond à l'url `https://monsite.com/public/exemple` (dans un cas réel, on pointerait directement le nom de domaine sur le sous-dossier "public" du projet, et pas à sa racine, ce qui donnerait alors directement `https://monsite.com/exemple`).
 
 * Le second paramètre `name` correspond au nom de la route. Celui-ci doit être **unique** dans toute l'application (pas deux routes avec le même nom). Ce nom de route est très important, car on pourra l'utiliser au lieu du chemin pour rediriger l'utilisateur, ou bien générer des URLs dans nos pages HTML.
 
@@ -298,7 +298,7 @@ public function methodeExempleGet(): Response
 
 3. Créez une méthode ayant une route visant le chemin `/hello`, nommée `hello_get` et autorisant seulement la méthode `GET`. Cette méthode doit renvoyer "Hello world" à l'utilisateur. Testez votre route sur votre site.
 
-4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site `https://adressedusite/public/hello/Paul` (ou bien simplement `https://adressedusite/hello/Paul` si vous utilisez le serveur de Symfony).
+4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site [https://localhost/the_feed/public/hello/Paul](https://localhost/the_feed/public/hello/Paul).
 
 </div>
 
