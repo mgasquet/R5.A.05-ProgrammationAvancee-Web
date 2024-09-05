@@ -583,7 +583,7 @@ Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple,
 
     Dans `path`, on préciser le **chemin** de la route (par exemple `/deconnexion`) et dans `target` la **route** (cette fois, pas avec son chemin, mais bien avec son nom) vers laquelle est redirigé l'utilisateur après s'être déconnecté.
 
-* Ensuite, on ajoute simplement un paramètre `methods` dans la section `_security_logout` dans le fichier `config/routes/security.yaml` :
+* Ensuite, on configure une section `_security_logout` dans le fichier `config/routes.yaml` :
 
     ```yaml
     _security_logout:
@@ -592,7 +592,7 @@ Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple,
         methods: ['POST']
     ```
 
-    En effet, par défaut, toutes les méthodes sont autorisées pour accéder à la route de déconnexion. Dans notre cas, nous limitons cela à `POST`.
+    Par défaut, toutes les méthodes sont autorisées pour accéder à la route de déconnexion. Dans notre cas, nous limitons cela à `POST` grâce à l'attribut `methods`.
 
 Par la suite, quand on voudra faire appel à la route (par exemple, en utilisant `path` dans un template twig), on utilisera le nom de route `_logout_main`. Le `main` correspond au nom du `firewall` où nous avons paramétré la section `logout`.
 
