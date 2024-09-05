@@ -11,7 +11,7 @@ lang: fr
 
 ## Mise en place de l’environnement de développement avec Docker
 
-Afin de simplifier la mise en place de l'environnement de développement en évitant les divers problèmes de compatibilité selon votre machine ou votre système d'exploitation, le travail sur les différents TPs s'effectuera au traves d'un **conteneur Docker** configuré adéquatement et possédant tous les outils dont vous aurez besoin.
+Afin de simplifier la mise en place de l'environnement de développement en évitant les divers problèmes de compatibilité selon votre machine ou votre système d'exploitation, le travail sur les différents TPs s'effectuera au travers d'un **conteneur Docker** configuré adéquatement et possédant tous les outils dont vous aurez besoin.
 
 <div class="exercise">
 
@@ -83,7 +83,7 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
 <div class="exercise">
 
-1. Depuis le terminal (dans le conteneur docker), assurez vous d'être bien placé dans `/var/www/html`.
+1. Depuis le terminal (dans le conteneur docker), assurez-vous d'être bien placé dans `/var/www/html`.
 
 2. Exécutez les commandes suivantes :
 
@@ -97,7 +97,7 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
    Cet ensemble de commandes crée les fichiers de base de votre projet et télécharge les briques logicielles essentielles pour le développement d'un site web.
 
-3. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à executer **depuis la racine du projet**) :
+3. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter **depuis la racine du projet**) :
 
    ```bash
    chown -R root:www-data .
@@ -167,7 +167,7 @@ class ExempleController extends AbstractController
 }
 ```
 
-Une route et une fonction d'exemple sont créés par défaut, mais nous la supprimerons pour placer nos propres fonctions.
+Une route et une fonction d'exemple sont créées par défaut, mais nous la supprimerons pour placer nos propres fonctions.
 
 Bien entendu, vous pouvez aussi créer un contrôleur à la main, mais la commande a aussi l'avantage d'inclure les premiers imports nécessaires.
 
@@ -385,7 +385,7 @@ Avant tout, quelques rappels sur le langage utilisé par ce moteur de templates 
       {% for key, value in tab %}
       <li>{{ key }} = {{ value }}</li>
       {% endfor %}
-    <ul>
+    </ul>
     ```
 
 * On peut aussi faire une boucle variant entre deux bornes : 
@@ -622,7 +622,7 @@ On doit effectuer une migration dès que l'on crée ou que l'on modifie une enti
 
 Afin de visualiser votre base de données et interagir avec, deux solutions s'offrent à vous :
 
-* Si vous utilisez `PHPStorm`, vous pouvez cliquez sur le bouton `Database` dans la barre latérale droite, puis ajouter une nouvelle connexion `MySQL` :
+* Si vous utilisez `PHPStorm`, vous pouvez cliquer sur le bouton `Database` dans la barre latérale droite, puis ajouter une nouvelle connexion `MySQL` :
 
     {% endraw %}
     ![database-phpstorm-1]({{site.baseurl}}/assets/TD1/database-phpstorm-1.png)
@@ -650,7 +650,7 @@ Afin de visualiser votre base de données et interagir avec, deux solutions s'of
 
 <div class="exercise">
 
-1. Configurez le paramètre `DATABASE_URL` dans le fichier `.env` (remplacez celui déjà présent) afin de connecter votre application à votre service de base de données. Donenz le nom que vous souhaitez à votre base (par exemple, `the_feed`).
+1. Configurez le paramètre `DATABASE_URL` dans le fichier `.env` (remplacez celui déjà présent) afin de connecter votre application à votre service de base de données. Donnez le nom que vous souhaitez à votre base (par exemple, `the_feed`).
 
 2. Exécutez la commande `doctrine:database:create` afin de créer la base de données.
 
@@ -664,7 +664,7 @@ Afin de visualiser votre base de données et interagir avec, deux solutions s'of
 
 Nous allons maintenant créer la route (et la page) qui se chargera d'afficher la liste des publications. Il s'agira en fait de la page d'accueil du site. 
 
-Dans le prochain exercice, vous allez utiliser de fausses publications générées à la main, dans le contrôleur, puis vous adapterez un template `twig` afin d'afficher ces publications. Il n'y a pas encore de `CSS`, mais cela viendra juste après.
+Dans le prochain exercice, vous allez utiliser de fausses publications générées à la main dans le contrôleur, puis vous adapterez un template `twig` afin d'afficher ces publications. Il n'y a pas encore de `CSS`, mais cela viendra juste après.
 
 Vous allez aussi être amené à utiliser des **filtres** de `twig`. Les **filtres** permettent de convertir une donnée en autre chose. On les utilise ainsi : `donnee|filtre(param1, param2, ...)`.
 
@@ -672,7 +672,7 @@ Vous allez aussi être amené à utiliser des **filtres** de `twig`. Les **filtr
 
 * Le filtre `capitalize` permet de convertir la première lettre d'une chaîne en majuscule.
 
-* Le filtre `date(format)` permet d'afficher une date selon un format désiré. Par exemple `Y-m-d`, si on souhaite un affichage du style "2023-09-01".
+* Le filtre `date(format)` permet d'afficher une date selon un format désiré. Un exemple de format est `"Y-m-d"` pour avoir un affichage du style "2023-09-01".
 
 Par exemple : 
 
@@ -772,19 +772,19 @@ Le système `AssetMapper` propose divers avantages **lors du développement** :
 
 * Le versionning des fichiers : les noms de fichiers sont associés à un suffixe lors du chargement de la page, liés à leurs versions. Si un changement intervient dans un des fichiers (par exemple, modification du js ou du css), le suffixe changera et le navigateur détectera donc qu'il doit recharger ce fichier (utile si le navigateur met en cache certains fichiers).
 
-* L'utilisation de librairies "clientes" externes disponibles sur npm (node package manager) sans avoir besoin d'installer `npm` sur votre machine. L'import est aussi très facile. Il en va de même pour les différents frameworks css.
+* L'utilisation de librairies "clientes" externes disponibles sur `npm` (node package manager) sans avoir besoin d'installer `npm` sur votre machine. L'import est aussi très facile. Il en va de même pour les différents frameworks css.
 
 * On peut créer différentes configurations et charger celle qu'on souhaite sur une page donnée, ou même plusieurs.
 
 Cependant, pour que tout cela soit automatique, il faut obligatoirement utiliser le serveur web de Symfony pendant le développement. Sinon il faudra exécuter une commande chaque fois qu'on voudra mettre à jour un fichier.
 
-De plus, si on souhaite faire des choses plutôt simples et basique (comme cela va être le cas dans ce TP), la mise en place et la configuration de ce système peut être un peu lourde.
+De plus, si on souhaite faire des choses plutôt simples et basiques (comme cela va être le cas dans ce TP), la mise en place et la configuration de ce système peut être un peu lourde.
 
 Bref, nous allons plutôt opter pour la solution la plus "simple" dans le cadre de ce TP : utiliser le dossier `public` à la racine du projet. Nous allons placer toutes nos ressources (css, js, images) dans ce dossier.
 
 Lors de la mise en **production**, même si on utilise le `AssetMapper` l'objectif final est d'avoir nos **assets** dans le dossier `public`. Si on utilise donc ce système, il suffit d'exécuter une commande pour tout "compiler" et copier dans le dossier en question.
 
-Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ assets(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier. Cela marche avec tous les systèmes (qu'on utilise `AssetMapper` ou directement le dossier `public`).
+Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier. Cela marche avec tous les systèmes (qu'on utilise `AssetMapper` ou directement le dossier `public`).
 
 Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : `{{ asset("exemple/coucou.jpg") }}` dans mon template (typiquement, dans la partie `src`).
 
@@ -811,13 +811,13 @@ Enfin, il reste un problème auquel nous allons faire face : construire les lien
 
 Pour gérer cela, symfony propose d'utiliser la fonction `path('nomRoute')` dans twig. Cette fonction permet de générer le chemin de la route passée en paramètre.
 
-Par exemple, si j'ai une route nommée `exemple` ayant pour chemin `/exemple/test/bonjour`, alors, si dans un template twig j'écris :
+Par exemple, si j'ai une route nommée `exemple` ayant pour chemin `/exemple/test/bonjour`, alors le template twig suivant
 
 ```twig
 <a href="{{ path('exemple') }}">Mon lien</a>
 ```
 
-Cela générera la balise `<a>` suivante :
+générera la balise `<a>` suivante
 
 ```html
 <a href="/exemple/test/bonjour">Mon lien</a>
@@ -867,7 +867,7 @@ Mais, comment utiliser ce repository dans votre contrôleur ? Avec de l'injectio
 
 Globalement, dans votre contrôleur, dès que vous avez besoin d'un service (repositories ou autre) dans une de vos méthodes, vous avez juste à l'ajouter comme paramètre (en précisant son type) de la méthode et... c'est tout !
 
-Par exemple, si je veux accéder à l'instance de `PublicationRepository` et également un autre service, par exemple, `EntityManagerInterface`, j'ai juste à faire :
+Par exemple, si je veux accéder à une instance de `PublicationRepository` et de `EntityManagerInterface`, j'ai juste à faire :
 
 ```php
 use App\Repository\PublicationRepository;
@@ -937,7 +937,7 @@ Dans votre contrôleur, vous avez sans doute utilisé la méthode `findAll`, hor
     }
     ```
 
-    Pour rappel : `PublicationRespository`, grâce à l'héritage, possède les méthodes `find`, `findAll`, etc.
+    Pour rappel : `PublicationRepository`, grâce à l'héritage, possède les méthodes `find`, `findAll`, etc.
 
 </div>
 
@@ -945,7 +945,7 @@ Maintenant que nous pouvons afficher les publications, il est temps de pouvoir e
 
 ### Formulaire de validation
 
-Comme vous le savez, qui dit création d'une entité, dit formulaire et validation des données transmisses au serveur. Ici aussi, Symfony nous propose des outils permettant de simplifier plusieurs étapes de ce processus avec un type d'objet permettant de générer, gérer et valider les formulaires de notre site.
+Comme vous le savez, qui dit création d'une entité, dit formulaire et validation des données transmises au serveur. Ici aussi, Symfony nous propose des outils permettant de simplifier plusieurs étapes de ce processus avec un type d'objet permettant de générer, gérer et valider les formulaires de notre site.
 
 De manière générale, on va créer des formulaires liés à une entité (dans notre cas, Publication), mais si besoin, il est aussi possible de créer des formulaires indépendants.
 
@@ -1078,9 +1078,9 @@ Du côté de `twig`, on peut alors générer le formulaire en utilisant plusieur
 
 * `form_rest(formulaireExemple)` : permet de générer ce qu'il "reste" : généralement, un champ caché appelé **token CSRF**. Ce token est généré aléatoirement à chaque affichage de formulaire permet de se protéger d'une attaque appelée **cross site request forgery** ou plus simplement `CSRF`. Cette attaque consiste à vous faire exécuter une requête sur un site cible depuis un site extérieur.
 
-La variable `formulaireExemple` correspondant au nom de la variable associé au formulaire dans le tableau associatif passé au template par le contrôleur.
+La variable `formulaireExemple` correspondant au nom de la variable associée au formulaire dans le tableau associatif passé au template par le contrôleur.
 
-Vous noterez que dans le cas de `form_widget`, l'identifiant ne se place pas dans `attr`, contrairement à `form_start`. De manière assez générale, tous les attributs "normaux" d'in **input** de formulaire (comme par exemple `placeholder`) se plaçeront à l'intérieur de `attr`.
+Vous noterez que dans le cas de `form_widget`, l'identifiant ne se place pas dans `attr`, contrairement à `form_start`. De manière assez générale, tous les attributs "normaux" d'un **input** de formulaire (par exemple `placeholder`) se placeront à l'intérieur de `attr`.
 
 Attention, dans le cas du bouton d'envoi du formulaire, on l'affiche aussi avec `form_widget`, et on configure le message contenu dans le bouton avec le paramètre `label` : 
 
@@ -1134,7 +1134,7 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 
 </div>
 
-Il y a [d'autres méthodes utiles](https://symfony.com/doc/current/form/form_customization.html#form-field-helpers) que vous pourriez utiliser. En fait, l'intégralité du formulaire peut être généré sans écrire de HTML (on peut même utiliser une boucle), même pour les attributs liés aux balises html (id, class...). Néanmoins, Symfony nous permet de garder la main sur certains aspects, et ainsi, choisir ci qui est généré automatiquement ou non, si on souhaite customiser certaines parties. 
+Il y a [d'autres méthodes utiles](https://symfony.com/doc/current/form/form_customization.html#form-field-helpers) que vous pourriez utiliser. En fait, l'intégralité du formulaire peut être générée sans écrire de HTML (on peut même utiliser une boucle), même pour les attributs liés aux balises html (id, class...). Néanmoins, Symfony nous permet de garder la main sur certains aspects, et ainsi, choisir ce qui est généré automatiquement ou non, si on souhaite customiser certaines parties. 
 
 Afin de garder une séparation entre les données du formulaire, sa validation et son affichage, nous allons choisir de ne pas coder les aspects liés au "style" (classes, id) dans les classes définissant les formulaires, et de plutôt les définir (si besoin) nous-même dans le template twig, à l'aide du paramètre `attr`.
 
@@ -1194,7 +1194,7 @@ public function methodeExemple(Request $request, EntityManagerInterface $entityM
 
 Cependant, dans notre cas, il reste un problème : quand et comment la date de publication va être générée si l'utilisateur ne la transmet pas dans le formulaire ?
 
-Dans certains cas, des attributs d'une classe donnée doivent être généré automatiquement avant d'être enregistrés dans la base, comme pour notre date de publication. Pour cela, il suffit d'ajouter un attribut `#[ORM\HasLifecycleCallbacks]` à votre classe-entité puis une méthode (du nom que vous souhaitez) en lui affectant l'attribut `#[ORM\PrePersist]` :
+Dans certains cas, des attributs d'une classe donnée doivent être générés automatiquement avant d'être enregistrés dans la base, comme pour notre date de publication. Pour cela, il suffit d'ajouter un attribut `#[ORM\HasLifecycleCallbacks]` à votre classe-entité puis une méthode (du nom que vous souhaitez) en lui affectant l'attribut `#[ORM\PrePersist]` :
 
 ```php
 #[ORM\Entity(repositoryClass: ExempleRepository::class)]
@@ -1301,7 +1301,7 @@ class Exemple {
 }
 ```
 
-Au niveau des classes de type formulaire, on peut aussi ajouter des propriétés au niveau des champs (qui ne sont pas lié à l'entité) en utilisant la **classe de l'assertion** ainsi :
+Au niveau des classes de type formulaire, on peut aussi ajouter des propriétés au niveau des champs (qui ne sont pas liés à l'entité) en utilisant la **classe de l'assertion** ainsi :
 
 ```php
 class ExempleType extends AbstractType {
@@ -1540,7 +1540,7 @@ services:
 
 Si jamais je souhaite changer de classe concrète, j'ai juste à changer le fichier `services.yaml`. Il n'y aura pas de changements à faire dans les classes qui utilisaient mon service jusqu'à présent.
 
-Il peut être intéressant de créer une **interface** pour son service, même si on ne prévoit pas immédiatement d'avoir plusieurs classes concrètes différentes pour ce service. C'est une bonne pratique car, on injectera alors systématiquement le service via l'interface, dans les contrôleurs, dans les autres services. Si jamais on vient finalement à ajouter une autre classes concrète implémentant la même interface (variante de ce service), il suffira alors d'éditer `services.yaml` sans toucher au reste du code si on souhaite en changer.
+Il peut être intéressant de créer une **interface** pour son service, même si on ne prévoit pas immédiatement d'avoir plusieurs classes concrètes différentes pour ce service. C'est une bonne pratique car, on injectera alors systématiquement le service via l'interface, dans les contrôleurs, dans les autres services. Si jamais on vient finalement à ajouter une autre classe concrète implémentant la même interface (variante de ce service), il suffira alors d'éditer `services.yaml` sans toucher au reste du code si on souhaite en changer.
 
 <div class="exercise">
 
@@ -1678,15 +1678,15 @@ Une petite dernière section supplémentaire à l'attention du parcours **RACDV*
 
  * Symfony réécrit l'URL pour appeler toujours le script de base public/index.php en transmettant l'information de l'URL relative. En utilisant le serveur de **Symfony**, cela se fait tout seul, sinon, le fichier `.htaccess` du dossier `public` est utilisé. Vous aviez vous-même inclut un fichier similaire pour obtenir le même comportement, dans votre framework "maison".
 
- * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]` comme nous le faisions (à terme) l'année dernière. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration). Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manière de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Laravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques librairies). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
+ * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]` comme nous le faisions (à terme) l'année dernière. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration). Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manières de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Laravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques librairies). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
  
  Fait amusant : si vous êtes amené à utiliser **Laravel**, vous pourrez constater que le framework importe le routeur de Symfony et l'étend ! Et c'est une bonne chose : on évite de réinventer la roue.
 
- * Symfony utilise un `ControllerResolver` et un `ArgumentResolver` pour appeler la bonne action (bon controller, bonne méthode) avec les bons arguments. Vous aviez déjà utilisé exactement ces classes (issues de Symfony) dans votre framework maison ! En effet, nous les avions installé avec composer.
+ * Symfony utilise un `ControllerResolver` et un `ArgumentResolver` pour appeler la bonne action (bon controller, bonne méthode) avec les bons arguments. Vous aviez déjà utilisé exactement ces classes (issues de Symfony) dans votre framework maison ! En effet, nous les avions installées avec composer.
 
  * La majeure partie de la technologie `twig` (syntaxe, blocs...) a été vue l'année dernière.
 
- * Nous avions  ajouté deux fonctions à `twig` : `asset` pour récupérer les assets (images, fichiers...) de notre application et `route` pour générer le lien d'une route à partir de son nom (et éventuellement ses paramètres). Ici, Symfony inclut directement ces fonctions avec `asset` et `path` (à la place de `route`).
+ * Nous avions ajouté deux fonctions à `twig` : `asset` pour récupérer les assets (images, fichiers...) de notre application et `route` pour générer le lien d'une route à partir de son nom (et éventuellement ses paramètres). Ici, Symfony inclut directement ces fonctions avec `asset` et `path` (à la place de `route`).
 
  * Le fichier de configuration `config/services.yaml` est très proche du fichier de configuration du conteneur de services que certains d'entre vous aviez codé (lors du TD4 de complément web, au semestre 4). Nous avions aussi codé un équivalent de ce fichier sous la forme d'une classe de configuration PHP.
 
