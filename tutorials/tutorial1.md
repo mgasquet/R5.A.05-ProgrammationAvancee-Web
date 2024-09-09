@@ -1256,7 +1256,7 @@ Nous aurions pu afficher la même vue que dans `route_exemple_get` (au lieu de r
 
 ### Assertions (contraintes)
 
-Vous savez maintenant comment créer des publications via un formulaire, mais pour l'instant, vous ne vérifiez pas vraiment les données qui sont soumises. Par exemple, comment faire, par exemple, pour limiter la taille du message ? Est-ce que cela se fait avec le contrôleur ? Pas du tout, pour cela, Symfony a prévu un système appelé **assertions**.
+Vous savez maintenant comment créer des publications via un formulaire, mais pour l'instant, vous ne vérifiez pas vraiment les données qui sont soumises. Comment faire, par exemple, pour limiter la taille du message ? Est-ce que cela se fait avec le contrôleur ? Pas du tout, pour cela, Symfony a prévu un système appelé **assertions**.
 
 Une **assertion** est une contrainte liée à un champ du formulaire ou une propriété de l'entité. Quand un formulaire est soumis, Symfony va vérifier que toutes les contraintes sont respectées. Si une ou plusieurs annotations ne sont pas validées, des erreurs sont générées (dans le contrôleur, on vérifie cela avec `$form->isValid()`).
 
@@ -1440,7 +1440,7 @@ J'ai accès à un attribut `$this->attr` dans ma classe (qui sera affecté lors 
 Concernant le service, une fois votre classe construite, vous pouvez l'injecter où vous le souhaiter (dans un contrôleur, ou bien dans un autre service) et vous en servir :
 
 ```php
- #[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
+#[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
 public function methodeExemple(ExempleService $exempleService): Response
 {
     $exempleService->maFonction();
