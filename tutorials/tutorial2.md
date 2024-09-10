@@ -581,16 +581,16 @@ Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple,
                     target: routeRetour
     ```
 
-    Dans `path`, on préciser le **chemin** de la route (par exemple `/deconnexion`) et dans `target` la **route** (cette fois, pas avec son chemin, mais bien avec son nom) vers laquelle est redirigé l'utilisateur après s'être déconnecté.
+    Dans `path`, on précise le **chemin** de la route (par exemple `/deconnexion`) et dans `target` la **route** (cette fois, pas avec son chemin, mais bien avec son nom) vers laquelle est redirigé l'utilisateur après s'être déconnecté.
 
 * Ensuite, on configure une section `_security_logout` dans le fichier `config/routes.yaml` :
 
-    ```yaml
-    _security_logout:
-        resource: security.route_loader.logout
-        type: service
-        methods: ['POST']
-    ```
+  ```yaml
+  _security_logout:
+      resource: security.route_loader.logout
+      type: service
+      methods: ['POST']
+  ```
 
     Par défaut, toutes les méthodes sont autorisées pour accéder à la route de déconnexion. Dans notre cas, nous limitons cela à `POST` grâce à l'attribut `methods`.
 
@@ -602,7 +602,7 @@ Nous n'avons pas beaucoup évoqué la notion de `firewall` jusqu'ici. Un `firewa
 
 1. Paramétrez la route de déconnexion dans le fichier `config/packages/security.yaml`. Elle doit avoir pour chemin `/deconnexion`. Après s'être déconnecté, l'utilisateur doit être redirigé sur la route `feed`.
 
-2. Modifiez le fichier `config/routes/security.yaml` afin d'autoriser seulement la méthode `POST` lorsque la route de déconnexion est utilisée.
+2. Modifiez le fichier `config/routes.yaml` afin d'autoriser seulement la méthode `POST` lorsque la route de déconnexion est utilisée.
 
 3. Dans votre template `base.html.twig`, ajoutez le formulaire suivant dans le menu de navigation en complétant `action` de manière adéquate pour pointer sur votre route de déconnexion (toujours en utilisant la fonction `path`, jamais directement le chemin) :
 
@@ -819,13 +819,13 @@ Voici la liste des attributs disponibles, qui devraient notamment vous rappeler 
 
 On peut aussi ajouter un attribut supplémentaire `#[ORM\JoinColumn(onDelete="SET NULL")]` si on veut appliquer la stratégie de mettre l'attribut référencé à `null` lors de la suppression de l'entité référencée (au lieu de supprimer complétement la ressource qui lui est liée).
 
-* `[ORM\OneToMany](targetEntity: Target::class, mappedBy: ..., cascade: [...])` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder une **collection** de l'entité ciblée (l'attribut est de type `Collection`). Le paramètre `targetEntity` permet de spécifier la classe cible. Le paramètre `mappedBy` fonctionne de la même manière que `inversedBy`.
+* `#[ORM\OneToMany(targetEntity: Target::class, mappedBy: ..., cascade: [...])]` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder une **collection** de l'entité ciblée (l'attribut est de type `Collection`). Le paramètre `targetEntity` permet de spécifier la classe cible. Le paramètre `mappedBy` fonctionne de la même manière que `inversedBy`.
 
 * `#[OneToOne(mappedBy: ...)]` : À utiliser dans une relation `1 - 1`. Dans l'autre entité, on utilise le même attribut en remplaçant `mappedBy` par `inversedBy`.
 
 * `#[ManyToMany(targetEntity: Target::class, mappedBy: ...)]` : À utiliser dans une relation **plusieurs - plusieurs**. Dans l'autre entité, on utilise la même attribut en remplaçant `mappedBy` par `inversedBy`. Dans ce cas, une nouvelle table sera créée dans la base de données (table de jointure). Dans une des deux entités, au niveau de l'attribut concerné, il faut alors ajouter une autre attribut `#[JoinTable(name: 'nom_table_jointure')]` afin de nommer cette table. Le paramètre `targetEntity` fonctionne de la même manière que pour `OneToMany`.
 
-La configuration des attributs présentée implique un système **bidirectionnel** où l'entité A connait l'entité B et inversement. Il est bien entendu possible de faire un système unidirectionnel. Pour cela, il faut placer seulement l'attribut dans une des entités concernées, de ne pas spécifier les paramètres `mappedBy` et `inversedBy` et de rajouter l'attribut `#[JoinColumn(name: 'parent_id', referencedColumnName: 'id')]` où `parent_id` référence le nom de l'attribut "clé étrangère" (qui va être créé) et `referencedColumnName` le nom de la clé primaire de la table référencée. Il est aussi possible de créer des auto-référence (référence vers la même entité).
+La configuration des attributs présentée implique un système **bidirectionnel** où l'entité A connait l'entité B et inversement. Il est bien entendu possible de faire un système unidirectionnel. Pour cela, il faut placer seulement l'attribut dans une des entités concernées, de ne pas spécifier les paramètres `mappedBy` et `inversedBy` et de rajouter l'attribut `#[JoinColumn(name: 'parent_id', referencedColumnName: 'id')]` où `parent_id` référence le nom de l'attribut "clé étrangère" (qui va être créé) et `referencedColumnName` le nom de la clé primaire de la table référencée. Il est aussi possible de créer des auto-références (référence vers la même entité).
 
 Attention, au niveau des attributs des relations `OneToOne` ou `ManyToOne`, une **clé étrangère** est générée dans la base :
 
