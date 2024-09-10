@@ -309,11 +309,11 @@ Dans notre nouveau service, nous allons utiliser certaines fonctions de l'objet 
 ```php
 // $fichier est le fichier uploadé
 // $destination est le dossier vers lequel le fichier sera déplacé
-$fileName = uniqid() . '.' . $fichier->guessExtension();
+$fileName = uniqid($login) . '.' . $fichier->guessExtension();
 $fichier->move($destination, $fileName);
 ```
 
-L'utilisation de `uniqueid` permet de générer une chaîne aléatoire (presque garantie unique). Ainsi, on devrait obtenir un nom de fichier unique, pour l'image de profil de l'utilisateur. La méthode `guessExtension` permet d'obtenir l'extension du fichier (png, jpg...). Enfin, `move` déplace le fichier vers un dossier de destination.
+L'utilisation de `uniqueid` permet de générer un identifiant (chaîne de caractère) basé sur l'heure actuelle. Le paramètre donné à cette fonction permet de lui ajouter un **préfixe** (dans notre cas, on utilise le login) ce qui permet de garantir son unicité (on peut aussi éventuellement lui ajouter un deuxième paramètre booléen pour lui demander d'ajouter une chaîne aléatoire en suffixe). Ainsi, on devrait obtenir un nom de fichier unique, pour l'image de profil de l'utilisateur. La méthode `guessExtension` permet d'obtenir l'extension du fichier (png, jpg...). Enfin, `move` déplace le fichier vers un dossier de destination.
 
 Ensuite, le service `UserPasswordHasherInterface` permet de **hacher/chiffrer** un mot de passe, en utilisant l'algorithme configuré dans `security.yaml` (dans notre cas `auto`, donc, le meilleur algorithme de chiffrement disponible).
 
