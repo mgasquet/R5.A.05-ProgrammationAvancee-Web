@@ -231,7 +231,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
         headers.append("Content-Type", "application/json");
 
         //Le payload contient les données (sous la forme d'un objet clé-valeur) qu'on souhaite envoyer avec la requête
-        const payload = {donnee1 : ..., donee2: ..., ...};
+        const payload = {donnee1 : ..., donnee2: ..., ...};
 
         //On utilise le mot clé "await" pour "attendre" que la requête soit complètement éxécutée avant d'éxécuter les prochaines instructions.
         //Par conséquent, la fonction "maFonction" doit être asynchrone pour ne pas bloquer la page.
