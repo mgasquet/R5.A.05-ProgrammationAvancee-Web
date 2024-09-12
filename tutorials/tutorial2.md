@@ -359,6 +359,7 @@ $valeurChamp = $form["monChamp"]->getData();
 
     ```
     chown -R root:www-data ./public/img/utilisateurs/uploads
+    chmod g+w ./public/img/utilisateurs/uploads
     ```
 
 3. Dans le fichier `config/services.yaml`, ajoutez un paramètre `dossier_photo_profil` ayant pour valeur : `'%kernel.project_dir%/public/img/utilisateurs/uploads'`. La partie `%kernel.project_dir%` désigne la racine du projet. C'est un paramètre défini par Symfony (notez qu'en utilisant `%` on peut utiliser la valeur d'autres paramètres pour construire un autre paramètre, comme c'est le cas ici.).
