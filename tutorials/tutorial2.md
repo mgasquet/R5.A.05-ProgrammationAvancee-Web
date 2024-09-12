@@ -142,7 +142,7 @@ L'exemple d'assertion `File` donné plus tôt se transformerait ainsi dans le ta
 new File(maxSize : '2M', extensions : ['mp3', 'wav', 'ogg'])
 ```
 
-Vous l'aurez remarqué, nous utilisons la syntaxe des [arguments nommés](https://www.php.net/manual/fr/functions.arguments.php#functions.named-arguments) que nous avions évoqués lors du premier TD lors de l'introduction des attributs.
+Vous l'aurez remarqué, nous utilisons la syntaxe des [arguments nommés](https://www.php.net/manual/fr/functions.arguments.php#functions.named-arguments) que nous avions évoquée lors du premier TD lors de l'introduction des attributs.
 
 Ensuite, au niveau de la classe `Utilisateur`, nous pouvons utiliser un attribut 
 ```php
@@ -183,7 +183,7 @@ Avec Symfony, on peut générer le `<label>` lié à un champ avec {% raw %}`{{ 
 
 <div class="exercise">
 
-1. À l'aide de la commande `make:form` créez une classe de formulaire `UtilisateurType` pour l'entité `Utilisateur`. Dans cette nouvelle classe, supprimez les champs `password` et `nomPhotoProfil` et `roles` (qui ne sont pas envoyées et gérés par l'utilisateur) puis ajoutez trois nouveaux champs : `plainPassword`, `fichierPhotoProfil` et `inscription`.
+1. À l'aide de la commande `make:form` créez une classe de formulaire `UtilisateurType` pour l'entité `Utilisateur`. Dans cette nouvelle classe, supprimez les champs `password` et `nomPhotoProfil` et `roles` (qui ne sont pas envoyés et gérés par l'utilisateur) puis ajoutez trois nouveaux champs : `plainPassword`, `fichierPhotoProfil` et `inscription`.
 
 2. Configurez le type des champs ainsi :
 
@@ -435,9 +435,9 @@ $valeurChamp = $form["monChamp"]->getData();
 
     * `minlength` et `maxlength` sur le login et le mot de passe.
 
-    * `pattern` sur le mot de passe avec pour valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$` (on utilise `\\d` au lieu de `\d`, car autrement, `\` est interprété comme un caractère spécial)
+    * `pattern` sur le mot de passe avec valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$` (on utilise `\\d` au lieu de `\d`, car autrement, `\` est interprété comme un caractère spécial)
 
-    * Vous pouvez également déplacer les contraintes déjà présentes dans le code HTML correspondant au champ `fichierPhotoProfil` dans le champ dédié dans classe `UtilisateurType`. Attention, pour `required`, il se place en dehors de `attr` :
+    * Vous pouvez également déplacer les contraintes déjà présentes dans le code HTML correspondant au champ `fichierPhotoProfil` dans le champ dédié de la classe `UtilisateurType`. Attention, pour `required`, il se place en dehors de `attr` :
 
     ```php
     $builder
@@ -512,7 +512,7 @@ security:
 
 <div class="exercise">
 
-1. Dans `UtilisateurController`, créez une route `connexion` avec pour chemin `/connexion`, similaire à l'exemple donné plus tôt. Le template à préciser est `utilisateur/connexion.html.twig`. Nous allons le créer à la prochaine étape.
+1. Dans `UtilisateurController`, créez une route `connexion` de chemin `/connexion`, similaire à l'exemple donné plus tôt. Le template à préciser est `utilisateur/connexion.html.twig`. Nous allons le créer à la prochaine étape.
 
 2. Créez le template `connexion.html.twig` dans le dossier `templates/utilisateur`. Comme toutes nos pages, ce template étend `base.html.twig` et récrit certains blocks. La page doit avoir pour titre "Connexion".
 
@@ -596,7 +596,7 @@ Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple,
 
 Par la suite, quand on voudra faire appel à la route (par exemple, en utilisant `path` dans un template twig), on utilisera le nom de route `_logout_main`. Le `main` correspond au nom du `firewall` où nous avons paramétré la section `logout`.
 
-Nous n'avons pas beaucoup évoqué la notion de `firewall` jusqu'ici. Un `firewall` est la partie de Symfony qui permet de vous authentifier, de savoir qui vous êtes selon les parties du site (les pages) auxquelles vous tentez d'accéder. Les firewall `dev` est un "faux" firewall utilisé en local pour avoir accès aux outils de développement (entre autres) sur la page web, notamment. Par défaut, vous possédez donc un seul véritable firewall `main` qui est configuré pour traité l'accès à toutes les pages du site. Généralement, c'est amplement suffisant, mais on pourrait aussi imaginer avoir un `firewall` nommé `api` si le site proposait également une api qui permettrait d'authentifier les utilisateurs différemment, les déconnecter différemment, etc. Et il serait utilisé pour toutes les routes qui commencent par `/api/`, par exemple. Pour configurer les routes pour lequel un `firewall` est utilisé, on utilise le paramètre `pattern`. Comme vous le voyez, `main` n'en possède pas : par défaut, il permet donc de traiter toutes les routes.
+Nous n'avons pas beaucoup évoqué la notion de `firewall` jusqu'ici. Un `firewall` est la partie de Symfony qui permet de vous authentifier, de savoir qui vous êtes selon les parties du site (les pages) auxquelles vous tentez d'accéder. Les firewall `dev` est un "faux" firewall utilisé en local pour avoir accès aux outils de développement (entre autres) sur la page web, notamment. Par défaut, vous possédez donc un seul véritable firewall `main` qui est configuré pour traiter l'accès à toutes les pages du site. Généralement, c'est amplement suffisant, mais on pourrait aussi imaginer avoir un `firewall` nommé `api` si le site proposait également une api qui permettrait d'authentifier les utilisateurs différemment, les déconnecter différemment, etc. Et il serait utilisé pour toutes les routes qui commencent par `/api/`, par exemple. Pour configurer les routes pour lequel un `firewall` est utilisé, on utilise le paramètre `pattern`. Comme vous le voyez, `main` n'en possède pas : par défaut, il permet donc de traiter toutes les routes.
 
 <div class="exercise">
 
@@ -801,7 +801,7 @@ Cependant, gardez en mémoire l'utilisation de `IsGranted` avec une `Expression`
 
 1. Si un utilisateur déjà connecté tente d'accéder aux routes `inscription` ou `connexion`, redirigez-le vers la route `feed` (page principale).
 
-2. Vérifiez que vous êtes effectivement redirigé vers la page principale si vous tentez d'accéder à ces routes (en modifiant directement l'URL)tout en étant connecté.
+2. Vérifiez que vous êtes effectivement redirigé vers la page principale si vous tentez d'accéder à ces routes (en modifiant directement l'URL) tout en étant connecté.
 
 </div>
 
@@ -831,7 +831,7 @@ Attention, au niveau des attributs des relations `OneToOne` ou `ManyToOne`, une 
 
 * Si on veut que cet attribut ne puisse pas être **null** dans la base, on ajoute un attribut `#[ORM\JoinColumn(nullable: false)]`.
 
-* Si on veut autoriser le comportement de suppression en cascade du côté de la base lors de la suppression de l'entité cible, il faut aussi spécifier le paramètre `onDelete: "CASCADE"` dans cette même attribut. Par exemple `#[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]`
+* Si on veut autoriser le comportement de suppression en cascade du côté de la base lors de la suppression de l'entité cible, il faut aussi spécifier le paramètre `onDelete: "CASCADE"` dans ce même attribut. Par exemple `#[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]`
 
 Vous pouvez également consulter [une documentation plus complète](https://www.doctrine-project.org/projects/doctrine-orm/en/3.2/reference/association-mapping.html).
 
@@ -839,7 +839,7 @@ Fort heureusement, Symfony nous permet de mâcher ce travail en utilisant encore
 
 1. Déclarer une nouvelle propriété
 
-2. Quand on demande le **type**, sélectionner au choix : `ManyToOne`, `OneToMany`, `ManyToMany` ou `OneToOne`. Il est également possible de sélectionner `relation` : cela affichera des informations pour vous aider à choisir parmis les 4 valeurs précédentes.
+2. Quand on demande le **type**, sélectionner au choix : `ManyToOne`, `OneToMany`, `ManyToMany` ou `OneToOne`. Il est également possible de sélectionner `relation` : cela affichera des informations pour vous aider à choisir parmi les 4 valeurs précédentes.
 
 3. On précise l'entité cible (avec le nom de sa classe).
 
@@ -853,7 +853,7 @@ Fort heureusement, Symfony nous permet de mâcher ce travail en utilisant encore
 
 2. En utilisant la commande `make:entity`, mettez à jour votre entité `Publication` en ajoutant une propriété `auteur` qui sera un **Utilisateur** :
 
-    * Trouvez le bon type à utiliser. Si vous hésitez précisez le type `relation`, Symfony vous aidera alors à choisir.
+    * Trouvez le bon type à utiliser. Si vous hésitez, précisez le type `relation`, Symfony vous aidera alors à choisir.
 
     * La propriété ne peut pas être nulle.
 
@@ -865,7 +865,7 @@ Fort heureusement, Symfony nous permet de mâcher ce travail en utilisant encore
 
 4. Modifiez la classe `Publication` pour faire en sorte que quand un utilisateur est supprimé dans la base, ses publications soient toutes supprimées (correspondant à une contrainte `ON DELETE CASCADE`). Il vous suffit d'éditer un attribut (annotation) déjà existant...
 
-    Vous vous faites peut-être la réflexion que cette contrainte semble redondant avec la suppression des entités orphelines. En fait, `onDelete: "CASCADE"` va créer une contrainte au niveau de la base de données. L'option `orphanRemoval` quant à elle agit au niveau de l'application (de l'ORM) : si on retire la publication à l'utilisateur (depuis sa collection de publications) la publication sera supprimée, car considérée comme orpheline (dans ce contexte, l'entité ne peut pas être possédée par plusieurs entités et doit forcément avoir un auteur). Mais si on supprime l'utilisateur tout court, cela ne supprimera pas les publications, car on ne retire pas vraiment la publication d'un utilisateur dans ce contexte. C'est donc pour cela qu'on ajoute aussi la contrainte `ON DELETE CASCADE`.
+    Vous vous faites peut-être la réflexion que cette contrainte semble redondante avec la suppression des entités orphelines. En fait, `onDelete: "CASCADE"` va créer une contrainte au niveau de la base de données. L'option `orphanRemoval` quant à elle agit au niveau de l'application (de l'ORM) : si on retire la publication à l'utilisateur (depuis sa collection de publications) la publication sera supprimée, car considérée comme orpheline (dans ce contexte, l'entité ne peut pas être possédée par plusieurs entités et doit forcément avoir un auteur). Mais si on supprime l'utilisateur tout court, cela ne supprimera pas les publications, car on ne retire pas vraiment la publication d'un utilisateur dans ce contexte. C'est donc pour cela qu'on ajoute aussi la contrainte `ON DELETE CASCADE`.
 
     En résumé :
 
@@ -933,7 +933,7 @@ En utilisant le **eager loading** :
 
 * Quand on exécute `findAllOrderedByDate`, une seule requête est exécutée pour récupérer toutes les publications et les données des auteurs (avec une jointure).
 
-* Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication, il n'y a pas de nouvelle requêtes exécutées pour récupérer ses données, elles ont déjà été chargées.
+* Quand, dans notre template `Twig`, on lit les données de l'auteur d'une publication, il n'y a pas de nouvelles requêtes exécutées pour récupérer ses données, elles ont déjà été chargées.
 
 Attention, cette stratégie (**eager loading**) est pertinente dans ce contexte, car nous savons que nous devons afficher les données de l'auteur sur chaque publication. Mais, dans d'autres contextes où ces données ne seraient pas toujours affichées, on pourrait alors préférer le **lazy loading** pour ne pas charger trop de données d'un seul coup (ce qui peut aussi réduire les performances inutilement, si on n'a pas besoins de lire toutes les données).
 
@@ -1168,7 +1168,7 @@ Tout cela va trouver son intérêt si le template est réutilisé dans plusieurs
 
 Il est intéressant de noter que le template inclus ait accès à toutes les variables déjà accessibles (ou définies) par le template qui l'appelle. 
 
-Il est d'ailleurs tout à fait possible que ce template "étende" un autre template, comme nous l'avons fait pour la plupart des templates que nous avons créé jusqu'à présent. Finalement, on peut voir l'extension de templates comme de l'héritage (et la redéfinission de blocks comme de la réécriture de méthodes) et l'utilisation d'un template à l'intérieur d'un autre template comme un appel de fonction, par exemple.
+Il est d'ailleurs tout à fait possible que ce template "étende" un autre template, comme nous l'avons fait pour la plupart des templates que nous avons créé jusqu'à présent. Finalement, on peut voir l'extension de templates comme de l'héritage (et la redéfinition de blocks comme de la réécriture de méthodes) et l'utilisation d'un template à l'intérieur d'un autre template comme un appel de fonction, par exemple.
 
 <div class="exercise">
 
@@ -1216,7 +1216,7 @@ Il faut d'abord créer le chemin de répertoires `templates/bundles/TwigBundle/E
 
 * Un template général `error.html.twig` qui sera chargé par défaut, s'il n'existe pas de template pour le code HTTP ayant déclenché l'erreur.
 
-Ces templates seront chargé automatiquement (en mode `prod`) si une erreur survient.
+Ces templates seront chargés automatiquement (en mode `prod`) si une erreur survient.
 
 <div class="exercise">
 
