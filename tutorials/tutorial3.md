@@ -217,8 +217,8 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
     * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) et soit renvoyer le code :
 
         * `Response::HTTP_NOT_FOUND` (404) si la publication n'existe pas (ressource non trouvée).
-        * `Response:HTTP_FORBIDDEN` (403) si l'utilisateur n'est pas auteur de la publication (opération interdite).
-        * `Response:HTTP_NO_CONTENT` (204) si tout se passe bien (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée)
+        * `Response::HTTP_FORBIDDEN` (403) si l'utilisateur n'est pas auteur de la publication (opération interdite).
+        * `Response::HTTP_NO_CONTENT` (204) si tout se passe bien (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée)
 
     Souvenez-vous : lors du TD2, nous avions vu une méthode très simple pour récupérer une entité préciser à partir d'une route paramétrée, sans utiliser explicitement son repository !
 
@@ -240,7 +240,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
         headers.append("Content-Type", "application/json");
 
         //Le payload contient les données (sous la forme d'un objet clé-valeur) qu'on souhaite envoyer avec la requête
-        const payload = {donnee1 : ..., donee2: ..., ...};
+        const payload = {donnee1 : ..., donnee2: ..., ...};
 
         //On utilise le mot clé "await" pour "attendre" que la requête soit complètement éxécutée avant d'éxécuter les prochaines instructions.
         //Par conséquent, la fonction "maFonction" doit être asynchrone pour ne pas bloquer la page.
