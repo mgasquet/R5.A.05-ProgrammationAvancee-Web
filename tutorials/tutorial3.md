@@ -118,7 +118,16 @@ Comme pour tous les composants, il faut commencer par l'installer avec `composer
 composer require friendsofsymfony/jsrouting-bundle
 ```
 
-Selon votre configuration, il se peut que le bundle ne soit pas activé par défaut. Si ce n'est pas le cas, il suffit de rajouter une petite ligne de code dans le fichier `config/bundles.php` :
+Lors de l'installation, il vous est demandé si vous souhaitez exécuter une "recette". Répondez oui.
+
+**Si jamais vous avez oublié de dire oui, exécutez les deux commandes suivantes :**
+
+```bash
+composer remove friendsofsymfony/jsrouting-bundle
+composer require friendsofsymfony/jsrouting-bundle
+```
+
+<!-- Selon votre configuration, il se peut que le bundle ne soit pas activé par défaut. Si ce n'est pas le cas, il suffit de rajouter une petite ligne de code dans le fichier `config/bundles.php` :
 
 ```php
 //config/bundles.php
@@ -135,7 +144,7 @@ Ensuite, comme le bundle défini certaines `routes` qui lui sont spécifiques, i
 ```yaml
 fos_js_routing:
     resource: "@FOSJsRoutingBundle/Resources/config/routing/routing-sf4.xml"
-```
+``` -->
 
 Enfin, certains **bundles** contiennent des assets (fichiers css, js, images, etc...) qu'il faut importer dans notre propre dossier d'assets, afin de pouvoir les utiliser. Pour cela, Symfony a prévu une commande :
 
@@ -161,7 +170,7 @@ let URL = Routing.generate('maRoute');
 let URL = Routing.generate('maRoute', {"param": val, ...});
 ```
 
-Nous allons mettre en place une route : `/feedy/{id}` qui sera accessible via la méthode `DELETE`.
+Nous allons mettre en place une route : `/publications/{id}` qui sera accessible via la méthode `DELETE`.
 
 Néanmoins, un problème subsiste : comment récupérer l'id de la publication associée au bouton "Supprimer" sur lequel on clique, pour le passer en paramètre de la route ?
 
@@ -197,7 +206,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 <div class="exercise">
 
-1. Dans `PublicationController`, créez une route `deletePublication` possédant une route paramétrée `/feedy/{id}`, accessible via la méthode `DELETE` et **exposée**. Concrètement, il n'y a aucune donnée à lire (pas de payload, c-à-d de corps de requête) mais vous devez :
+1. Dans `PublicationController`, créez une route `deletePublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Concrètement, il n'y a aucune donnée à lire (pas de payload, c-à-d de corps de requête) mais vous devez :
 
     * Récupérer la publication visée par l'identifiant donné dans la route.
 
@@ -207,9 +216,9 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
     * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) et soit renvoyer le code :
 
-        * `404` si la publication n'existe pas (ressource non trouvée).
-        * `403` si l'utilisateur n'est pas auteur de la publication (opération interdite).
-        * `204` si tout se passe bien (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée)
+        * `Response::HTTP_NOT_FOUND` (404) si la publication n'existe pas (ressource non trouvée).
+        * `Response:HTTP_FORBIDDEN` (403) si l'utilisateur n'est pas auteur de la publication (opération interdite).
+        * `Response:HTTP_NO_CONTENT` (204) si tout se passe bien (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée)
 
     Souvenez-vous : lors du TD2, nous avions vu une méthode très simple pour récupérer une entité préciser à partir d'une route paramétrée, sans utiliser explicitement son repository !
 
@@ -219,7 +228,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 4. Modifiez le template `publication.html.twig` afin d'inclure un attribut `data-publication-id` contenant l'identifiant de la publication dans les attributs du bouton de suppression.
 
-5. Dans le fichier `publications.js`, modifiez la fonction `supprimerFeedy` afin d'ajouter une requête asynchrone vers la route `deletePublication`. Vous pouvez notamment utiliser la fonction `fetch` et l'instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels (et nouvelles précisions) :
+5. Dans le fichier `publications.js`, modifiez la fonction `supprimerPublication` afin d'ajouter une requête asynchrone vers la route `deletePublication`. Vous pouvez notamment utiliser la fonction `fetch` et l'instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels (et nouvelles précisions) :
 
     ```javascript
     //Comme on utilise le mot clé "await" dans le corps de la fonction, on doit rendre la fonction asynchrone.
@@ -1129,17 +1138,17 @@ Actuellement, votre route `deletePublication` doit à peu près ressembler à ç
 
 ```php
 #[IsGranted('ROLE_USER')]
-#[Route('/feedy/{id}', name: 'deletePublication', options: ["expose" => true], methods: ["DELETE"])]
+#[Route('/publications/{id}', name: 'deletePublication', options: ["expose" => true], methods: ["DELETE"])]
 public function deletePublication(?Publication $publication, EntityManagerInterface $entityManager) : Response {
     if($publication === null) {
-        return new JsonResponse(null, 404);
+        return new JsonResponse(null, Response::HTTP_NOT_FOUND);
     }
     if($this->getUser() !== $publication->getAuteur()) {
-        return new JsonResponse(null, 403);
+        return new JsonResponse(null, Response::HTTP_FORBIDDEN);
     }
     $entityManager->remove($publication);
     $entityManager->flush();
-    return new JsonResponse(null, 204);
+    return new JsonResponse(null, Response::HTTP_NO_CONTENT);
 }
 ```
 
@@ -1159,7 +1168,7 @@ Deux notes importantes :
 
 * Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode (représentant généralement une entité mappée avec `#[MapEntity]`). Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
 
-* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`) Pour rappel, `?` autorise une valeur nulle. Ici, le fait de ne pas autoriser cela générera automatiquement une réponse **404** si l'utilisateur essaye d'accéder à un objet qui n'existe pas (identifiant invalide).
+* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`) Pour rappel, `?` autorise une valeur nulle. Ici, le fait de ne pas autoriser cela générera automatiquement une réponse **404** (not found) si l'utilisateur essaye d'accéder à un objet qui n'existe pas (identifiant invalide).
 
 Normalement, vous devriez maintenant être en mesure de retravailler la logique de vérification du "propriétaire" d'une publication.
 

@@ -435,9 +435,9 @@ $valeurChamp = $form["monChamp"]->getData();
 
     * `minlength` et `maxlength` sur le login et le mot de passe.
 
-    * `pattern` sur le mot de passe avec valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$` (on utilise `\\d` au lieu de `\d`, car autrement, `\` est interprété comme un caractère spécial)
+    * `pattern` sur le mot de passe avec valeur : `^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$`
 
-    * Vous pouvez également déplacer les contraintes déjà présentes dans le code HTML correspondant au champ `fichierPhotoProfil` dans le champ dédié de la classe `UtilisateurType`. Attention, pour `required`, il se place en dehors de `attr` :
+    * Vous pouvez également déplacer les contraintes `required` et `accept` déjà présentes sur le `form_widget` nommé **fichierPhotoProfil** dans le template `inscription.html.twig` dans le champ dédié de la classe `UtilisateurType`. Attention, pour `required`, il se place en dehors de `attr` :
 
     ```php
     $builder
@@ -445,6 +445,7 @@ $valeurChamp = $form["monChamp"]->getData();
             //Champ non requis, génère un required='' dans le champ
             'required' => false,
             'attr' => [
+                //Il faut gérer la contrainte "accept" ici
                 ...
             ]
         ])
@@ -1037,7 +1038,7 @@ public function getLivre(?Livre $livre): Response
 
 <div class="exercise">
 
-1. Dans le contrôleur `UtilisateurController` créez une route (et sa méthode) nommée `pagePerso` qui doit être déclenchée par les chemins type `/utilisateurs/{login}/feed` où le login est le login d'un utilisateur. La route est accessible en `GET` seulement. Vous devez faire en sorte de récupérer l'utilisateur correspondant au login passé en paramètre par la route puis :
+1. Dans le contrôleur `UtilisateurController` créez une route (et sa méthode) nommée `pagePerso` qui doit être déclenchée par les chemins type `/utilisateurs/{login}/publications` où le login est le login d'un utilisateur. La route est accessible en `GET` seulement. Vous devez faire en sorte de récupérer l'utilisateur correspondant au login passé en paramètre par la route puis :
 
     * Si l'utilisateur n'existe pas, afficher un message (flash) d'erreur "Utilisateur inexistant" puis rediriger vers la route `feed`.
 

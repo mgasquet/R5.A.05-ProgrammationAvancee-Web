@@ -1,7 +1,7 @@
-function supprimerFeedy(event) {
+function supprimerPublication(event) {
 	const button = event.target;
-    const feedy = button.closest(".feedy");
-    feedy.remove();
+    const publication = button.closest(".feedy");
+    publication.remove();
 }
 
 const buttons = document.getElementsByClassName("delete-feedy");
