@@ -32,8 +32,8 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
 ## TDs de Vue.js
 
 [Page des TDs de Vue.Js](https://matthieu-rosenfeld.github.io/)
-
-## Projet
-
-A venir
 -->
+
+## Projets
+
+1. Projet 1 (Symfony) : [Annuaire en ligne](tutorials/projet1)
