@@ -25,7 +25,7 @@ Voici les détails du service qui devra être développé :
 
 * Chaque profil doit être associé à un **code unique**. Pendant l'inscription, l'utilisateur peut choisir de préciser lui-même ce code ou non (à condition qu'il ne soit pas déjà pris). S'il ne précise rien, un code aléatoire sera alors généré. Quand l'utilisateur décide lui-même de saisir un code, l'application doit vérifier en temps réel que le code n'est pas déjà pris, avant la soumission du formulaire (donc, en utilisant du **javascript** et des **requêtes asynchrones**). Le code ne doit contenir que des caractères alphanumériques.
 
-* Seul le **javascript** "nature" est autorisé pour le développement du site (pas de framework, juste de simples fichiers **javascript**).
+* Seul le **javascript** "nature" est autorisé (pas de framework JS, juste de simples fichiers **javascript**, comme dans le TD3).
 
 * Une fois connecté, l'utilisateur peut **éditer son profil** avec des **informations complémentaires** (par exemple, numéro de téléphone, pays, adresse postale, réseaux sociaux, etc.). À vous de trouver les données qui vous semblent intéressantes à préciser sur le profil.
 
