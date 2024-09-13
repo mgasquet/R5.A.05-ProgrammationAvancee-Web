@@ -65,9 +65,11 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 * Dans les [TD2]({{site.baseurl}}/tutorials/tutorial2), nous avons vu comment capter des **événements** (`LoginSuccessEvent`, `LoginFailureEvent` et `LogoutEvent`) afin d'exécuter du code lorsque ces événements surviennent. [D'autres événements](https://symfony.com/doc/current/event_dispatcher.html) peuvent vous permettre de facilement implémenter la fonctionnalité relative à **la date de dernière connexion** d'un utilisateur ainsi que le **système de maintenance**.
 
-* Pour réaliser la fonctionnalité qui vérifie l'unicité du code du profil pendant l'inscription, à l'aide des requêtes asynchrones, vous pouvez vous inspirer de [ce TD de javascript](https://gitlabinfo.iutmontp.univ-montp2.fr/r4.01-developpementweb/TD5) de 2ᵉ année, notamment pour mettre en place un système de **debouncing**. 
+* Pour réaliser la fonctionnalité qui vérifie l'unicité du code du profil pendant l'inscription, à l'aide des requêtes asynchrones, vous pouvez vous inspirer de [ce TD de javascript](https://gitlabinfo.iutmontp.univ-montp2.fr/r4.01-developpementweb/TD5) de 2ᵉ année, notamment pour mettre en place un système de **debouncing**.
 
 * Dans le [TD3]({{site.baseurl}}/tutorials/tutorial3), nous avons vu qu'il faut renvoyer un objet `JsonResponse` quand on veut renvoyer une réponse au format JSON plutôt qu'une page web complète (générée avec **twig**). Vous trouverez plus d'informations [ici](https://symfony.com/doc/current/components/http_foundation.html#creating-a-json-response).
+
+* La création de commandes et la gestion des rôles sont également abordées lors du [TD3]({{site.baseurl}}/tutorials/tutorial3).
 
 * Pour le style du site, faites ce que vous voulez, tant que ce n'est pas trop laid ! Cependant, **il est interdit de reprendre le style de The Feed**. Par contre, vous pouvez utiliser n'importe quel Framework CSS (par exemple [bootstrap](https://getbootstrap.com/docs/5.3/getting-started/download/), [tailwind css](https://tailwindcss.com/) ou bien quelque chose d'encore plus simple comme [bulma](https://bulma.io/)). De plus, **Symfony** vous permet d'intégrer facilement [bootstrap](https://symfony.com/doc/current/form/bootstrap5.html) pour générer facilement des formulaires stylisés. Le site de [tailwind css](https://tailwindcss.com/docs/guides/symfony) possède aussi un guide d'installation pour Symfony.
 
