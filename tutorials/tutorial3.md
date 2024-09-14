@@ -1,6 +1,6 @@
 ---
 title: TD3 &ndash; Amélioration du site
-subtitle: Javascript, Premium, Système de paiement, Permissions, Administration, Commandes
+subtitle: Javascript, Premium, Permissions, Administration, Commandes, Système de paiement
 layout: tutorial
 lang: fr
 ---
@@ -11,17 +11,18 @@ Dans ce nouveau TD, nous allons améliorer le site en rajoutant diverses fonctio
 
 Voici les nouveaux objectifs pour "The Feed" :
 
-* Ajout de fonctionnalités asynchrones avec JavaScript (pour supprimer des publications).
+* Ajout de fonctionnalités **asynchrones** avec **JavaScript** (pour supprimer des publications).
 
-* Ajout d'un système de membres "premium", vendu par le site via l'API Stripe.
+* Ajout d'un système de **membres premium**.
 
-Puis, en bonus :
+* Gestion avancée des **permissions**.
 
-* Système avancé de permissions.
+* Ajout d'un nouveau **rôle** (administrateur).
 
-* Ajout de fonctionnalités concernant l'administration du site.
+* Ajout de **commandes**.
 
-* Ajout de commandes.
+* Ajout d'un **système de paiement** (pour obtenir le statut premium) avec **Stripe**.
+
 
 **On rappelle que les commandes doivent être exécutées à l'intérieur de votre conteneur Docker** à l'exception des commandes liées au logiciel client **Stripe** (dont nous allons parler dans ce TP, mais cela sera précisé en temps voulu).
 
@@ -555,9 +556,447 @@ Dans l'exemple ci-dessus, l'âge est stocké dans l'entité représentant nos ut
 
 </div>
 
+## Des permissions plus avancées
+
+Dans cette section, nous allons voir comment affiner la gestion des permissions avec Symfony.
+
+### Utilisation d'expressions dans l'attribut IsGranted
+
+Actuellement, votre route `deletePublication` doit à peu près ressembler à ça :
+
+```php
+#[IsGranted('ROLE_USER')]
+#[Route('/publications/{id}', name: 'deletePublication', options: ["expose" => true], methods: ["DELETE"])]
+public function deletePublication(?Publication $publication, EntityManagerInterface $entityManager) : Response {
+    if($publication === null) {
+        return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+    }
+    if($this->getUser() !== $publication->getAuteur()) {
+        return new JsonResponse(null, Response::HTTP_FORBIDDEN);
+    }
+    $entityManager->remove($publication);
+    $entityManager->flush();
+    return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+}
+```
+
+Ici, nous avons notamment besoin de vérifier que l'utilisateur est bien l'auteur de la publication... Mais saviez-vous que nous pouvons aussi faire tout cela dans l'attribut `IsGranted` ? En effet, nous avons vu précédemment que nous pouvions accéder au paramètre `user` représentant l'utilisateur courant en utilisant un objet `Expression` dans l'attribut `IsGranted`. Il est aussi possible d'accéder à un des paramètres de la méthode et de l'utiliser dans notre condition. Pour cela, on ajoute un second paramètre (le `subject`) à notre attribut `IsGranted` en précisant le nom d'un de nos paramètres.
+
+Par exemple :
+
+```php
+#[IsGranted(attribute: new Expression("is_granted('ROLE_USER') and subject.method() == user.method()"), subject: "monObjet")]
+#[Route('/exemple/{id}', name: 'route_exemple'], methods: ["POST"])]
+public function deletePublication(Exemple $monObjet) : Response {
+    ...
+}
+```
+
+Deux notes importantes :
+
+* Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode (représentant généralement une entité mappée avec `#[MapEntity]`). Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
+
+* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`) Pour rappel, `?` autorise une valeur nulle. Ici, le fait de ne pas autoriser cela générera automatiquement une réponse **404** (not found) si l'utilisateur essaye d'accéder à un objet qui n'existe pas (identifiant invalide).
+
+Normalement, vous devriez maintenant être en mesure de retravailler la logique de vérification du "propriétaire" d'une publication.
+
+<div class="exercise">
+
+1. Au niveau de la route `deletePublication`, utilisez vos nouvelles connaissances pour déplacer la logique vérifiant que l'utilisateur courant est bien le propriétaire de la publication vers votre attribut `IsGranted`.
+
+2. Vérifiez que tout fonctionne comme attendu (supprimez des publications sur votre compte).
+
+</div>
+
+### Les voters
+
+L'utilisation de `IsGranted` fonctionne bien, mais on reste encore dans des cas assez simples. S la condition grandit (de nouveaux rôles, comme un administrateur, ayant tous les droits...) ou bien que la vérification devient plus compliquée (appel à des services, plusieurs lignes de code...), que doit-on faire ? Tout mettre dans le contrôleur ? Non ! Comme évoqué précédemment, Symfony possède un système avancé pour gérer les permissions : les **voters**.
+
+Un **voter** est une classe listant des **permissions** (généralement liées à une entité, mais pas obligatoirement.). Lorsque le système vérifie une permission avec `isGranted` (avec une fonction ou un attribut), les **voters** sont sollicités au travers de deux méthodes :
+
+* Une méthode qui détermine si la classe du **voter** peut traiter cette vérification (est-ce que c'est une permission qui lui est liée ou non...).
+
+* Une méthode qui effectue la vérification et renvoie `true` ou `false` selon sa décision (accepte / refuse).
+
+Comme plusieurs **voters** peuvent "voter" sur la décision à prendre pour une même permission, on peut configurer une stratégie au niveau de l'application :
+
+* Si un seul des voters répond "oui", on accepte.
+
+* Si un seul des voters répond "non", on refuse.
+
+* Si la majorité des voters répondent "oui", on accepte.
+
+* On retient le vote du voter ayant la priorité la plus haute.
+
+Par défaut, la première stratégie est choisie. Il est aussi possible de configurer ses propres stratégies !
+
+Dans la classe du Voter, on liste (généralement) les permissions gérées par la classe du Voter avec des constantes. La première méthode `supports` vérifiera que la permission vérifiée est bien une des constantes listées, et que le sujet de la permission (s'il y en a un) correspond au type d'entité géré par la classe (ce n'est pas obligatoirement le cas).
+
+Les **voters** se placent dans le dossier `src/Security/Voter`. Il est possible d'injecter des services (et autres paramètres) via le constructeur.
+
+```php
+class ExempleVoter extends Voter
+{
+    //On fait la liste des permissions gérées par le Voter.
+    public const EXEMPLE = 'PERM_EXEMPLE';
+
+    public function __construct(/* Injection de services, si besoin*/)
+    {
+    }
+
+    /*
+    $attribute correspond à la permission vérifiée
+    $subject correspond au sujet sur lequelle la vérification est effectué (par exemple, une publication, un utilisateur)
+    Le sujet peut être éventuellement null!
+    La méthode renvoie true si ce Voter est habilité à voter pour cette permission (et ce subject)
+    */
+    protected function supports(string $attribute, mixed $subject): bool
+    {
+        ...
+    }
+
+    /*
+    Vote pour accorder la permission (ou non).
+    Le paramètre $token nous donne accès à l'utilisateur.
+    */
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    {
+        $user = $token->getUser();
+        ...
+        switch ($attribute) {
+            case self::EXEMPLE:
+                return ...
+            ...
+        }
+        ...
+    }
+}
+```
+
+Prenons l'exemple suivant : une application web permet à ses utilisateurs d'uploader et de partager des vidéos. Les données de la vidéo ne peuvent être modifiées que par l'utilisateur ayant uploadé la vidéo, pareil pour la suppression. Les vidéos peuvent être vues par tous les utilisateurs, sauf si la vidéo est privée. Certaines vidéos peuvent être inadaptées aux mineurs (contenu sensible, langage grossier...). Dans ce cas la vidéo ne peut pas être visionnée par un utilisateur ayant moins de 18 ans. Enfin, la vidéo peut éventuellement ne pas être visionnable dans certains pays.
+
+Pour gérer ces permissions, je vais construire un voter `VoterVideo` qui contiendra deux permissions : `VIDEO_VIEW` (permission pour regarder une vidéo donnée) et une autre `VIDEO_EDIT` (pour avoir le droit d'éditer ou de supprimer une vidéo).
+
+```php
+//src/Security/Voter/VideoVoter.php
+class VideoVoter extends Voter
+{
+    public const VIEW = 'VIDEO_VIEW';
+    public const EDIT = 'VIDEO_EDIT';
+
+    public function __construct()
+    {
+    }
+
+    protected function supports(string $attribute, mixed $subject): bool
+    {
+        //Je vote si la permission vérifiée est soit VIDEO_VIEW ou VIDEO_EDIT et que $subject est une instance de la classe Video.
+        return in_array($attribute, [self::VIEW, self::EDIT])
+            && $subject instanceof Video;
+    }
+
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    {
+        //a ce stade, comme `supports` oblige $subject à être du type Video, je sais que $subject est une vidéo.
+
+        //Je récupère l'utilisateur (null s'il n'est pas connecté)
+        $user = $token->getUser();
+
+        switch ($attribute) {
+            case self::VIEW:
+                if($subject->isPrivate() && ($user == null || $subject->getAuthor() != $user)) {
+                    return false;
+                }
+                else if($subject->isAdultOnly() && ($user == null || $user.getAge() < 18)) {
+                    return false;
+                }
+                else if(!empty($subject->getBannedCountries()) && ($user == null || in_array($user->getCountry(), $subject->getBannedCountries()))) {
+                    return false;
+                }
+                return true;
+            case self::EDIT:
+                return $user != null && $subject->getAuthor() == $user;
+        }
+
+        return false;
+    }
+}
+```
+
+Enfin, dans mon contrôleur (ou ailleurs) dès que je veux contrôler l'autorisation, par exemple, quand un utilisateur accède à une vidéo, j'utilise la permission `VIDEO_VIEW` :
+
+```php
+#[IsGranted(attribute: 'VIDEO_VIEW', subject: 'video')]
+#[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
+public function watchVideo(#[MapEntity] Video $video): Response
+{
+    ...
+}
+```
+
+On voit bien qu'il aurait été difficile de mettre toute la logique de la permission `VIDEO_VIEW` dans l'attribut `IsGranted` ! On peut aussi utiliser, à la place, la méthode `denyAccessUnlessGranted` :
+
+```php
+#[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
+public function watchVideo($id, VideoRepository $videoRepository): Response
+{
+    $video = $videoRepository->find($id);
+    $this->denyAccessUnlessGranted(`VIDEO_VIEW`, $video);
+    ...
+}
+```
+
+Ou bien :
+
+```php
+#[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
+public function watchVideo($id, VideoRepository $videoRepository): Response
+{
+    $video = $videoRepository->find($id);
+    if(!$this->isGranted(`VIDEO_VIEW`, $video)) {
+        //Réponse customisée...
+    }
+    ...
+}
+```
+
+Il est aussi tout à fait possible d'utiliser cette permission avec la méthode `is_granted` dans nos templates twig.
+
+```twig
+{% raw %}
+{% if is_granted('VIDEO_VIEW', video) %}
+
+{% endif %}
+{% endraw %}
+```
+
+La commande suivante permet de générer une classe `NomEntiteVoter` contenant du code basique pour un **Voter**, lié à l'entité `NomEntite` :
+
+```php 
+php bin/console make:voter NomEntiteVoter
+``` 
+Cependant, encore une fois, il n'est pas obligatoire d'avoir des permissions liées spécifiquement à une entité !
+
+<div class="exercise">
+
+1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication`. Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il en est l'auteur.
+
+2. Utilisez votre nouvelle permission au niveau de la route `deletePublication`.
+
+3. Modifiez le template `publication.html.twig` pour utiliser `is_granted` pour afficher le bouton de suppression de la publication au lieu du code que vous utilisiez avant.
+
+4. Vérifiez que tout fonctionne toujours.
+
+</div>
+
+### Rôle Admin
+
+Nous allons maintenant créer et utiliser un véritable nouveau **rôle** qui aura plus de permissions. Ce rôle sera un administrateur qui aura tous les droits ! Et la mise en place de tout cela va être grandement facilité par le système de voter.
+
+Il n'y a pas vraiment de procédure pour créer un nouveau rôle sur Symfony. En fait, on peut ajouter les rôles que l'on souhaite aux utilisateurs. Cependant, il faut impérativement que le nom du rôle débute par `ROLE_`.
+
+Néanmoins, il faut penser à **hiérarchiser** les rôles. Cela consiste à dire que tel ou tel rôle est une version dérivée d'un rôle existant. Ainsi, un utilisateur possédant un rôle particulier aura ses propres privilèges en plus de ceux de tous les sous-rôles duquel le rôle est dérivé.
+
+Tout cela se configure dans le fichier `config/packages/security.yaml` :
+
+```yaml
+#config/packages/security.yaml
+security:
+    
+    ...
+
+    role_hierarchy:
+        ROLE_CUSTOM: ROLE_USER
+        ROLE_CUSTOM2: ROLE_USER
+        ROLE_SUPER_CUSTOM : ROLE_CUSTOM, ROLE_CUSTOM2
+```
+
+Dans l'exemple ci-dessus, un utilisateur possédant le rôle `ROLE_CUSTOM` possède automatiquement tous les privilèges de `ROLE_USER` (en plus des siens). Pareil pour `ROLE_CUSTOM2`. Enfin, `ROLE_SUPER_CUSTOM` possède les privilèges de `ROLE_CUSTOM`, `ROLE_CUSTOM2` et aussi `ROLE_USER` (car `ROLE_CUSTOM` et/ou `ROLE_CUSTOM2` dérivent de `ROLE_USER`...).
+
+<div class="exercise">
+
+1. Dans le fichier `security.yaml`, définissez une hiérarchie pour le rôle `ROLE_ADMIN` (nouveau rôle) en faisant en sorte que celui-ci hérite de tous les privilèges du rôle de base : `ROLE_USER`.
+
+2. Modifiez le voter `PublicationVoter` afin de voter favorablement si l'utilisateur possède le privilège `ROLE_ADMIN`. Pour cela, il vous faudra injecter et utiliser le service `Security` qui permet d'utiliser la méthode `isGranted` :
+
+    ```php
+    use Symfony\Bundle\SecurityBundle\Security;
+
+    $this->security->isGranted(role)
+    ```
+
+3. Dans votre base de données, ajoutez le rôle `ROLE_ADMIN` à un utilisateur : affectez la valeur `["ROLE_ADMIN"]` dans le champ `roles`. Si vous étiez connecté avec ce compte, vous serez déconnecté après le changement de rôle, par mesure de sécurité.
+
+4. Connectez-vous avec le compte admin. Si vous avez bien configuré votre voter, le bouton de suppression devrait alors apparaître sur toutes les publications !
+
+</div>
+
+Comme vous le constatez, les voters sont assez puissant ! L'intérêt est encore assez limité ici, mais nous pourrions rajouter plus de permissions dans la classe publication (edit, delete, etc...). Cette classe permet de centraliser toute la logique de vérification des permissions. Nous n'avons pas eu à répéter le code vérifiant le statut de l'utilisateur (propriétaire ou admin) à la fois dans le contrôleur et à la fois dans le template twig. On utilise simplement notre permission `PUBLICATION_DELETE`.
+
+## Créer ses propres commandes
+
+Dans cette section, nous allons voir comment créer nos propres commandes qui seront utilisables comme les autres commandes de Symfony, dans le terminal :
+
+```php
+php bin/console macommande ...
+```
+
+Il peut être très utile de créer des commandes pour assurer certaines opérations de maintenance ou d'administration du site. On peut aussi relier cela à un système qui exécutera périodiquement des commandes (par exemple, chaque semaine, chaque mois...). L'avantage (par rapport à un script classique) c'est qu'on est déjà dans l'environnement de l'application. On peut donc injecter et utiliser des services, des paramètres, etc...
+
+Pour initialiser la classe d'une commande, on exécute :
+
+```
+php bin/console make:command MaCommande
+```
+
+Ce qui génère une classe `MaCommande` dans le dossier `src/Command`. Faisons un tour des possibilités proposées par cette classe :
+
+```php
+#[AsCommand(
+    /* Nom de la commande, tel qu'on l'utilisera lors de l'éxécution de php bin/console ... */
+    name: 'nomcommande',
+    /* Pour décrire ce que fait la commande, si l'utilisateur utilise l'option --help, par exemple. */
+    description: '...',
+)]
+class MaCommande extends Command
+{
+    public function __construct(
+        /* Injection de dépendances... */
+    ) {
+        //Il faut quand même appeller le constructeur parent (de la classe Command)
+        parent::__construct();
+    }
+
+    //On configure les paramètres de la commande ici
+    protected function configure(): void
+    {
+        $this
+            //Argument (se place dans l'ordre, quand on écrit la commande)
+            //Peut être obligatoire ou optionnel
+            ->addArgument('arg1', InputArgument::REQUIRED, "Argument description")
+            ->addArgument('arg2', InputArgument::OPTIONAL, "Argument description")
+
+            //On peut configurer des options qui s'utilisent ainsi `--nomOption` dans la commande. Il n'y a pas de valeur associée à l'option, contrairement aux arguments. Il s'agit simplement d'une option qu'on active ou non.
+            ->addOption('nomOption', null, InputOption::VALUE_NONE, "Option description")
+        ;
+    }
+
+    //Méthode déclenchée lors de l'éxécution de la commande.
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        //Permet de gérer les messages d'entrées/sorties
+        $io = new SymfonyStyle($input, $output);
+
+        //On récupère un argument
+        $arg1 = $input->getArgument('arg1');
+
+        if ($arg1) {
+            //Permet de vérifier que l'argument est défini ou non (s'il est optionnel)
+        }
+
+        //Permet de voir si une option est activée.
+        if ($input->getOption('nomOption')) {
+            // ...
+        }
+
+        //Pour afficher un message normal.
+        $io->writeln("message");
+
+        //Pour afficher un message de succès.
+        $io->success("message");
+
+        //Pour afficher un message d'erreur.
+        $io->error("message");
+
+        //Pour afficher un message d'avertissement.
+        $io->warning("message");
+
+        //On peut aussi utiliser $io->ask pour poser une question et récupérer des arguments de manière intéractive... $io contient plein de méthodes utiles!
+
+        /* 
+        On retourne une des trois valeurs possibles :
+        * Command::SUCCESS : la commande s'st bien éxécutée (de bout en bout)
+        * Command::INVALID: il y a un problème par rapport aux arguments passés.
+        * Command:FALIURE : il y a eu un problème lors de l'éxécution.
+        */
+        return Command::SUCCESS;
+    }
+}
+```
+
+Reprenons l'exemple du site de partage de vidéos. Je veux créer une commande qui me permet de supprimer une vidéo dont le code unique est passé en paramètre (pas l'id, mais une chaîne de caractère unique du style `whIu75m`, comme sur YouTube par exemple).
+
+```php
+#[AsCommand(
+    name: 'delete:video',
+    description: 'Delete a video (by using its unique identifier)',
+)]
+class MaCommande extends Command
+{
+    public function __construct(
+       private VideoRepository $videoRepository,
+       private EntityManagerInterface $entityManager
+    ) {
+        parent::__construct();
+    }
+
+    protected function configure(): void
+    {
+        $this
+            ->addArgument('videoCode', InputArgument::REQUIRED, "The unique identifier of the video.")
+        ;
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
+        $io = new SymfonyStyle($input, $output);
+        $code = $input->getArgument('videoCode');
+        $video = $this->videoRepository->findOneBy(["videoCode" => $code]);
+        if($video === null) {
+            $io->error("Video not found.");
+            return Command::FAILURE;
+        }
+        $this->entityManager->remove($video);
+        $this->entityManager->flush();
+        $io->success("The video has been deleted !");
+        return Command::SUCCESS;
+    }
+}
+```
+
+<div class="exercise">
+
+1. Créez et testez la commande `GivePremiumCommand` nommée `give:premium` qui prend en paramètre le login d'un utilisateur et le rend membre premium.
+
+2. Créez et testez la commande `RevokePremiumCommand` nommée `revoke:premium` qui prend en paramètre le login d'un utilisateur et le lui enlève le statut premium.
+
+3. Créez et testez la commande `PromoteAdminCommand` nommée `promote:admin` qui prend en paramètre le login d'un utilisateur et lui donne le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour ajouter un rôle) à la classe `Utilisateur` :
+
+    ```php
+    public function addRole($role) : void {
+        if(!in_array($role, $this->roles)) {
+            $this->roles[] = $role;
+        }
+    }
+    ```
+
+4. Créez et testez la commande `RevokeAdminCommand` nommée `revoke:admin` qui prend en paramètre le login d'un utilisateur et lui enlève le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour retirer un rôle) à la classe `Utilisateur` :
+
+    ```php
+    public function removeRole($role) : void {
+        $index = array_search($role, $this->roles);
+        //array_search renvoie soit l'index (la clé) soit false is rien n'est trouver 
+        //Préciser le !== false est bien nécessaire, car si le role se trouve à l'index 0, utiliser un simple if($index) ne vérifie pas le type! Et donc, si l'index retournait est 0, la condition ne passerait pas...!
+        if ($index !== false) {
+            unset($this->roles[$index]);
+        }
+    }
+    ```
+</div>
+
 ## Stripe
 
-Nous allons maintenant mettre en place un système de paiement (en mode "test" mais qui peux réellement fonctionner). Pour cela, nous allons utiliser la plateforme de paiement `Stripe`.
+Pour terminer ce TD, nous allons maintenant mettre en place un système de paiement (en mode "test" mais qui peut réellement fonctionner). Pour cela, nous allons utiliser la plateforme de paiement `Stripe`.
 
 Au même titre que PayPal, Stripe est un outil permettant aux entreprises de recevoir de l'argent en reliant leur compte à divers systèmes de paiement, par exemple, sur un site web. Ce genre d'outil dispose généralement d'une `API` qui permet son intégration à de nombreux systèmes de manière assez flexible. Et bien sûr, avant de recevoir de "vrai" paiement, ces plateformes mettent à disposition des développeurs des outils de tests pour simuler des paiements et vérifier que tout fonctionne.
 
@@ -567,9 +1006,9 @@ Quant à Stripe qui fonctionne avec un système de clés (publique/privées), il
 
 Bien sûr, il existe bien d'autres plateformes, mais celles-ci sont les plus populaires. Hors des outils et des possibilités proposées par chaque plateforme, la principale différence va se situer au niveau du `fee` (frais de transaction) prélevé sur chaque transaction réelle (c'est ainsi que la plateforme fait du profit). On retrouve généralement un système de frais fixe (par exemple, 15 centimes) + un pourcentage sur le paiement reçu (par exemple, 3% du paiement reçu). Une entreprise doit donc prendre en compte le fait que si elle fait payer un produit ou un service, par exemple 15 euros, elle ne recevra pas ces 15 euros en totalité, car la plateforme prendra sa part.
 
-Aujourd'hui nous allons uniquement utiliser Stripe en mode "test", donc aucune transaction réelle sera réalisée (inutile de vous munir de votre CB :D). Si dans le futur vous avez pour projet de monter un business réel, gardez en tête que vous devez avoir une entreprise (microentreprise, association ou autre) déclarée. Toute plateforme similaire vous demandera des informations et des documents légaux avant que vous puissiez transférer l'argent vers votre compte bancaire (le compte bancaire de l'entreprise). Cependant, ce que vous allez apprendre aujourd'hui sera facilement reproductible dans un cas concret. Il suffira de changer vos clés API de test par des clés réelles.
+Aujourd'hui, nous allons uniquement utiliser Stripe en mode "test", donc aucune transaction réelle sera réalisée (inutile de vous munir de votre CB :D). Si dans le futur vous avez pour projet de monter un business réel, gardez en tête que vous devez avoir une entreprise (microentreprise, association ou autre) déclarée. Toute plateforme similaire vous demandera des informations et des documents légaux avant que vous puissiez transférer l'argent vers votre compte bancaire (le compte bancaire de l'entreprise). Cependant, ce que vous allez apprendre aujourd'hui sera facilement reproductible dans un cas concret. Il suffira de changer vos clés API de test par des clés réelles.
 
-Dans le cadre de notre application, nous allons travailler avec un système de "webhook" qui suit la logique suivante :
+Dans le cadre de notre application, nous allons travailler avec un système de **webhook** qui suit la logique suivante :
 
 * L'utilisateur souhaite acheter un produit / service sur notre site.
 
@@ -1127,442 +1566,6 @@ Stripe propose aussi un système d'identification qui permet de ne pas exécuter
 De manière générale, il faudrait plutôt gérer les paiements dans des objets dédiés à part (par exemple, un objet commande, etc...). Il serait créé lors de l'intention de paiement et supprimé une fois le paiement traité. La clé d'idempotence pourrait être l'identifiant (ou une valeur unique) lié à cet objet.
 
 Bref, tout ceci n'était qu'une introduction, et nous n'avons malheureusement pas plus de temps pour aller dans le détail. Cependant, dans la mise en place réelle d'un système de paiement, il faut impérativement prendre en compte et utiliser ces systèmes de sécurisation !
-
-## Bonus
-
-Nous allons maintenant aborder quelques sections bonus, optionnelles. Si le temps le permet, vous pouvez vous y intéresser afin d'approfondir la maîtrise de cet outil.
-
-### Des permissions plus avancées
-
-Actuellement, votre route `deletePublication` doit à peu près ressembler à ça :
-
-```php
-#[IsGranted('ROLE_USER')]
-#[Route('/publications/{id}', name: 'deletePublication', options: ["expose" => true], methods: ["DELETE"])]
-public function deletePublication(?Publication $publication, EntityManagerInterface $entityManager) : Response {
-    if($publication === null) {
-        return new JsonResponse(null, Response::HTTP_NOT_FOUND);
-    }
-    if($this->getUser() !== $publication->getAuteur()) {
-        return new JsonResponse(null, Response::HTTP_FORBIDDEN);
-    }
-    $entityManager->remove($publication);
-    $entityManager->flush();
-    return new JsonResponse(null, Response::HTTP_NO_CONTENT);
-}
-```
-
-Ici, nous avons notamment besoin de vérifier que l'utilisateur est bien l'auteur de la publication... Mais saviez-vous que nous pouvons aussi faire tout cela dans l'attribut `IsGranted` ? En effet, nous avons vu précédemment que nous pouvions accéder au paramètre `user` représentant l'utilisateur courant en utilisant un objet `Expression` dans l'attribut `IsGranted`. Il est aussi possible d'accéder à un des paramètres de la méthode et de l'utiliser dans notre condition. Pour cela, on ajoute un second paramètre (le `subject`) à notre attribut `IsGranted` en précisant le nom d'un de nos paramètres.
-
-Par exemple :
-
-```php
-#[IsGranted(attribute: new Expression("is_granted('ROLE_USER') and subject.method() == user.method()"), subject: "monObjet")]
-#[Route('/exemple/{id}', name: 'route_exemple'], methods: ["POST"])]
-public function deletePublication(Exemple $monObjet) : Response {
-    ...
-}
-```
-
-Deux notes importantes :
-
-* Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode (représentant généralement une entité mappée avec `#[MapEntity]`). Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
-
-* Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`) Pour rappel, `?` autorise une valeur nulle. Ici, le fait de ne pas autoriser cela générera automatiquement une réponse **404** (not found) si l'utilisateur essaye d'accéder à un objet qui n'existe pas (identifiant invalide).
-
-Normalement, vous devriez maintenant être en mesure de retravailler la logique de vérification du "propriétaire" d'une publication.
-
-<div class="exercise">
-
-1. Au niveau de la route `deletePublication`, utilisez vos nouvelles connaissances pour déplacer la logique vérifiant que l'utilisateur courant est bien le propriétaire de la publication vers votre attribut `IsGranted`.
-
-2. Vérifiez que tout fonctionne comme attendu (supprimez des publications sur votre compte).
-
-</div>
-
-Tout cela fonctionne bien, mais on reste encore dans des cas assez simples. Mais si la condition grandit (de nouveaux rôles, comme un administrateur, ayant tous les droits...) ou bien que la vérification devient plus compliquée (appel à des services, plusieurs lignes de code...), que doit-on faire ? Tout mettre dans le contrôleur ? Non ! Comme évoqué précédemment, Symfony possède un système avancé pour gérer les permissions : les **voters**.
-
-Un **voter** est une classe listant des **permissions** (généralement liées à une entité, mais pas obligatoirement.). Lorsque le système vérifie une permission avec `isGranted` (avec une fonction ou un attribut), les **voters** sont sollicités au travers de deux méthodes :
-
-* Une méthode qui détermine si la classe du **voter** peut traiter cette vérification (est-ce que c'est une permission qui lui est liée ou non...).
-
-* Une méthode qui effectue la vérification et renvoie `true` ou `false` selon sa décision (accepte / refuse).
-
-Comme plusieurs **voters** peuvent "voter" sur la décision à prendre pour une même permission, on peut configurer une stratégie au niveau de l'application :
-
-* Si un seul des voters répond "oui", on accepte.
-
-* Si un seul des voters répond "non", on refuse.
-
-* Si la majorité des voters répondent "oui", on accepte.
-
-* On retient le vote du voter ayant la priorité la plus haute.
-
-Par défaut, la première stratégie est choisie. Il est aussi possible de configurer ses propres stratégies !
-
-Dans la classe du Voter, on liste (généralement) les permissions gérées par la classe du Voter avec des constantes. La première méthode `supports` vérifiera que la permission vérifiée est bien une des constantes listées, et que le sujet de la permission (s'il y en a un) correspond au type d'entité géré par la classe (ce n'est pas obligatoirement le cas).
-
-Les **voters** se placent dans le dossier `src/Security/Voter`. Il est possible d'injecter des services (et autres paramètres) via le constructeur.
-
-```php
-class ExempleVoter extends Voter
-{
-    //On fait la liste des permissions gérées par le Voter.
-    public const EXEMPLE = 'PERM_EXEMPLE';
-
-    public function __construct(/* Injection de services, si besoin*/)
-    {
-    }
-
-    /*
-    $attribute correspond à la permission vérifiée
-    $subject correspond au sujet sur lequelle la vérification est effectué (par exemple, une publication, un utilisateur)
-    Le sujet peut être éventuellement null!
-    La méthode renvoie true si ce Voter est habilité à voter pour cette permission (et ce subject)
-    */
-    protected function supports(string $attribute, mixed $subject): bool
-    {
-        ...
-    }
-
-    /*
-    Vote pour accorder la permission (ou non).
-    Le paramètre $token nous donne accès à l'utilisateur.
-    */
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
-    {
-        $user = $token->getUser();
-        ...
-        switch ($attribute) {
-            case self::EXEMPLE:
-                return ...
-            ...
-        }
-        ...
-    }
-}
-```
-
-Prenons l'exemple suivant : une application web permet à ses utilisateurs d'uploader et de partager des vidéos. Les données de la vidéo ne peuvent être modifiées que par l'utilisateur ayant uploadé la vidéo, pareil pour la suppression. Les vidéos peuvent être vues par tous les utilisateurs, sauf si la vidéo est privée. Certaines vidéos peuvent être inadaptées aux mineurs (contenu sensible, langage grossier...). Dans ce cas la vidéo ne peut pas être visionnée par un utilisateur ayant moins de 18 ans. Enfin, la vidéo peut éventuellement ne pas être visionnable dans certains pays.
-
-Pour gérer ces permissions, je vais construire un voter `VoterVideo` qui contiendra deux permissions : `VIDEO_VIEW` (permission pour regarder une vidéo donnée) et une autre `VIDEO_EDIT` (pour avoir le droit d'éditer ou de supprimer une vidéo).
-
-```php
-//src/Security/Voter/VideoVoter.php
-class VideoVoter extends Voter
-{
-    public const VIEW = 'VIDEO_VIEW';
-    public const EDIT = 'VIDEO_EDIT';
-
-    public function __construct()
-    {
-    }
-
-    protected function supports(string $attribute, mixed $subject): bool
-    {
-        //Je vote si la permission vérifiée est soit VIDEO_VIEW ou VIDEO_EDIT et que $subject est une instance de la classe Video.
-        return in_array($attribute, [self::VIEW, self::EDIT])
-            && $subject instanceof Video;
-    }
-
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
-    {
-        //a ce stade, comme `supports` oblige $subject à être du type Video, je sais que $subject est une vidéo.
-
-        //Je récupère l'utilisateur (null s'il n'est pas connecté)
-        $user = $token->getUser();
-
-        switch ($attribute) {
-            case self::VIEW:
-                if($subject->isPrivate() && ($user == null || $subject->getAuthor() != $user)) {
-                    return false;
-                }
-                else if($subject->isAdultOnly() && ($user == null || $user.getAge() < 18)) {
-                    return false;
-                }
-                else if(!empty($subject->getBannedCountries()) && ($user == null || in_array($user->getCountry(), $subject->getBannedCountries()))) {
-                    return false;
-                }
-                return true;
-            case self::EDIT:
-                return $user != null && $subject->getAuthor() == $user;
-        }
-
-        return false;
-    }
-}
-```
-
-Enfin, dans mon contrôleur (ou ailleurs) dès que je veux contrôler l'autorisation, par exemple, quand un utilisateur accède à une vidéo, j'utilise la permission `VIDEO_VIEW` :
-
-```php
-#[IsGranted(attribute: 'VIDEO_VIEW', subject: 'video')]
-#[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
-public function watchVideo(#[MapEntity] Video $video): Response
-{
-    ...
-}
-```
-
-On voit bien qu'il aurait été difficile de mettre toute la logique de la permission `VIDEO_VIEW` dans l'attribut `IsGranted` ! On peut aussi utiliser, à la place, la méthode `denyAccessUnlessGranted` :
-
-```php
-#[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
-public function watchVideo($id, VideoRepository $videoRepository): Response
-{
-    $video = $videoRepository->find($id);
-    $this->denyAccessUnlessGranted(`VIDEO_VIEW`, $video);
-    ...
-}
-```
-
-Ou bien :
-
-```php
-#[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
-public function watchVideo($id, VideoRepository $videoRepository): Response
-{
-    $video = $videoRepository->find($id);
-    if(!$this->isGranted(`VIDEO_VIEW`, $video)) {
-        //Réponse customisée...
-    }
-    ...
-}
-```
-
-Il est aussi tout à fait possible d'utiliser cette permission avec la méthode `is_granted` dans nos templates twig.
-
-```twig
-{% raw %}
-{% if is_granted('VIDEO_VIEW', video) %}
-
-{% endif %}
-{% endraw %}
-```
-
-La commande suivante permet de générer une classe `NomEntiteVoter` contenant du code basique pour un **Voter**, lié à l'entité `NomEntite` :
-
-```php 
-php bin/console make:voter NomEntiteVoter
-``` 
-Cependant, encore une fois, il n'est pas obligatoire d'avoir des permissions liées spécifiquement à une entité !
-
-<div class="exercise">
-
-1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication`. Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il en est l'auteur.
-
-2. Utilisez votre nouvelle permission au niveau de la route `deletePublication`.
-
-3. Modifiez le template `publication.html.twig` pour utiliser `is_granted` pour afficher le bouton de suppression de la publication au lieu du code que vous utilisiez avant.
-
-4. Vérifiez que tout fonctionne toujours.
-
-</div>
-
-### Rôle Admin
-
-Nous allons maintenant créer et utiliser un véritable nouveau **rôle** qui aura plus de permissions. Ce rôle sera un administrateur qui aura tous les droits! Et la mise en place de tout cela va être grandement facilité par le système de voter.
-
-Il n'y a pas vraiment de procédure pour créer un nouveau rôle sur Symfony. En fait, on peut ajouter les rôles que l'on souhaite aux utilisateurs. Cependant, il faut impérativement que le nom du rôle débute par `ROLE_`.
-
-Néanmoins, il faut penser à **hiérarchiser** les rôles. Cela consiste à dire que tel ou tel rôle est une version dérivée d'un rôle existant. Ainsi, un utilisateur possédant un rôle particulier aura ses propres privilèges en plus de ceux de tous les sous-rôles duquel le rôle est dérivé.
-
-Tout cela se configure dans le fichier `config/packages/security.yaml` :
-
-```yaml
-#config/packages/security.yaml
-security:
-    
-    ...
-
-    role_hierarchy:
-        ROLE_CUSTOM: ROLE_USER
-        ROLE_CUSTOM2: ROLE_USER
-        ROLE_SUPER_CUSTOM : ROLE_CUSTOM, ROLE_CUSTOM2
-```
-
-Dans l'exemple ci-dessus, un utilisateur possédant le rôle `ROLE_CUSTOM` possède automatiquement tous les privilèges de `ROLE_USER` (en plus des siens). Pareil pour `ROLE_CUSTOM2`. Enfin, `ROLE_SUPER_CUSTOM` possède les privilèges de `ROLE_CUSTOM`, `ROLE_CUSTOM2` et aussi `ROLE_USER` (car `ROLE_CUSTOM` et/ou `ROLE_CUSTOM2` dérivent de `ROLE_USER`...).
-
-<div class="exercise">
-
-1. Dans le fichier `security.yaml`, définissez une hiérarchie pour le rôle `ROLE_ADMIN` (nouveau rôle) en faisant en sorte que celui-ci hérite de tous les privilèges du rôle de base : `ROLE_USER`.
-
-2. Modifiez le voter `PublicationVoter` afin de voter favorablement si l'utilisateur possède le privilège `ROLE_ADMIN`. Pour cela, il vous faudra injecter et utiliser le service `Security` qui permet d'utiliser la méthode `isGranted` :
-
-    ```php
-    use Symfony\Bundle\SecurityBundle\Security;
-
-    $this->security->isGranted(role)
-    ```
-
-3. Dans votre base de données, ajoutez le rôle `ROLE_ADMIN` à un utilisateur : affectez la valeur `["ROLE_ADMIN"]` dans le champ `roles`. Si vous étiez connecté avec ce compte, vous serez déconnecté après le changement de rôle, par mesure de sécurité.
-
-4. Connectez-vous avec le compte admin. Si vous avez bien configuré votre voter, le bouton de suppression devrait alors apparaître sur toutes les publications !
-
-</div>
-
-Comme vous le constatez, les voters sont assez puissant ! L'intérêt est encore assez limité ici, mais nous pourrions rajouter plus de permissions dans la classe publication (edit, delete, etc...). Cette classe permet de centraliser toute la logique de vérification des permissions. Nous n'avons pas eu à répéter le code vérifiant le statut de l'utilisateur (propriétaire ou admin) à la fois dans le contrôleur et à la fois dans le template twig. On utilise simplement notre permission `PUBLICATION_DELETE`.
-
-### Créer ses propres commandes
-
-Pour finir, nous allons voir comment créer nos propres commandes qui seront utilisables comme les autres commandes de Symfony, dans le terminal :
-
-```php
-php bin/console macommande ...
-```
-
-Il peut être très utile de créer des commandes pour assurer certaines opérations de maintenance ou d'administration du site. On peut aussi relier cela à un système qui exécutera périodiquement des commandes (par exemple, chaque semaine, chaque mois...). L'avantage (par rapport à un script classique) c'est qu'on est déjà dans l'environnement de l'application. On peut donc injecter et utiliser des services, des paramètres, etc...
-
-Pour initialiser la classe d'une commande, on exécute :
-
-```
-php bin/console make:command MaCommande
-```
-
-Ce qui génère une classe `MaCommande` dans le dossier `src/Command`. Faisons un tour des possibilités proposées par cette classe :
-
-```php
-#[AsCommand(
-    /* Nom de la commande, tel qu'on l'utilisera lors de l'éxécution de php bin/console ... */
-    name: 'nomcommande',
-    /* Pour décrire ce que fait la commande, si l'utilisateur utilise l'option --help, par exemple. */
-    description: '...',
-)]
-class MaCommande extends Command
-{
-    public function __construct(
-        /* Injection de dépendances... */
-    ) {
-        //Il faut quand même appeller le constructeur parent (de la classe Command)
-        parent::__construct();
-    }
-
-    //On configure les paramètres de la commande ici
-    protected function configure(): void
-    {
-        $this
-            //Argument (se place dans l'ordre, quand on écrit la commande)
-            //Peut être obligatoire ou optionnel
-            ->addArgument('arg1', InputArgument::REQUIRED, "Argument description")
-            ->addArgument('arg2', InputArgument::OPTIONAL, "Argument description")
-
-            //On peut configurer des options qui s'utilisent ainsi `--nomOption` dans la commande. Il n'y a pas de valeur associée à l'option, contrairement aux arguments. Il s'agit simplement d'une option qu'on active ou non.
-            ->addOption('nomOption', null, InputOption::VALUE_NONE, "Option description")
-        ;
-    }
-
-    //Méthode déclenchée lors de l'éxécution de la commande.
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        //Permet de gérer les messages d'entrées/sorties
-        $io = new SymfonyStyle($input, $output);
-
-        //On récupère un argument
-        $arg1 = $input->getArgument('arg1');
-
-        if ($arg1) {
-            //Permet de vérifier que l'argument est défini ou non (s'il est optionnel)
-        }
-
-        //Permet de voir si une option est activée.
-        if ($input->getOption('nomOption')) {
-            // ...
-        }
-
-        //Pour afficher un message normal.
-        $io->writeln("message");
-
-        //Pour afficher un message de succès.
-        $io->success("message");
-
-        //Pour afficher un message d'erreur.
-        $io->error("message");
-
-        //Pour afficher un message d'avertissement.
-        $io->warning("message");
-
-        //On peut aussi utiliser $io->ask pour poser une question et récupérer des arguments de manière intéractive... $io contient plein de méthodes utiles!
-
-        /* 
-        On retourne une des trois valeurs possibles :
-        * Command::SUCCESS : la commande s'st bien éxécutée (de bout en bout)
-        * Command::INVALID: il y a un problème par rapport aux arguments passés.
-        * Command:FALIURE : il y a eu un problème lors de l'éxécution.
-        */
-        return Command::SUCCESS;
-    }
-}
-```
-
-Reprenons l'exemple du site de partage de vidéos. Je veux créer une commande qui me permet de supprimer une vidéo dont le code unique est passé en paramètre (pas l'id, mais une chaîne de caractère unique du style `whIu75m`, comme sur YouTube par exemple).
-
-```php
-#[AsCommand(
-    name: 'delete:video',
-    description: 'Delete a video (by using its unique identifier)',
-)]
-class MaCommande extends Command
-{
-    public function __construct(
-       private VideoRepository $videoRepository,
-       private EntityManagerInterface $entityManager
-    ) {
-        parent::__construct();
-    }
-
-    protected function configure(): void
-    {
-        $this
-            ->addArgument('videoCode', InputArgument::REQUIRED, "The unique identifier of the video.")
-        ;
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $io = new SymfonyStyle($input, $output);
-        $code = $input->getArgument('videoCode');
-        $video = $this->videoRepository->findOneBy(["videoCode" => $code]);
-        if($video === null) {
-            $io->error("Video not found.");
-            return Command::FAILURE;
-        }
-        $this->entityManager->remove($video);
-        $this->entityManager->flush();
-        $io->success("The video has been deleted !");
-        return Command::SUCCESS;
-    }
-}
-```
-
-<div class="exercise">
-
-1. Créez et testez la commande `GivePremiumCommand` nommée `give:premium` qui prend en paramètre le login d'un utilisateur et le rend membre premium.
-
-2. Créez et testez la commande `RevokePremiumCommand` nommée `revoke:premium` qui prend en paramètre le login d'un utilisateur et le lui enlève le statut premium.
-
-3. Créez et testez la commande `PromoteAdminCommand` nommée `promote:admin` qui prend en paramètre le login d'un utilisateur et lui donne le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour ajouter un rôle) à la classe `Utilisateur` :
-
-    ```php
-    public function addRole($role) : void {
-        if(!in_array($role, $this->roles)) {
-            $this->roles[] = $role;
-        }
-    }
-    ```
-
-4. Créez et testez la commande `RevokeAdminCommand` nommée `revoke:admin` qui prend en paramètre le login d'un utilisateur et lui enlève le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour retirer un rôle) à la classe `Utilisateur` :
-
-    ```php
-    public function removeRole($role) : void {
-        $index = array_search($role, $this->roles);
-        //array_search renvoie soit l'index (la clé) soit false is rien n'est trouver 
-        //Préciser le !== false est bien nécessaire, car si le role se trouve à l'index 0, utiliser un simple if($index) ne vérifie pas le type! Et donc, si l'index retournait est 0, la condition ne passerait pas...!
-        if ($index !== false) {
-            unset($this->roles[$index]);
-        }
-    }
-    ```
-</div>
 
 ## Conclusion
 
