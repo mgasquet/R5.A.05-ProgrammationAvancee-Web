@@ -80,11 +80,9 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
     ```
 
 2. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
-
 <!--
     * Téléchargez un [deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2), renommez-le `.htaccess` et placez-le à la racine de votre projet (protège contre la lecture de vos fichiers de configuration, contenant vos mots de passes et autres informations confidentielles...).
 -->
-
 3. Installez maintenant la librairie spécifique à API Platform :
 
     * Dans le dossier du projet, exécutez la commande suivante :
@@ -106,7 +104,6 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
    Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
 
 5. Nous allons maintenant configurer la base de données dans le fichier `.env`. Configurez donc une nouvelle base (nouveau nom) et ne réutilisez pas la précédente (par exemple, nommez la base `the_feed_api`).
-
 <!--
     * Si vous souhaitez utiliser une des bases de données mises à disposition à l'IUT, nous allons éviter de réutiliser votre unique base MySQL, pour ne pas effacer le travail effectué sur le site. À la place, nous allons utiliser une base de données locale, stockée dans un fichier, avec **SQLite** :
 
@@ -116,12 +113,12 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
     **Attention**, si vous comptez déposer votre projet sur un repository git **public**, utilisez plutôt un fichier `.env.local` à la place, qui ne sera ignoré lors des commits (pour ne pas exposer vos mots de passe).
 -->
-
 6. Exécutez la commande suivante afin de créer la base :
 
     ```bash
     php bin/console doctrine:database:create
     ```
+    
 <!--
 6. Si vous utilisez une base **SQLite** (par exemple, sur les machines de l'IUT), la base sera générée dans un fichier **data.db** placé dans le dossier **var** du projet. Pour visualiser et manipuler le contenu de cette base, vous ne pouvez pas simplement éditer le fichier. Néanmoins, comme vous êtes maintenant professionnel et que vous maîtrisez votre **IDE** (PHPStorm) nous allons pouvoir nous en servir pour manipuler la base à travers une interface intégrée :
 
