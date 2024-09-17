@@ -1389,13 +1389,13 @@ Tout est prêt pour finaliser notre système de paiement ! Avant de traiter les 
 Pour que Stripe utilise notre **webhook**, nous devons lui indiquer l'URL à laquelle il se trouve. Pour le mode "test", cela se fait donc avec le client que vous avez utilisé plus tôt, en ligne de commandes. Il suffit d'exécuter la commande suivante :
 
 ```bash
-./stripe listen --forward-to https://exemple.com
+./stripe listen --skip-verify --forward-to https://exemple.com
 ```
 
 Par défaut, nous écoutons **tous les événements** en lien avec notre compte Stripe. Pour filtrer et n'utiliser que celui qui nous intéresse pour ce webhook, on utilise l'option `--events` :
 
 ```bash
-./stripe listen --events=checkout.session.completed --forward-to https://exemple.com
+./stripe listen --skip-verify --events=checkout.session.completed --forward-to https://exemple.com
 ```
 
 Ici, dès que l'événement correspondant à la validation du formulaire de paiement est émis, Stripe enverra une requête à l'adresse précisée (à travers notre machine, car le client est connecté à notre compte).
