@@ -243,7 +243,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
         //Le payload contient les données (sous la forme d'un objet clé-valeur) qu'on souhaite envoyer avec la requête
         const payload = {donnee1 : ..., donnee2: ..., ...};
 
-        //On utilise le mot clé "await" pour "attendre" que la requête soit complètement éxécutée avant d'éxécuter les prochaines instructions.
+        //On utilise le mot clé "await" pour "attendre" que la requête soit complètement exécutée avant d'exécuter les prochaines instructions.
         //Par conséquent, la fonction "maFonction" doit être asynchrone pour ne pas bloquer la page.
         //On précise l'URL de la requête.
         const response = await fetch(URL, {
@@ -254,7 +254,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
             headers: headers,
         });
 
-        //Ici, on a la garantie que la requête a fini de s'éxécuter (on a un code de réponse, et éventuellement un résultat)
+        //Ici, on a la garantie que la requête a fini de s'exécuter (on a un code de réponse, et éventuellement un résultat)
         if(response.status === ...) {
             //response.status permet d'accèder au code de réponse HTTP (200, 204, 403, 404, etc...)
         }
@@ -325,7 +325,7 @@ Nous souhaitons maintenant pouvoir fixer une limite plus grande pour le nombre d
 
 Sur tous les attributs de contraintes/assertions, il est possible de définir un paramètre `groups`. Ce paramètre permet de lister ce qu'on nomme **groupes de validation**. La contrainte ne sera vérifiée que si elle possède un des groupes de validation actif.
 
-Par défaut, le groupe `Default` est activé. Il n'y a pas besoin de le préciser au niveau des attributs, car toutes les contraintes qui ne précisent par de groupes particuliers possèdent ce groupe, par défaut.
+Par défaut, le groupe `Default` est activé. Il n'y a pas besoin de le préciser au niveau des attributs, car toutes les contraintes qui ne précisent pas de groupes particuliers possèdent ce groupe, par défaut.
 
 Cependant, il est tout à fait possible d'activer d'autres groupes de validation selon la situation, notamment dans la classe permettant de construire un formulaire, au niveau de la méthode `configureOptions`.
 
@@ -432,7 +432,7 @@ $form = $this->createForm(MonType::class, $entity, [
 
 1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `publication:write:normal`.
 
-2. Modifiez la classe `PublicationType` pour activer le bon groupe selon la situation de l'utilisateur (premium ou non). Vous aurez besoin du service `Security`. Ce service vous permet de récupérer l'utilisateur courant. Attention, il faudra vérifier s'il n'est pas `null`, car le formulaire peut être généré (mais pas forcément montré) via la route `feed`, même pour un utilisateur déconnecté (si l'utilisateur n'est pas connecté ou non premium, on utilisera le groupe `publication:wdrite:normal`) :
+2. Modifiez la classe `PublicationType` pour activer le bon groupe selon la situation de l'utilisateur (premium ou non). Vous aurez besoin du service `Security`. Ce service vous permet de récupérer l'utilisateur courant. Attention, il faudra vérifier s'il n'est pas `null`, car le formulaire peut être généré (mais pas forcément montré) via la route `feed`, même pour un utilisateur déconnecté (si l'utilisateur n'est pas connecté ou non premium, on utilisera le groupe `publication:write:normal`) :
 
     ```php
     use Symfony\Bundle\SecurityBundle\Security;
@@ -594,7 +594,7 @@ public function deletePublication(Exemple $monObjet) : Response {
 
 Deux notes importantes :
 
-* Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode (représentant généralement une entité mappée avec `#[MapEntity]`). Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
+* Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode. Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
 
 * Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`) Pour rappel, `?` autorise une valeur nulle. Ici, le fait de ne pas autoriser cela générera automatiquement une réponse **404** (not found) si l'utilisateur essaye d'accéder à un objet qui n'existe pas (identifiant invalide).
 
@@ -610,7 +610,7 @@ Normalement, vous devriez maintenant être en mesure de retravailler la logique 
 
 ### Les voters
 
-L'utilisation de `IsGranted` fonctionne bien, mais on reste encore dans des cas assez simples. S la condition grandit (de nouveaux rôles, comme un administrateur, ayant tous les droits...) ou bien que la vérification devient plus compliquée (appel à des services, plusieurs lignes de code...), que doit-on faire ? Tout mettre dans le contrôleur ? Non ! Comme évoqué précédemment, Symfony possède un système avancé pour gérer les permissions : les **voters**.
+L'utilisation de `IsGranted` fonctionne bien, mais on reste encore dans des cas assez simples. Si la condition grandit (de nouveaux rôles, comme un administrateur, ayant tous les droits...) ou bien que la vérification devient plus compliquée (appel à des services, plusieurs lignes de code...), que doit-on faire ? Tout mettre dans le contrôleur ? Non ! Comme évoqué précédemment, Symfony possède un système avancé pour gérer les permissions : les **voters**.
 
 Un **voter** est une classe listant des **permissions** (généralement liées à une entité, mais pas obligatoirement.). Lorsque le système vérifie une permission avec `isGranted` (avec une fonction ou un attribut), les **voters** sont sollicités au travers de deux méthodes :
 
@@ -728,7 +728,7 @@ Enfin, dans mon contrôleur (ou ailleurs) dès que je veux contrôler l'autorisa
 ```php
 #[IsGranted(attribute: 'VIDEO_VIEW', subject: 'video')]
 #[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
-public function watchVideo(#[MapEntity] Video $video): Response
+public function watchVideo(Video $video): Response
 {
     ...
 }
@@ -779,7 +779,7 @@ Cependant, encore une fois, il n'est pas obligatoire d'avoir des permissions li�
 
 <div class="exercise">
 
-1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication`. Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il en est l'auteur.
+1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication`. Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il est connecté et qu'il en est l'auteur.
 
 2. Utilisez votre nouvelle permission au niveau de la route `deletePublication`.
 
@@ -853,7 +853,7 @@ Ce qui génère une classe `MaCommande` dans le dossier `src/Command`. Faisons u
 
 ```php
 #[AsCommand(
-    /* Nom de la commande, tel qu'on l'utilisera lors de l'éxécution de php bin/console ... */
+    /* Nom de la commande, tel qu'on l'utilisera lors de l'exécution de php bin/console ... */
     name: 'nomcommande',
     /* Pour décrire ce que fait la commande, si l'utilisateur utilise l'option --help, par exemple. */
     description: '...',
@@ -881,7 +881,7 @@ class MaCommande extends Command
         ;
     }
 
-    //Méthode déclenchée lors de l'éxécution de la commande.
+    //Méthode déclenchée lors de l'exécution de la commande.
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         //Permet de gérer les messages d'entrées/sorties
@@ -915,9 +915,9 @@ class MaCommande extends Command
 
         /* 
         On retourne une des trois valeurs possibles :
-        * Command::SUCCESS : la commande s'st bien éxécutée (de bout en bout)
-        * Command::INVALID: il y a un problème par rapport aux arguments passés.
-        * Command:FALIURE : il y a eu un problème lors de l'éxécution.
+        * Command::SUCCESS : la commande s'est bien exécutée (de bout en bout)
+        * Command::INVALID : il y a un problème par rapport aux arguments passés.
+        * Command::FAILURE : il y a eu un problème lors de l'exécution.
         */
         return Command::SUCCESS;
     }
