@@ -966,7 +966,7 @@ class MaCommande extends Command
 
 <div class="exercise">
 
-1. Créez et testez la commande `GivePremiumCommand` nommée `give:premium` qui prend en paramètre le login d'un utilisateur et le rend membre premium.
+1. Créez et testez la commande `GivePremiumCommand` nommée `give:premium` qui prend en paramètre le login d'un utilisateur et le rend membre premium. Pour mettre à jour les données de l'utilisateur en base de données, il faudra utiliser le service `EntityManagerInterface`, comme quand vous créez une entité. Après avoir modifié les données de l'utilisateur, il suffit d'appeler `persist` et `flush`, comme d'habitude.
 
 2. Créez et testez la commande `RevokePremiumCommand` nommée `revoke:premium` qui prend en paramètre le login d'un utilisateur et le lui enlève le statut premium.
 
@@ -1330,7 +1330,7 @@ Pour récupérer l'utilisateur ciblé à partir de son identifiant, vous pourrez
 
 Pour mettre à jour les données de l'utilisateur en base de données, il faudra utiliser le service `EntityManagerInterface`, comme quand vous créez une entité. Après avoir modifié les données de l'utilisateur, il suffit d'appeler `persist` et `flush`, comme d'habitude.
 
-Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'ajouter un rôle. Nous l'ajouterons dans le prochain exercice.
+ <!-- Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'ajouter un rôle. Nous l'ajouterons dans le prochain exercice. -->
 
 <div class="exercise">
 
@@ -1378,9 +1378,7 @@ Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'
 
 4. Créez un nouveau contrôleur `WebhookController`. À l'intérieur, ajoutez une nouvelle route nommée `stripeWebhook` ayant pour chemin `/webhook/stripe` accessible en `POST` (Stripe envoie sa requête en `POST`). Dans le code de cette route, vous devrez vérifier la signature de la requête, puis extraire les données (l'objet "session") et enfin appeler la méthode `handlePaymentPremium` de notre service. Vous pourrez reprendre la structure du code présenté plus tôt.
 
-    Niveau injection de dépendance, vous devrez bien sûr injecter notre service `PaymentHandlerInterface`, mais nous devons aussi accéder à la signature secrète que nous avons défini à l'étape précédente. Pour cela, deux possibilités :
-    
-    Vous pouvez injecter ce paramètre comme dans les services, en utilisant l'attribut `#[Autowire(env: '...')]` dans les paramètres de la méthode liée à la route.
+    Niveau injection de dépendance, vous devrez bien sûr injecter notre service `PaymentHandlerInterface`, mais nous devons aussi accéder à la signature secrète que nous avons défini à l'étape précédente. Pour cela, vous pouvez injecter ce paramètre comme dans les services, en utilisant l'attribut `#[Autowire(env: '...')]` dans les paramètres de la méthode liée à la route.
 
 </div>
 
