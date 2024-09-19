@@ -157,8 +157,8 @@ Vous remarquerez alors de nouvelles ressources dans votre dossier `public`. Il n
 
 ```twig
 {% raw %}
-<script src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
-<script src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
+<script defer src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
+<script defer src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
 {% endraw %}
 ```
 
