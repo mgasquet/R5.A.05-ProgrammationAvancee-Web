@@ -6,5 +6,5 @@ function supprimerPublication(event) {
 
 const buttons = document.getElementsByClassName("delete-feedy");
 Array.from(buttons).forEach(function (button) {
-    button.addEventListener("click", supprimerFeedy);
+    button.addEventListener("click", supprimerPublication);
 });
