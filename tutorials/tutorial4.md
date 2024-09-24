@@ -80,9 +80,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
     ```
 
 2. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
-<!--
-    * Téléchargez un [deuxième fichier d'accès]({{site.baseurl}}/assets/TD1/htaccess2), renommez-le `.htaccess` et placez-le à la racine de votre projet (protège contre la lecture de vos fichiers de configuration, contenant vos mots de passes et autres informations confidentielles...).
--->
+
 3. Installez maintenant la librairie spécifique à API Platform :
 
     * Dans le dossier du projet, exécutez la commande suivante :
@@ -104,44 +102,13 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
    Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
 
 5. Nous allons maintenant configurer la base de données dans le fichier `.env`. Configurez donc une nouvelle base (nouveau nom) et ne réutilisez pas la précédente (par exemple, nommez la base `the_feed_api`).
-<!--
-    * Si vous souhaitez utiliser une des bases de données mises à disposition à l'IUT, nous allons éviter de réutiliser votre unique base MySQL, pour ne pas effacer le travail effectué sur le site. À la place, nous allons utiliser une base de données locale, stockée dans un fichier, avec **SQLite** :
 
-        ```bash
-        DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"
-        ```
-
-    **Attention**, si vous comptez déposer votre projet sur un repository git **public**, utilisez plutôt un fichier `.env.local` à la place, qui ne sera ignoré lors des commits (pour ne pas exposer vos mots de passe).
--->
 6. Exécutez la commande suivante afin de créer la base :
 
     ```bash
     php bin/console doctrine:database:create
     ```
     
-<!--
-6. Si vous utilisez une base **SQLite** (par exemple, sur les machines de l'IUT), la base sera générée dans un fichier **data.db** placé dans le dossier **var** du projet. Pour visualiser et manipuler le contenu de cette base, vous ne pouvez pas simplement éditer le fichier. Néanmoins, comme vous êtes maintenant professionnel et que vous maîtrisez votre **IDE** (PHPStorm) nous allons pouvoir nous en servir pour manipuler la base à travers une interface intégrée :
-
-    * Cliquez sur l'onglet **Databases** à droite de PHPStorm afin d'ouvrir le panneau de gestion des bases de données.
-
-    * Effectuez un clic droit sur ce panneau puis **New** → **Data source** → **SQLite**.
-
-    * Au niveau du champ **File**, cliquez sur les trois petits points (...) pour rechercher un fichier dans le système. Sélectionnez votre fichier **data.db** situé dans le dossier **var** de votre projet.
-
-    * En bas de la fenêtre, cliquez sur le bouton pour télécharger le driver nécessaire (si cela vous est demandé) puis validez le tout.
-
-    * Votre base de données apparaît dans le panneau. Vos tables seront placées dans **data.db** → **main** → **tables**.
-
-    * Après une mise à jour de la structure de votre BDD, effectuez un clic droit sur **data.db** (dans le panneau) puis **refresh**.
-
-    * Si vous êtes à l'IUT, donnez les droits nécessaires au serveur web pour qu'il puisse manipuler votre fichier de BDD :
-
-    ```bash
-    chown -R root:www-data ~/public_html/the_feed_api/var/data.db
-    ```
-
-    Il est important de noter que vous pouvez manipuler n'importe quelle base de données via cet outil de PHPStorm ! Même votre base MySQL, par exemple.
--->
 7. En vous rendant dans le dossier du projet, videz le cache :
 
     ```bash
@@ -1219,35 +1186,13 @@ Lorsqu'on se connecte, l'application cliente aimerait potentiellement connaître
 
 Comme nous n'envoyons plus le `JWT`, l'application cliente n'a donc plus accès à ces informations (qu'elle aurait pu obtenir en decodant le `JWT`). On peut alors envisager plusieurs solutions :
 
-* Avoir une route dédiée qui donne les informations de l'utilisateur courant. L'idée est que le serveur décode les informations contenues dans le JWT et les renvoient en réponse. Ensuite, le client peut stocker ces ifnormaitons dans des variables temporaires et utiliser la route en question à chaque rechargement.
+* Avoir une route dédiée qui donne les informations de l'utilisateur courant. L'idée est que le serveur décode les informations contenues dans le JWT et les renvoient en réponse. Ensuite, le client peut stocker ces informations dans des variables temporaires et utiliser la route en question à chaque rechargement.
 
-* Directement renvoyer les informations utiles lors de la connexion et les stocker dans le `localSotrage`. il n'y a pas de problème ici, car on ne stocke pas d’informations sensibles, ou bien le `JWT`. Même en cas de faille `XSS`, les données récupérées ne seront pas intéressantes et exploitables.
+* Directement renvoyer les informations utiles lors de la connexion et les stocker dans le `localStorage`. Il n'y a pas de problème ici, car on ne stocke pas d’informations sensibles, ou bien le `JWT`. Même en cas de faille `XSS`, les données récupérées ne seront pas intéressantes et exploitables.
 
 Nous allons donc choisir la deuxième option et faire en sorte d'ajouter des informations concernant l'utilisateur dans le corps de la réponse. On aimerait ajouter son **identifiant**, son **login**, son **adresse email**, son statut **premium** et la **date d'expiration** du `JWT`. Pour cela, on peut créer une classe qui permettra de détecter l'événement d’authentification et d'ajouter des informations dans le corps de la réponse.
 
 Voici cette classe :
-
-```php
-namespace App\EventListener;
-
-use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
-use Symfony\Component\HttpFoundation\RequestStack;
-
-class JWTCreatedListener
-{
-    /**
-     * @param JWTCreatedEvent $event
-     * @return void
-     */
-    public function onJWTCreated(JWTCreatedEvent $event)
-    {
-        $payload = $event->getData();
-        //Insertion de données ICI - A compléter
-        $payload["cle"] = '...';
-        $event->setData($payload);
-    }
-}
-```
 
 ```php
 namespace App\EventListener;
