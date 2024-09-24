@@ -966,7 +966,7 @@ class MaCommande extends Command
 
 <div class="exercise">
 
-1. Créez et testez la commande `GivePremiumCommand` nommée `give:premium` qui prend en paramètre le login d'un utilisateur et le rend membre premium. Pour mettre à jour les données de l'utilisateur en base de données, il faudra utiliser le service `EntityManagerInterface`, comme quand vous créez une entité. Après avoir modifié les données de l'utilisateur, il suffit d'appeler `persist` et `flush`, comme d'habitude.
+1. Créez et testez la commande `GivePremiumCommand` nommée `give:premium` qui prend en paramètre le login d'un utilisateur et le rend membre premium. Pour mettre à jour les données de l'utilisateur en base de données, il faudra utiliser le service `EntityManagerInterface`, comme quand vous créez une entité. Après avoir modifié les données de l'utilisateur, il suffit d'appeler `flush`.
 
 2. Créez et testez la commande `RevokePremiumCommand` nommée `revoke:premium` qui prend en paramètre le login d'un utilisateur et le lui enlève le statut premium.
 
@@ -1328,7 +1328,7 @@ if($paymentCapture == null || $paymentCapture["status"] != "succeeded") {
 
 Pour récupérer l'utilisateur ciblé à partir de son identifiant, vous pourrez bien sûr injecter et utiliser le **repository** de l'entité.
 
-Pour mettre à jour les données de l'utilisateur en base de données, il faudra utiliser le service `EntityManagerInterface`, comme quand vous créez une entité. Après avoir modifié les données de l'utilisateur, il suffit d'appeler `persist` et `flush`, comme d'habitude.
+Pour mettre à jour les données de l'utilisateur en base de données, il faudra utiliser le service `EntityManagerInterface`, comme quand vous créez une entité. Après avoir modifié les données de l'utilisateur, il suffit d'appeler `flush`.
 
  <!-- Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'ajouter un rôle. Nous l'ajouterons dans le prochain exercice. -->
 
