@@ -33,7 +33,7 @@ Voici les détails du service qui devra être développé :
 
 * À tout moment, l'utilisateur peut **changer le code associé à son profil** (soit en spécifiant un nouveau, soit en demandant la génération d'un code aléatoire).
 
-* L'utilisateur peut **supprimer son profil**.
+* L'utilisateur peut **supprimer son compte**.
 
 * Une route incluant le code du profil permet d'accéder et de visualiser la page de profil d'un utilisateur (par exemple `/profil/{code}`). Il n'y a pas besoin d'être connecté pour cela.
 
