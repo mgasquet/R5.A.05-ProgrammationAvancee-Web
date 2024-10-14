@@ -73,15 +73,17 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
 <div class="exercise">
 
-1. Dans le répertoire où vous souhaitez placer le dossier du projet, exécutez la commande suivante :
+1. Depuis le terminal (dans le conteneur docker), assurez-vous d'être bien placé dans `/var/www/html` puis exécutez la commande suivante :
 
     ```bash
     composer create-project symfony/skeleton:"6.4.*" the_feed_api
     ```
 
-2. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public`.
+    Le projet est accessible sur votre machine (hors conteneur) dans le dossier `shared/public_html/the_feed_api`.
 
-3. Installez maintenant la librairie spécifique à API Platform :
+2. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public` du projet `the_feed_api`.
+
+3. Toujours dans votre conteneur, installez maintenant la librairie spécifique à API Platform :
 
     * Dans le dossier du projet, exécutez la commande suivante :
 
@@ -91,8 +93,6 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
         Répondez `n` (no) à la question posée.
 
-    * Une fois l'installation terminée, supprimez le **contenu** du fichier `config/packages/api_platform.yaml` (son contenu, pas le fichier en, lui-même!). Ce fichier de configuration a été généré avec un paramétrage par défaut, mais nous n'avons pas besoin de tout cela pour le moment. Nous irons l'éditer proprement plus tard.
-
 4. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter depuis la racine du projet) :
 
    ```bash
@@ -101,21 +101,37 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
    Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
 
-5. Nous allons maintenant configurer la base de données dans le fichier `.env`. Configurez donc une nouvelle base (nouveau nom) et ne réutilisez pas la précédente (par exemple, nommez la base `the_feed_api`).
+5. Ouvrez le fichier `config/packages/api_plaform.yaml` et éditez-le ainsi :
 
-6. Exécutez la commande suivante afin de créer la base :
+    ```yaml
+    api_platform:
+        title: The Feed API
+        version: 1.0.0
+        defaults:
+            cache_headers:
+                vary: ['Content-Type', 'Authorization', 'Origin']
+            formats:
+                jsonld: ['application/ld+json']
+                json: ['application/json']
+    ```
+
+    Les deux options dans `formats` vont nous permettre d'utiliser deux formats pour la lecture et l'écriture de données : `json` (que vous connaissez bien) mais aussi un format plus évolué, le `ld+json`.
+
+6. Nous allons maintenant configurer la base de données dans le fichier `.env`. Configurez donc une nouvelle base (nouveau nom) et ne réutilisez pas la précédente (par exemple, nommez la base `the_feed_api`). Pour rappel, comme nous sommes dans le conteneur, l'adresse hôte à utiliser est `db`, le login `root` et le mot de passe `root`. Le port est `3306`.
+
+7. Exécutez la commande suivante afin de créer la base :
 
     ```bash
     php bin/console doctrine:database:create
     ```
     
-7. En vous rendant dans le dossier du projet, videz le cache :
+8. En vous rendant dans le dossier du projet, videz le cache :
 
     ```bash
     php bin/console cache:clear
     ```
 
-8. Rendez-vous sur votre site à l'adresse : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
+9. Rendez-vous sur votre site à l'adresse : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
 
 </div>
 
@@ -322,7 +338,7 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
 
 </div>
 
-Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En effet, nous ne voulons pas que les publications soient modifiables. Il faut donc interdire les méthodes `PUT` et `PATCH`, ou plutôt, autoriser seulement les autres méthodes. Pour cela, il suffit d'utiliser le paramètres `operations` au niveau de l'annotation `#[ApiResource]`. Ce paramètre est une **liste** des opérations permises, sous la forme d'objets (qu'on peut d'ailleurs configurer de manière ciblée).
+Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En effet, nous ne voulons pas que les publications soient modifiables. Il faut donc interdire les méthodes `PUT` et `PATCH`, ou plutôt, autoriser seulement les autres méthodes. Pour cela, il suffit d'utiliser les paramètres `operations` au niveau de l'annotation `#[ApiResource]`. Ce paramètre est une **liste** des opérations permises, sous la forme d'objets (qu'on peut d'ailleurs configurer de manière ciblée).
 
 Les opérations possibles sont :
 
@@ -348,12 +364,14 @@ Petite note à part, par défaut, `GetCollection` utilise un système de paginat
 
 Ce système est nécessaire afin de limiter les données lues côté client et ainsi charger le contenu au fur et à mesure (imaginez si vous deviez charger tout **Twitter/X** à chaque accès !!!). Il est possible d'augmenter le nombre de ressources renvoyées par page ou bien simplement désactiver ce système (et donc tout renvoyer à chaque fois). Par convenance dans le cadre de ce TP, nous allons donc désactiver ce système, mais retenez bien que dans un contexte réel, il faudrait le conserver et charger le contenu petit à petit, au fil du parcours de l'utilisateur.
 
-Pour configurer tout cela, on édite le contenu du fichier `config/packages/api_platform.yaml` (que vous aviez vidé tout à l'heure) :
+Pour configurer tout cela, on édite le contenu du fichier `config/packages/api_platform.yaml` :
 
 ```yaml
 # Dans config/packages/api_platform.yaml
 api_platform:
+    ...
     defaults:
+        ...
         pagination_items_per_page: 30 # Pour changer le nombre de ressources renvoyées si la pagination est activée
         pagination_enabled: true/false # Active ou désactive la pagination
 ```
@@ -400,9 +418,7 @@ Pour créer la ressource `Utilisateur`, nous n'allons pas nous embêter et repre
 
 10. Testez de créer des utilisateurs (login/adresseEmail, pas de mot de passe pour le moment) et vérifiez que vos contraintes sont respectées (essayez de rentrer un login trop court ou trop long, une adresse email au mauvais format, etc...). Vérifiez aussi que, même si la propriété `premium` est précisé dans le payload, avec la valeur `true`, elle est ignorée (la valeur `premium` de l'utilisateur reste à `false`).
 
-11. Testez la modification d'un utilisateur existant avec `PATCH`, en configurant la requête correctement, sur `Postman`. Là aussi, on doit pouvoir modifier le login et l'adresse email, mais toute modification sur le statut premium est ignorée.
-
-    **Aide :** pour la méthode `PATCH`, le `payload` n'est pas au format `json`, mais au format `merge-patch+json`. On envoie le même `payload`, sauf que ce format indique à l'application qu'on souhaite mettre à jour seulement une partie de l'entité, avec les attributs spécifiés. Sur `Postman`, lorsque vous réaliserez une requête `PATCH`, il faudra préciser ce format dans votre requête en vous rendant dans la partie `Headers` puis en **désactivant** la case `Content-Type` existante puis en ajoutant (en bas) un nouveau champ nommé `Content-Type` en précisant la valeur `application/merge-patch+json`.
+11. Testez la modification d'un utilisateur existant avec `PATCH`, en configurant la requête correctement, sur `Postman`. Là aussi, on doit pouvoir modifier le login et l'adresse email, mais toute modification sur le statut premium est ignorée. On envoie le même type de `payload` que lors d'un `POST`, sauf qu'on indique seulement les attributs qu'on souhaite mettre à jour.
 
 12. Testez également la méthode `GET` (récupérer tous les utilisateurs, récupérer un utilisateur précis...)
 </div>
@@ -441,7 +457,7 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
 
 9. Maintenant, tentez d'ajouter une publication en précisant l'identifiant numérique (son id) de l'utilisateur pour la partie `auteur`. Analysez le message d'erreur que vous obtenez.
 
-10. La valeur à préciser pour faire référence à une autre ressource est appelé `IRI` (International Ressource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veux pas créer un utilisateur lorsqu'on créé une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TP.
+10. La valeur à préciser pour faire référence à une autre ressource est appelé `IRI` (International Ressource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/the_feed_api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veux pas créer un utilisateur lorsqu'on créé une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TP.
 
 11. Une fois le mécanisme des `IRI` compris, retentez de créer une publication en affectant un utilisateur.
 
@@ -1036,10 +1052,10 @@ Maintenant, il ne nous reste plus qu'à mettre en place un système de connexion
 **Si vous êtes en local**, il faudra activer l'extension **sodium** dans votre fichier `php.ini`. Trouvez la ligne `;extension=sodium` dans votre fichier et enlevez `;` afin de décommenter l'extension.
 -->
 
-Afin d'activer l'authentification de nos utilisateurs, il nous faut une route dédiée. Pour la déclarer, nous pouvons utiliser le fichier `config/routes.yaml` :
+Afin d'activer l'authentification de nos utilisateurs, il nous faut une route dédiée. Pour la déclarer, nous pouvons utiliser le fichier `config/routes/api_platform.yaml` afin d'y ajouter une nouvelle route :
 
 ```yml
-auth:
+api_auth:
     path: /api/auth
     methods: ['POST']
 ```
@@ -1059,7 +1075,7 @@ security:
             provider: app_user_provider
             json_login:
                 #Le nom de la route d'authentification
-                check_path: auth
+                check_path: /api/auth
                 #La propriété correspondant au login dans notre entité
                 username_path: login
                 #La propriété correspondant au mot de passe (haché) dans notre entité
@@ -1081,6 +1097,8 @@ Pour se connecter, on devra donc envoyer un `payload` de la forme :
 }
 ```
 
+Attention, ici, on utilise le nom d'attribut `password` et pas `plainPassword`.
+
 <div class="exercise">
 
 1. Installez le package suivant (système d'authentification par JWT) :
@@ -1097,7 +1115,7 @@ Pour se connecter, on devra donc envoyer un `payload` de la forme :
 
     Elles sont placées dans le dossier `config/jwt`. Les fichiers de configuration se mettent à jour automatiquement (jetez un œil à `.env`, par exemple). Si vous êtes sur le serveur de l'IUT, il faut aussi protéger ce dossier pour qu'on ne puisse pas récupérer vos clés. Téléchargez ce fichier [htaccess]({{site.baseurl}}/assets/TD4/htaccess3), placez-le dans le dossier contenant les clés puis renommez-le en `.htaccess`.
 
-3. Au niveau du fichier `config/routes.yaml` ajoutez la route d'authentification.
+3. Au niveau du fichier `config/routes/api_platform.yaml` ajoutez la route d'authentification.
 
 4. Éditez le fichier `config/packages/security.yaml` afin de prendre en charge le système d'authentification.
 
@@ -1488,10 +1506,6 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken as BaseRefreshToken;
 
-/**
- * @ORM\Entity
- * @ORM\Table("refresh_tokens")
- */
 #[ORM\Entity]
 #[ORM\Table(name: 'refresh_tokens')]
 class RefreshToken extends BaseRefreshToken
@@ -1500,10 +1514,10 @@ class RefreshToken extends BaseRefreshToken
 }
 ```
 
-* Ensuite, on crée les différentes routes liées au rafraîchissement, dans le fichier `config/routes.yaml` :
+* Ensuite, on crée les différentes routes liées au rafraîchissement, dans le fichier `config/routes/gesdinet_jwt_refresh_token.yaml` (qui sera généré une fois le bundle installé):
 
 ```yaml
-#Route pour rafraîchir notre JWT
+#Route pour rafraîchir notre JWT (déjà definie par défaut)
 api_refresh_token:
     path: /api/token/refresh
 
@@ -1528,12 +1542,12 @@ security:
                 path: api_token_invalidate
 ```
 
-* Enfin, dans `config/packages`, on crée le fichier `gesdinet_jwt_refresh_token.yaml` pour configurer le bundle et indiquer quelle classe correspond au token de rafraîchissement :
+* Enfin, dans `config/packages`, on édite le fichier `gesdinet_jwt_refresh_token.yaml` pour configurer le bundle et indiquer quelle classe correspond au token de rafraîchissement et d'autres paramètres :
 
 ```yaml
 #config/packages/gesdinet_jwt_refresh_token.yaml
 gesdinet_jwt_refresh_token:
-    #Classe représentant le token de rafraîchissement
+    #Classe représentant le token de rafraîchissement (option déjà paramétrée, par défaut)
     refresh_token_class: App\Entity\RefreshToken
     #Pour que la durée de vie du token de rafraîchissement soit réinitialisée (à son maximum) après chaque utilisation
     ttl_update: true
@@ -1569,26 +1583,17 @@ Maintenant, à vous de jouer!
     composer require gesdinet/jwt-refresh-token-bundle
     ```
 
-    Si on vous pose une question relative à l'utilisation d'une `recipe` répondez **no**. Le mécanisme des `recipes` permet de configurer automatiquement certains aspects de l'application quand on ajoute une nouvelle librairie, un bundle... Par exemple, en créant de nouveaux fichiers ou en complétant certains fichiers de configuration. Cela est défini par le développeur du module installé. Dans notre cas, pour ce bundle précis, cela ne nous arrange pas forcément.
+    Quand on vous pose la question relative à l'utilisation d'une `recipe` répondez **yes**. Le mécanisme des `recipes` permet de configurer automatiquement certains aspects de l'application quand on ajoute une nouvelle librairie, un bundle... Par exemple, en créant de nouveaux fichiers ou en complétant certains fichiers de configuration. Cela est défini par le développeur du module installé.
 
-2. Activez le bundle dans `config/bundles.php` :
+2. Créez l'entité `RefreshToken` (vous pouvez directement copier le code présenté plus tôt).
 
-    ```php
-    return [
-        ...
-        Gesdinet\JWTRefreshTokenBundle\GesdinetJWTRefreshTokenBundle::class => ['all' => true],
-    ];
-    ```
+3. Complétez les différents fichiers de configurations : `config/routes/gesdinet_jwt_refresh_token.yaml`, `config/packages/security.yaml`, `config/packages/gesdinet_jwt_refresh_token.yaml`.
 
-3. Créez l'entité `RefreshToken` (vous pouvez directement copier le code présenté plus tôt).
+4. Videz le cache.
 
-4. Remplissez les différents fichiers de configurations : `routes.yaml`, `security.yaml`, `gesdinet_jwt_refresh_token.yaml`.
+5. Mettez à jour la structure de votre base de données en utilisant les commandes adéquates.
 
-5. Videz le cache.
-
-6. Mettez à jour la structure de votre base de données en utilisant les commandes adéquates.
-
-7. Testez votre nouveau système :
+6. Testez votre nouveau système :
 
     * Authentifiez-vous et vérifiez que vous obtenez bien un `refresh_token` dans vos **cookies** en plus de votre token habituel.
 
