@@ -13,7 +13,7 @@ Nous avons déjà abordé la notion d'API l'an dernier. Nous allons tout de mêm
 
 De nos jours, les architectures qui séparent activement la partie `back-end` (serveur, routage, services, accès aux données) de la partie `front-end` (ce qui est rendu niveau client, pages html, etc...) sont de plus en plus privilégiées. En effet, une telle séparation permet notamment d'utiliser un même serveur applicatif avec plusieurs technologies clientes (une application sur smartphone, une application Vue.js, React, etc...).
 
-Dans ce fonctionnement, le serveur ne doit alors que renvoyer des données (généralement au format `JSON`, ou bien parfois `XML`) mais il ne se charge pas du rendu de la page. C'est alors les technologies clientes qui, une fois les données récupérées auprès du serveur, les utilisent pour mettre à jour leur interface. On appelle alors le programme côté back-end une `API` pour `Application Programming Interface`. Cela signifie en fait que ce programme est lui-même un `service` qui sert à exécuter des actions et récupérer de l'information, mais pas de document (pages web) à proprement parler.
+Dans ce fonctionnement, le serveur ne doit alors que renvoyer des données (généralement au format `JSON`, ou bien parfois `XML`) mais il ne se charge pas du rendu de la page. Ce sont alors les technologies clientes qui, une fois les données récupérées auprès du serveur, les utilisent pour mettre à jour leur interface. On appelle alors le programme côté back-end une `API` pour `Application Programming Interface`. Cela signifie en fait que ce programme est lui-même un `service` qui sert à exécuter des actions et récupérer de l'information, mais pas de document (pages web) à proprement parler.
 
 Dans le monde des **API**, il existe un **style architectural** nommé `REST` pour **representational state transfer**. Dans cette architecture on parle de **ressources** pour faire référence aux différentes entités de notre service (publications, utilisateurs, commentaires...). Ces ressources doivent être désignées à travers des routes formulées de manière précise, par exemple :
 
@@ -39,7 +39,7 @@ Pour manipuler ces ressources, on utilise les méthodes `HTTP` suivantes :
 
 * `PUT` : Remplace complètement la ressource désignée par la route avec les informations fournies dans le corps de la requête (tous les attributs nécessaires doivent donc être spécifiés, comme pour `POST`). On écrase l'ancienne ressource avec la nouvelle.
 
-* `PATCH` : Met à jour partiellement les données de la ressource désignée par la route avec les informations fournies dans le corps de la requête (seul les attributs qui ont besoin d'être mis à jour doivent être spécifiés).
+* `PATCH` : Met à jour partiellement les données de la ressource désignée par la route avec les informations fournies dans le corps de la requête (seuls les attributs qui ont besoin d'être mis à jour doivent être spécifiés).
 
 * `DELETE` : Supprime la ressource désignée par la route.
 
@@ -153,7 +153,7 @@ Pour générer le code de base lié à l'entité publication, nous allons utilis
     composer require symfony/maker-bundle --dev
     ```
 
-2. Créez une nouvelle entité `Publication` à l'aide de la commande `make:entity` en ajoutant l'option `--api-resource` qui permet d'indiquer à Symfony que nous créeons une entité liée à **API Platform**.
+2. Créez une nouvelle entité `Publication` à l'aide de la commande `make:entity` en ajoutant l'option `--api-resource` qui permet d'indiquer à Symfony que nous créons une entité liée à **API Platform**.
 
     Pour les propriétés à ajouter :
 
@@ -265,13 +265,13 @@ On trie les résultats par rapport au premier attribut spécifié puis, en cas d
 //Quand je récupère l'ensemble des entreprises, elles sont triées de celle possédant le plus gros CA à celle possédant le plus petit CA.
 #[ApiResource(
     ...,
-    order : ["chiffreAfaire" => "DESC"]
+    order : ["chiffreAffaire" => "DESC"]
 )]
 class Entreprise {
 
     private ?string $nom = null;
 
-    private ?float $chiffreAfaire = null;
+    private ?float $chiffreAffaire = null;
 
 }
 ```
@@ -322,7 +322,7 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
 
 </div>
 
-Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En effet, nous ne voulons pas que les publications soient modifiables. Il faut donc interdire les méthodes `PUT` et `PATCH`, ou plutôt, autoriser seulement les autres méthodes. Pour cela, il suffit d'utiliser le paramètres `operations` au niveau de l'annotation `#[ApiResource]`. Ce paramètre est une **liste** des opérations permises, sous la forme d'objets (qu'on peut d'ailleurs configurer de manière ciblée).
+Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En effet, nous ne voulons pas que les publications soient modifiables. Il faut donc interdire les méthodes `PUT` et `PATCH`, ou plutôt, autoriser seulement les autres méthodes. Pour cela, il suffit d'utiliser le paramètre `operations` au niveau de l'annotation `#[ApiResource]`. Ce paramètre est une **liste** des opérations permises, sous la forme d'objets (qu'on peut d'ailleurs configurer de manière ciblée).
 
 Les opérations possibles sont :
 
@@ -331,7 +331,7 @@ Les opérations possibles sont :
 * `Post` : création d'une ressource.
 * `Put` : mise à jour complète d'une ressource ciblée.
 * `Patch` : mise à jour partielle d'une ressource ciblée.
-* `Delete` : supression d'une ressource ciblée.
+* `Delete` : suppression d'une ressource ciblée.
 
 Ainsi, la configuration suivante permet seulement l'utilisation de la méthode `Get` ciblée et `Delete` :
 
@@ -425,7 +425,7 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
 
     * Activez la suppression des entités orphelines.
 
-2. La stratégie de suppression doit être `CASCADE` (si un utilisateur est supprimé, toutes ses publications sont supprimées...). Si vous ne vous souvenez plus comment faire, jetez un oeil à votre attribut `auteur` de la classe `Publication` du projet précédent.
+2. La stratégie de suppression doit être `CASCADE` (si un utilisateur est supprimé, toutes ses publications sont supprimées...). Si vous ne vous souvenez plus comment faire, jetez un œil à votre attribut `auteur` de la classe `Publication` du projet précédent.
 
 3. Activez le mode de chargement `EAGER` (eager loading) pour la récupération des données de l'auteur.
 
@@ -441,7 +441,7 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
 
 9. Maintenant, tentez d'ajouter une publication en précisant l'identifiant numérique (son id) de l'utilisateur pour la partie `auteur`. Analysez le message d'erreur que vous obtenez.
 
-10. La valeur à préciser pour faire référence à une autre ressource est appelé `IRI` (International Ressource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veux pas créer un utilisateur lorsqu'on créé une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TP.
+10. La valeur à préciser pour faire référence à une autre ressource est appelé `IRI` (International Ressource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veut pas créer un utilisateur lorsqu'on crée une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TP.
 
 11. Une fois le mécanisme des `IRI` compris, retentez de créer une publication en affectant un utilisateur.
 
@@ -515,7 +515,7 @@ class Groupe {
 
 Ici, quand on récupère les données d'un étudiant, on affiche seulement son id, son nom, son prénom, mais pas son groupe (même pas d'IRI).
 
-Pour les groupes, on affiche tout sauf la liste des étudiants (qui aurait était une liste d'IRI aussi).
+Pour les groupes, on affiche tout sauf la liste des étudiants (qui aurait été une liste d'IRI aussi).
 
 Pour qu'on obtienne aussi l'identifiant et le nom du groupe quand on lit les données d'un étudiant, il faut d'abord préciser le groupe `etudiant:read` au niveau de la propriété `groupe` et il faut ensuite ajouter le groupe `etudiant:read` sur chaque propriété de la classe `Groupe` qu'on souhaite afficher quand on rend le groupe d'un utilisateur : 
 
@@ -764,7 +764,7 @@ Un `JWT` est une chaîne de caractères appelée `token` encodée en `base64` qu
 
 * La `signature` qui permet de vérifier l'authenticité du jeton.
 
-Pour créer un `JWT`, on utilise une paire clé publique/clé privée. La **clé privée** sert à créer la `signature` du jeton à partir de la concaténation du `header` et du `payload`. Elle est conservée par l'émetteur et n'est pas transmisse. La **clé publique** quant à elle sert à vérifier la signature du `token` (pour attester qu'il n'a pas été modifié) et peut être distribuée. Le jeton final est encodé en `base64`.
+Pour créer un `JWT`, on utilise une paire clé publique/clé privée. La **clé privée** sert à créer la `signature` du jeton à partir de la concaténation du `header` et du `payload`. Elle est conservée par l'émetteur et n'est pas transmise. La **clé publique** quant à elle sert à vérifier la signature du `token` (pour attester qu'il n'a pas été modifié) et peut être distribuée. Le jeton final est encodé en `base64`.
 
 Tout le monde peut décoder un `JWT` et lire son contenu. Donc il **ne doit pas contenir d'informations sensibles** (mot de passe, numéro de carte de crédit, etc...) Cependant, bien qu'il soit lisible par tous, il est impossible de le **falsifier**. En effet, seul l'émetteur qui possède la clé privée ayant servi à signer le jeton peut le modifier ! Si quelqu'un tente de falsifier un `JWT`, il ne pourra pas connaître la signature adéquate à apposer pour ce nouveau corps de données. Ainsi, grâce à la signature, un token falsifié sera rejeté.
 
@@ -774,13 +774,16 @@ De nos jours, les **API** utilisent un système d'authentification par `token` c
 
 * Le serveur possède une paire clé publique/clé privée.
 
-* Quand un utilisateur veut s'authentifier, il envoie ses identifiants, le serveur les vérifie et, si tout est bon, créé un `JWT` contenant les informations utiles au serveur, par exemple, l'id de l'utilisateur.
+* Quand un utilisateur veut s'authentifier, il envoie ses identifiants. Le
+  serveur les vérifie et, si tout est bon, créé un `JWT` signé avec sa clé
+  privée et contenant les informations utiles au serveur, par exemple, l'id de
+  l'utilisateur.
 
 * Le serveur renvoie le `JWT` et le client le conserve.
 
 * Dès qu'il veut accéder à une route sécurisée, le client envoie le `JWT` au serveur, en plus de sa requête.
 
-* Quand le serveur reçoit le `JWT`, il vérifie qu'il n'a pas été falsifié (avec les deux clés) et peut donc le décoder en toute confiance et récupérer les informations de l'utilisateur à partir de son identifiant stocké dans le `JWT` (en faisant une requête sur la base pour obtenir le reste des informations, par exemple) et ainsi vérifier s'il a le droit d'effectuer cette requête.
+* Quand le serveur reçoit le `JWT`, il vérifie qu'il n'a pas été falsifié (avec la clé publique) et peut donc le décoder en toute confiance et récupérer les informations de l'utilisateur à partir de son identifiant stocké dans le `JWT` (en faisant une requête sur la base pour obtenir le reste des informations, par exemple) et ainsi vérifier s'il a le droit d'effectuer cette requête.
 
 Bien que le `JWT` soit décodable côté client, il est impossible le falsifier pour changer l'id de l'utilisateur contenu, car le serveur le détectera. Il est aussi impossible de simplement créer un `JWT` avec l'identifiant d'un autre utilisateur, car le client ne peut pas générer la signature adéquate (car il ne possède pas la clé privée).
 
@@ -808,7 +811,7 @@ security:
                 property: login
 ```
 
-Dans le projet précédent, cette section avait était générée automatiquement, car nous avions utilisé la commande `make:user` pour créer l'entité `Utilisateur`.
+Dans le projet précédent, cette section avait été générée automatiquement, car nous avions utilisé la commande `make:user` pour créer l'entité `Utilisateur`.
 
 Si vous vous souvenez bien, dans le formulaire de création de l'utilisateur, il y avait un champ `plainPassword` qui ne faisait pas partie de l'entité et qui était **haché** puis placé dans la propriété `password`. Mais comment faire cela, alors que nous n'avons pas de formulaire ni de contrôleur pour gérer ce comportement ?
 
@@ -922,7 +925,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 3. Dans votre classe `Utilisateur`, décommentez la propriété `password`, ses getters/setters ainsi que la déclaration d'implémentation de l'interface `PasswordAuthenticatedUserInterface`. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API). Il faut aussi décommenter dans `UtilisateurRepository` la déclaration de l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la méthode `upgradePassword`.
 
-4. Ajoutez une propriété `$plainPassword` de type `?string` à la classe `Utilisateur` (ainsi que ses getters/setters). Pour le `getter`, précisez bien le type de retour `?string` (pour autoriser les valeurs nulles). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété (sous forme d'attributs). N'oubliez pas d'importer les classes correspondantes. Aussi, en utilisant un autre attribut (provenant d'API Platform), faites en sorte que cette propriété ne puisse jamais pouvoir être lue par les utilisateurs (jamais affichée/normalisée quand on renvoi une ressource type utilisateur).
+4. Ajoutez une propriété `$plainPassword` de type `?string` à la classe `Utilisateur` (ainsi que ses getters/setters). Pour le `getter`, précisez bien le type de retour `?string` (pour autoriser les valeurs nulles). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété (sous forme d'attributs). N'oubliez pas d'importer les classes correspondantes. Aussi, en utilisant un autre attribut (provenant d'API Platform), faites en sorte que cette propriété ne puisse jamais pouvoir être lue par les utilisateurs (jamais affichée/normalisée quand on renvoie une ressource type utilisateur).
 
 5. Modifiez la méthode `eraseCredentials` afin que celle-ci mette `plainPassword` à **null**. En effet, par mesure de sécurité, comme cette propriété est stockée dans la classe utilisateur et non pas dans un formulaire, elle va être enregistré dans la session. Il faut donc posséder une méthode afin de "vider" cette information sensible après l'avoir utilisé.
 
@@ -980,7 +983,7 @@ Attention, ces groupes sont différents de ceux utilisés dans `normalizationCon
 
 2. Videz le cache puis vérifiez que vous pouvez mettre à jour l'utilisateur sans préciser le mot de passe.
 
-3. Utilisez vos groupes de validation sur les attributs `Assert\NotBlank` et `Assert\NotNull` des autres propriétés (login et adresse email) afin qu'ils soient obligatoire lors de la création, mais pas lors de la mise à jour (en fait, c'est le cas par défaut lors d'un PATCH, car les valeurs de ces attributs existent déjà dans les données de l'utilisateur et ne sont pas nulles, mais préciser ces groupes permet plus de clarté). Videz le cache.
+3. Utilisez vos groupes de validation sur les attributs `Assert\NotBlank` et `Assert\NotNull` des autres propriétés (login et adresse email) afin qu'ils soient obligatoires lors de la création, mais pas lors de la mise à jour (en fait, c'est le cas par défaut lors d'un PATCH, car les valeurs de ces attributs existent déjà dans les données de l'utilisateur et ne sont pas nulles, mais préciser ces groupes permet plus de clarté). Videz le cache.
 
 </div>
 
@@ -988,7 +991,7 @@ Attention, ces groupes sont différents de ceux utilisés dans `normalizationCon
 
 Maintenant, nous faisons face à un autre problème : on voudrait que certaines propriétés puissent être précisées lors de la création, mais pas lors de la mise à jour (qu'elles soient ignorées). Par exemple, on souhaite que le login d'un utilisateur ne puisse pas être mis à jour. Pour cela, on peut utiliser les groupes de **dénormalisation**.
 
-A l'inverse des groupes de **normalisation** où nous avions précisé quels attributs afficher ou non lors d'une opération type `GET`, les groupes de **dénormalisation** permettent d'ignorer certaines propriétés.
+À l'inverse des groupes de **normalisation** où nous avions précisé quels attributs afficher ou non lors d'une opération type `GET`, les groupes de **dénormalisation** permettent d'ignorer certaines propriétés.
 
 Au niveau d'une propriété, il suffit de rajouter le `groupe` (dans l'annotation `#[Groups(...)]` que vous avez déjà utilisé pour la normalisation) pour lequel la propriété ne doit pas être ignoré. Par exemple : 
 
@@ -1110,7 +1113,7 @@ Pour se connecter, on devra donc envoyer un `payload` de la forme :
 
 Tout fonctionne correctement ? Parfait ! Cependant, nous allons tout casser ! En effet, de nos jours, renvoyer directement le `JWT` dans le corps de la réponse n'est pas une très bonne pratique, dans de nombreux cas (notamment si votre **API** est utilisée au travers d'une application cliente sur navigateur). Il faut bien comprendre que quelqu'un qui possède votre **token** peut usurper votre identité jusqu'à son expiration. Il faut donc limiter au maximum les risques que cela se produise.
 
-Cette fois, le problème vient du client, et plus précisément des applications qui tournent sur un navigateur web (avec un framework javascript par exemple, comme nous le ferons dans les prochains TDs). Le problème est de savoir où et comment stocker le JWT. Il y a plusieurs options :
+Cette fois, le problème vient du client, et plus précisément des applications qui tournent sur un navigateur web (avec un framework JavaScript par exemple, comme nous le ferons dans les prochains TDs). Le problème est de savoir où et comment stocker le JWT. Il y a plusieurs options :
 
 * Dans une **variable** simple. Mais celle-ci sera supprimée si la page est rechargée, ce n'est donc pas idéal du tout (l'utilisateur devra se reconnecter...)
 
@@ -1124,19 +1127,19 @@ Jusqu'à il y a quelques années (et encore un peu aujourd'hui), beaucoup d'appl
 
 * Le client (navigateur web) stocke le `JWT` dans le `localStorage` et l'envoi à chaque requête où cela est nécessaire. De plus, comme on peut décoder le `JWT` (qui ne contient aucune information sensible), on peut connaître la date d'expiration du token et agir en conséquence.
 
-Cependant, ce système était fortement vulnérable à un type d'attaque bien connue : l'attaque `XSS` (Cross-site Scripting). cette attaque consiste à exploiter une vulnérabilité du site pour introduire un script malveillant qui sera exécuté par le navigateur d'une victime (ou pire, tous les utilisateurs). Cette attaque est par exemple possible si certaines informations fournies par l'utilisateur ne sont pas correctement échappées par l'application et traitées comme du code. 
+Cependant, ce système était fortement vulnérable à un type d'attaque bien connue : l'attaque `XSS` (Cross-site Scripting). Cette attaque consiste à exploiter une vulnérabilité du site pour introduire un script malveillant qui sera exécuté par le navigateur d'une victime (ou pire, tous les utilisateurs). Cette attaque est par exemple possible si certaines informations fournies par l'utilisateur ne sont pas correctement échappées par l'application et traitées comme du code. 
 
-Un attaquant pourrait par exemple envoyer des informations (par exemple, quand il rentre sa biographie sur son profil) contenant un bout de code javascript qui irait lire le `JWT` dans le `localStorage` et l'enverrai ailleurs, sur un espace accessible par l'attaquant. Toutes les personnes qui consulteraient la biographie en question exécuteraient alors (sans le savoir) ce script, et leur token serait donc envoyé à l'attaquant. Par la suite, ce dernier pourra donc usurper les identités des utilisateurs dont il a récupéré le token.
+Un attaquant pourrait par exemple envoyer des informations (par exemple, quand il rentre sa biographie sur son profil) contenant un bout de code JavaScript qui irait lire le `JWT` dans le `localStorage` et l'enverrait ailleurs, sur un espace accessible par l'attaquant. Toutes les personnes qui consulteraient la biographie en question exécuteraient alors (sans le savoir) ce script, et leur token serait donc envoyé à l'attaquant. Par la suite, ce dernier pourra donc usurper les identités des utilisateurs dont il a récupéré le token.
 
-Le danger vient donc du fait que n'importe quel script `javascript` puisse acceder et lire dans `localStorage`. Si le contenu du `JWT` n'est pas sensible en soi, le `JWT` en lui-même est utilisé pour vous identifier. Il faut donc absolument éviter de le stocker dans un endroit potentiellement vulnérable.
+Le danger vient donc du fait que n'importe quel script `javascript` puisse accéder et lire dans `localStorage`. Si le contenu du `JWT` n'est pas sensible en soi, le `JWT` en lui-même est utilisé pour vous identifier. Il faut donc absolument éviter de le stocker dans un endroit potentiellement vulnérable.
 
 Pour palier à ce problème, une nouvelle approche a été choisie : utiliser des **cookies sécurisés**. Plus précisent des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stoker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
 
-* **secure** : le cookie n'est envoyé que si la requête est chiffré (**https**).
+* **secure** : le cookie n'est envoyé que si la requête est chiffrée (**https**).
 * **httpOnly** : le cookie n'est pas accessible dans le **javascript**. Il sera envoyé automatiquement à chaque requête vers le serveur, mais à aucun moment un script pourra lire ses données. Cela élimine le risque de se le faire voler en cas d'attaque XSS.
-* L'attribut **SameSite** permet de définir si le cookie doit être envoyé ou non selon le site où est émis la requête vers le serveur. Cela permet notamment d'éviter les attaques **CSRF** dont nous allons parler juste après.
+* L'attribut **SameSite** permet de définir si le cookie doit être envoyé ou non selon le site où est émise la requête vers le serveur. Cela permet notamment d'éviter les attaques **CSRF** dont nous allons parler juste après.
 
-Une attaque **CSRF** (Cross-site Request Forgery) consiste à faire envoyer une requête vers un serveur (une API) à l'utilisateur, mais depuis un autre site. L'idée est que le site en question contienne un script javascript qui émet la requête. Il faut ensuite faire en sorte que l'utilisateur que l'on souhaite piéger se rende sur ce site. La requête sera alors envoyée depuis le navigateur du client, comme si c'était lui qui était à l'initiative de la requête. Alors, même avec un cookie **secure** et en **httpOnly**, dans ce cas, l'attaquant pourra exécuter des actions sous notre identité. Notez cette fois que l'attaquant ne récupère pas notre `JWT`. Il utilise notre identité à travers notre navigateur.
+Une attaque **CSRF** (Cross-site Request Forgery) consiste à faire envoyer une requête vers un serveur (une API) à l'utilisateur, mais depuis un autre site. L'idée est que le site en question contienne un script JavaScript qui émet la requête. Il faut ensuite faire en sorte que l'utilisateur que l'on souhaite piéger se rende sur ce site. La requête sera alors envoyée depuis le navigateur du client, comme si c'était lui qui était à l'initiative de la requête. Alors, même avec un cookie **secure** et en **httpOnly**, dans ce cas, l'attaquant pourra exécuter des actions sous notre identité. Notez cette fois que l'attaquant ne récupère pas notre `JWT`. Il utilise notre identité à travers notre navigateur.
 
 Pour contrer cela, on paramètre l'attribut `Same-Site` du cookie, avec une des deux valeurs suivantes :
 
@@ -1184,7 +1187,7 @@ Lorsqu'on se connecte, l'application cliente aimerait potentiellement connaître
 
 * La date d'expiration du token, pour pouvoir mettre en place le rafraîchissement (section bonus du TD) et/ou déconnecter automatiquement l'utilisateur.
 
-Comme nous n'envoyons plus le `JWT`, l'application cliente n'a donc plus accès à ces informations (qu'elle aurait pu obtenir en decodant le `JWT`). On peut alors envisager plusieurs solutions :
+Comme nous n'envoyons plus le `JWT`, l'application cliente n'a donc plus accès à ces informations (qu'elle aurait pu obtenir en décodant le `JWT`). On peut alors envisager plusieurs solutions :
 
 * Avoir une route dédiée qui donne les informations de l'utilisateur courant. L'idée est que le serveur décode les informations contenues dans le JWT et les renvoient en réponse. Ensuite, le client peut stocker ces informations dans des variables temporaires et utiliser la route en question à chaque rechargement.
 
@@ -1290,7 +1293,7 @@ Par exemple :
 )]
 ```
 
-Ici, la route utilisant la méthode `POST` sur cette ressource est uniquement accessible aux utilisateurs avec le rôle `ROLE_USER` (donc, tous les utilisateurs authentifiés). La méthode `DELETE` elle par contre n'est accessibles qu'aux utilisateurs ayant le rôle `ROLE_ADMIN`.
+Ici, la route utilisant la méthode `POST` sur cette ressource est uniquement accessible aux utilisateurs avec le rôle `ROLE_USER` (donc, tous les utilisateurs authentifiés). La méthode `DELETE` elle par contre n'est accessible qu'aux utilisateurs ayant le rôle `ROLE_ADMIN`.
 
 On a aussi accès à d'autres variables :
 
@@ -1360,13 +1363,13 @@ En plus du même `ProcessorInterface` que vous avez utilisé auparavant (pour sa
 
 3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également les attributs `NotBlank` et `NotNull` (ou bien le paramètre `required` dans l'attribut `#[ApiProperty]`) que vous aviez sans doute placé précédemment sur cette propriété.
 
-4. Videz le cache puis connectez-vous (si ce n'est pas déjà fait, c'est à dire si vous ne possédez pas le cookie **BEARER** contenant le `JWT`) et tentez de créer une nouvelle publication. Le JWT sera automatiquement envoyé au serveur avec la requête, dans un cookie. Vérifiez alors que la publication est bien créée et que l'auteur a bien été affecté par rapport à l'utilisateur représenté par le `JWT` que vous utilisez.
+4. Videz le cache puis connectez-vous (si ce n'est pas déjà fait, c'est-à-dire si vous ne possédez pas le cookie **BEARER** contenant le `JWT`) et tentez de créer une nouvelle publication. Le JWT sera automatiquement envoyé au serveur avec la requête, dans un cookie. Vérifiez alors que la publication est bien créée et que l'auteur a bien été affecté par rapport à l'utilisateur représenté par le `JWT` que vous utilisez.
 
 </div>
 
 ### Autorisation d'envoi d'informations d'authentification
 
-Afin que le navigateurs acceptent d'envoyer des informations d'authentification pour les requêtes sécurisées (donc, votre `JWT`), il faut modifier la configuration de l'API afin qu'elle ajoute une en-tête `Access-Control-Allow-Credentials` à **true** (sinon, le navigateur refusera de traiter la requête).
+Afin que les navigateurs acceptent d'envoyer des informations d'authentification pour les requêtes sécurisées (donc, votre `JWT`), il faut modifier la configuration de l'API afin qu'elle ajoute un en-tête `Access-Control-Allow-Credentials` à **true** (sinon, le navigateur refusera de traiter la requête).
 
 Pour cela, rien de plus simple : il suffit d'ajouter un paramètre dans le fichier `config/packages/nelmio_cors.yaml` :
 
@@ -1600,9 +1603,9 @@ Maintenant, à vous de jouer!
 
 </div>
 
-Dans l'absolu, nous pourrions aussi inclure (lors de l'authentification ou du rafraîchissement) des informations sur le token de rafraîchissement (notamment, sa date d'expiration). Cependant, dans l'absolu, le client n'en a pas vraiment besoin. S'il essaye de rafraîchir le `JWT` alors que le token de rafraîchissement a expiré, le serveur renverra une erreur `401` (Unauthorized) et le client sera alors au courant que le token a expiré. A l'inverse, pour le `JWT` d'authentification, il est essentiel que le client connaisse la date d'expiration afin d'utiliser le token de rafraîchissement au moment opportun.
+Dans l'absolu, nous pourrions aussi inclure (lors de l'authentification ou du rafraîchissement) des informations sur le token de rafraîchissement (notamment, sa date d'expiration). Cependant, dans l'absolu, le client n'en a pas vraiment besoin. S'il essaye de rafraîchir le `JWT` alors que le token de rafraîchissement a expiré, le serveur renverra une erreur `401` (Unauthorized) et le client sera alors au courant que le token a expiré. À l'inverse, pour le `JWT` d'authentification, il est essentiel que le client connaisse la date d'expiration afin d'utiliser le token de rafraîchissement au moment opportun.
 
-Si toutefois on a vraiment besoin de donner certaines informations du jwt au client (dans le corps de la réponse `JSON`), on peut alors adapter la classe `AuthenticationSuccessListener` et décoder le token de rafraîchissement qui est associé à la clé `refresh_token` dans `$data`.
+Si toutefois on a vraiment besoin de donner certaines informations du JWT au client (dans le corps de la réponse `JSON`), on peut alors adapter la classe `AuthenticationSuccessListener` et décoder le token de rafraîchissement qui est associé à la clé `refresh_token` dans `$data`.
 
 ### Utiliser les voters
 
@@ -1640,6 +1643,6 @@ Dans le paramètre `security` de chaque opération, il suffit de préciser la pe
 
 Nous avons terminé de construire notre `API` ! Elle est complète et prête à l'emploi pour être utilisée dans n'importe quelle application cliente (mobile, web, ...).
 
-Vous avez pu constater la puissance de l'outil `API Platform`. Nous ne sommes pas beaucoup sortis des classes **entités** et la majeure partie de la logique métier de l'application est spécifiée grâce aux attributs dans ces classes. Pour les traitements particuliers, nous pouvons utiliser les **state processors** (et les **state provider**). S'il y a vraiment besoin, il y toujours possibilité de définir des **controllers** avec des routes comme nous le faisions avant (par exemple, pour un **webhook**).
+Vous avez pu constater la puissance de l'outil `API Platform`. Nous ne sommes pas beaucoup sortis des classes **entités** et la majeure partie de la logique métier de l'application est spécifiée grâce aux attributs dans ces classes. Pour les traitements particuliers, nous pouvons utiliser les **state processors** (et les **state provider**). S'il y a vraiment besoin, il y a toujours possibilité de définir des **controllers** avec des routes comme nous le faisions avant (par exemple, pour un **webhook**).
 
 Dans la suite des TDs de web, vous allez apprendre à utiliser un framework JS client : `Vue.js`. Gardez donc cette API de côté, vous serez amenés à la réutiliser...
