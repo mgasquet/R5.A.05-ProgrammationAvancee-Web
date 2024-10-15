@@ -981,8 +981,8 @@ Pour rappel, afin de préciser les **groupes** dans lesquels un attribut s'appli
     ],
 )]
 class Exemple {
-    #[Assert\NotBlank(groups: [`exemple:create`])]
-    #[Assert\NotNull(groups: [`exemple:create`])]
+    #[Assert\NotBlank(groups: ["exemple:create"])]
+    #[Assert\NotNull(groups: ["exemple:create"])]
     private ?string $propriete;
 }
 ```
@@ -1035,7 +1035,7 @@ Par exemple :
 
 <div class="exercise">
 
-1. En utilisant deux nouveaux groupes : `utilisateur:create` et `utilisateur:update`, faites en sorte que le **login** soit ignoré dans le cadre d'une requête `PATCH` s'il est envoyé dans le **payload** de la requête. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actifs (`plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour, `login` seulement créé). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale.
+1. En utilisant deux nouveaux groupes : `utilisateur:create` et `utilisateur:update`, faites en sorte que le **login** soit ignoré dans le cadre d'une requête `PATCH` s'il est envoyé dans le **payload** de la requête. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actives (`plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour, `login` seulement créé). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale.
 
 2. Videz le cache. Tentez de mettre à jour le login d'un utilisateur (avec `PATCH`). Vous devriez constater que le login n'a pas été mis à jour !
 
@@ -1149,7 +1149,7 @@ Un attaquant pourrait par exemple envoyer des informations (par exemple, quand i
 
 Le danger vient donc du fait que n'importe quel script `javascript` puisse accéder et lire dans `localStorage`. Si le contenu du `JWT` n'est pas sensible en soi, le `JWT` en lui-même est utilisé pour vous identifier. Il faut donc absolument éviter de le stocker dans un endroit potentiellement vulnérable.
 
-Pour palier à ce problème, une nouvelle approche a été choisie : utiliser des **cookies sécurisés**. Plus précisent des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stoker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
+Pour pallier à ce problème, une nouvelle approche a été choisie : utiliser des **cookies sécurisés**. Plus précisent des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stoker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
 
 * **secure** : le cookie n'est envoyé que si la requête est chiffrée (**https**).
 * **httpOnly** : le cookie n'est pas accessible dans le **javascript**. Il sera envoyé automatiquement à chaque requête vers le serveur, mais à aucun moment un script pourra lire ses données. Cela élimine le risque de se le faire voler en cas d'attaque XSS.
@@ -1167,7 +1167,7 @@ Pour contrer cela, on paramètre l'attribut `Same-Site` du cookie, avec une des 
 
 Il reste important de noter que, même avec tout cela, on est toujours exposé "en partie" aux attaques `XSS` : si un script malveillant est présent sur le site et exécuté par l'utilisateur, l'attaquant ne pourra plus récupérer le token de l'utilisateur, mais pourra tout de même exécuter des actions sous son identité. On ne règle donc que la moitié du problème. Pour le reste, c'est au développeur de s'assurer de ne pas introduire ce genre de faille et de mettre en place des mécanismes de sécurité supplémentaires.
 
-Tout cela semble compliqué et fastidieux à configurer! Mais pas de panique, un simple paramétrage d'API Platform permet de générer et placer un cookie **secure**, **htppOnly** avec l'attribut **SameSite: Lax** dans la réponse de la requête d'authentification. Par défaut, le token sera alors supprimé du **corps** (`JSON`) de la réponse.
+Tout cela semble compliqué et fastidieux à configurer! Mais pas de panique, un simple paramétrage d'API Platform permet de générer et placer un cookie **secure**, **httpOnly** avec l'attribut **SameSite: Lax** dans la réponse de la requête d'authentification. Par défaut, le token sera alors supprimé du **corps** (`JSON`) de la réponse.
 
 Pour cela, il faut modifier le fichier `config/packages/lexik_jwt_authentication.yaml` en ajoutant les sections suivantes :
 
