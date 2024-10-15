@@ -103,17 +103,17 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
 5. Ouvrez le fichier `config/packages/api_plaform.yaml` et éditez-le ainsi :
 
-    ```yaml
-    api_platform:
-        title: The Feed API
-        version: 1.0.0
-        defaults:
-            cache_headers:
-                vary: ['Content-Type', 'Authorization', 'Origin']
-            formats:
-                jsonld: ['application/ld+json']
-                json: ['application/json']
-    ```
+   ```yaml
+   api_platform:
+       title: The Feed API
+       version: 1.0.0
+       defaults:
+           cache_headers:
+               vary: ['Content-Type', 'Authorization', 'Origin']
+           formats:
+               jsonld: ['application/ld+json']
+               json: ['application/json']
+   ```
 
     Les deux options dans `formats` vont nous permettre d'utiliser deux formats pour la lecture et l'écriture de données : `json` (que vous connaissez bien) mais aussi un format plus évolué, le `ld+json`.
 
@@ -866,7 +866,7 @@ class MonStateProcessor implements ProcessorInterface {
     {
         //$data est l'entité qu'on manipule (par exemple, une Publication, un Utilisateur...)
         //$operation est l'opération exécutée (GET, POST, ...)
-        //$uriVariables contient les éventuelles variables paramétrés dans le chemin de la route
+        //$uriVariables contient les éventuelles variables paramétrées dans le chemin de la route
 
         //On retourne la donnée après modification
         return $data;
@@ -941,7 +941,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 3. Dans votre classe `Utilisateur`, décommentez la propriété `password`, ses getters/setters ainsi que la déclaration d'implémentation de l'interface `PasswordAuthenticatedUserInterface`. Faites en sorte qu'il soit impossible de lire et d'écrire cette propriété (au niveau de l'API). Il faut aussi décommenter dans `UtilisateurRepository` la déclaration de l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la méthode `upgradePassword`.
 
-4. Ajoutez une propriété `$plainPassword` de type `?string` à la classe `Utilisateur` (ainsi que ses getters/setters). Pour le `getter`, précisez bien le type de retour `?string` (pour autoriser les valeurs nulles). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété (sous forme d'attributs). N'oubliez pas d'importer les classes correspondantes. Aussi, en utilisant un autre attribut (provenant d'API Platform), faites en sorte que cette propriété ne puisse jamais pouvoir être lue par les utilisateurs (jamais affichée/normalisée quand on renvoie une ressource type utilisateur).
+4. Ajoutez une propriété `$plainPassword` de type `?string` à la classe `Utilisateur` (ainsi que ses getters/setters). Pour le `getter`, précisez bien le type de retour `?string` (pour autoriser les valeurs nulles). Cet attribut ne doit pas être stocké dans la base ! Reprenez les assertions que vous utilisiez dans la classe `UtilisateurType` du projet précédent pour les appliquer sur cette propriété (sous forme d'attributs). N'oubliez pas d'importer les classes correspondantes. Aussi, en utilisant un autre attribut (provenant d'API Platform), faites en sorte que cette propriété ne puisse jamais être lue par les utilisateurs (jamais affichée/normalisée quand on renvoie une ressource type utilisateur).
 
 5. Modifiez la méthode `eraseCredentials` afin que celle-ci mette `plainPassword` à **null**. En effet, par mesure de sécurité, comme cette propriété est stockée dans la classe utilisateur et non pas dans un formulaire, elle va être enregistré dans la session. Il faut donc posséder une méthode afin de "vider" cette information sensible après l'avoir utilisé.
 
@@ -961,9 +961,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 11. Modifiez votre `UtilisateurProcessor` de manière à ne pas tenter de hacher le mot de passe s'il n'est pas transmis (s'il est **null**, donc). Cela va nous permettre d'utiliser le même processeur pour la création et la mise à jour (mais on aurait aussi pu en faire deux distincts). Lors de la mise à jour du profil, un utilisateur ne souhaite pas forcément modifier son mot de passe, mais s'il le fait, il faut bien le ré-hacher. Affectez donc aussi `UtilisateurProcessor` comme processeur de l'opération `PATCH`.
 
-12. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien, c'est-à dire que quand le mot de passe est précisé, il est bien re-haché.
-
-    Attention, pour rappel, il faut utiliser un nouveau champ **Content-Type** `application/merge-patch+json` dans les `Headers` de la requête pour faire un `PATCH`. Quant au `payload`, on met un *JSON* classique dans *Body* > *Raw (JSON)*.
+12. Videz le cache puis vérifiez que la mise à jour de l'utilisateur fonctionne bien quand on donne un nouveau mot de passe, qui est donc re-haché.
 
 </div>
 
