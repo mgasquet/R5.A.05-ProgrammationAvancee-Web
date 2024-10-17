@@ -7,7 +7,7 @@ lang: fr
 
 ## Sujet - API de gestion d'événements
 
-Ce projet se fera avec le même **trinôme** que le premier projet et s'intéressera au développement d'une **API REST** de **gestions d'événements**.
+Ce projet se fera avec en **trinôme** (vous n'êtes pas obligé de garder la même équipe que pour le premier projet) et s'intéressera au développement d'une **API REST** de **gestions d'événements**.
 
 L'objectif est de développer cette API à l'aide de **Symfony** et **API Platform** (utilisé lors du [TD4]({{site.baseurl}}/tutorials/tutorial4)).
 
