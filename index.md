@@ -38,3 +38,4 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
 ## Projets
 
 1. Projet 1 (Symfony) : [Annuaire en ligne](tutorials/projet1)
+2. Projet 2 (API Platform, Symfony) : [API REST de gestion d'événements](tutorials/projet2)
