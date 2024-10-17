@@ -15,7 +15,7 @@ Attention, ici, on vous demande seulement une **API**, donc, **sans interface gr
 
 Voici les détails de l'**API REST** qui devra être développée :
 
-* L'API doit permettre gérer des **événements** d'un certain **thème** (un **domaine d'événements** que l'équipe choisira) organisés par différents utilisateurs.
+* L'API doit permettre de gérer des **événements** d'un certain **thème** (un **domaine d'événements** que l'équipe choisira) organisés par différents utilisateurs.
 
 * L'API permet à des utilisateurs de s'**inscrire**, de s'**authentifier**, de **modifier** les informations de leurs comptes, de supprimer leur compte, etc.
 
