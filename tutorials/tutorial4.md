@@ -1236,10 +1236,10 @@ class AuthenticationSuccessListener
         $data = $event->getData();
         $user = $event->getUser();
 
-        //Insertion de données de l'utilisateur ici - A compléter
+        //Insertion de données de l'utilisateur ici - À compléter
         $data['attribut'] = $user->getXXX();
         
-        //Récupération des donnés contenues de le JWT - A compléter
+        //Récupération des données contenues de le JWT - À compléter
         //On décode le jwt qui est déjà encodé, à ce stade, afin de récupérer les informations qui nous intéressent.
         $jwt = $this->jwtManager->parse($data['token']);
         $data['token_exp'] = $jwt['???'];
@@ -1552,7 +1552,7 @@ gesdinet_jwt_refresh_token:
     refresh_token_class: App\Entity\RefreshToken
     #Pour que la durée de vie du token de rafraîchissement soit réinitialisée (à son maximum) après chaque utilisation
     ttl_update: true
-    #Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de la renvoyé dans le corps de la réponse.
+    #Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de le renvoyer dans le corps de la réponse.
     cookie:
         enabled: true
     #Le firewall (section définie dans security.yaml) paramétrant notre système de déconnexion / d'invalidation de token.
