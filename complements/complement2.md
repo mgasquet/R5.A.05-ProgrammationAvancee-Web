@@ -148,42 +148,48 @@ POST https://localhost/api/villes
     "nom": "Nîmes",
     "codePostal": 30000
 }
+```
 
 Renvoi :
-
+```
 {
     "@id": "/api/villes/1"
     "id": 1,
     "nom": "Nîmes",
     "codePostal": 30000
 }
+```
 
+```
 POST https://localhost/api/villes
 {
     "nom": "Montpellier",
     "codePostal": 34000
 }
+```
 
 Renvoi :
-
+```
 {
     "@id": "/api/villes/2"
     "id": 2,
     "nom": "Montpellier",
     "codePostal": 34000
 }
+```
 
 Création d'un joueur qui habite à Nîmes :
-
+```
 POST https://localhost/api/joueurs
 {
     "nom": "Smith",
     "prenom": "John",
     "ville": "/api/villes/1"
 }
+```
 
 Renvoi :
-
+```
 {
     "@id": "/api/joueurs/1"
     "id": 1,
@@ -192,16 +198,18 @@ Renvoi :
     "ville": "/api/villes/1",
     "resultats" : []
 }
+```
 
 On ne veut plus connaître la ville de résidence de ce joueur :
-
+```
 PATCH https://localhost/api/joueurs/1
 {
     "ville": null
 }
+```
 
-Changement de ville : 
-
+Changement de ville :
+```
 PATCH https://localhost/api/joueurs/1
 {
     "ville": "/api/villes/2"
@@ -248,8 +256,6 @@ class Ville
 
 ```
 GET https://localhost/api/joueurs/1
-
-Renvoi :
 
 {
     "@id": "/api/joueurs/1"
@@ -301,8 +307,6 @@ class Ville
 
 ```
 GET https://localhost/api/joueurs/1/ville
-
-Renvoi :
 
 {
     "@id": "/api/joueurs/1/ville",
@@ -390,31 +394,35 @@ class Resultat
 }
 ```
 
-```
-Ajout d'un résultat au joueur 1 :
 
+Ajout d'un résultat au joueur 1 :
+```
 POST https://localhost/api/joueurs/1/resultats
 {
     "nombrePoints": 15
 }
+```
 
 Récupération de tous les résultats du joueur 1 :
-
+```
 GET https://localhost/api/joueurs/1/resultats
+```
 
 Récupération du résultat 1, lié au joueur 1 :
-
+```
 GET https://localhost/api/joueurs/1/resultats/1
+```
 
 Mise à jour du résultat 1, lié au joueur 1 :
-
+```
 PATCH https://localhost/api/joueurs/1/resultats/1
 {
     "nombrePoints": 23
 }
+```
 
-Supression du résultat 1, lié au joueur 1 :
-
+Suppression du résultat 1, lié au joueur 1 :
+```
 DELETE https://localhost/api/joueurs/1/resultats/1
 ```
 
@@ -490,11 +498,329 @@ class Resultat
 
 ## Les relations un-un (OneToOne)
 
+Dans la pratique, les relations un-un (**OneToOne**) sont assez peu utilisées, car les 
+informations correspondantes peuvent simplement être mises à disposition dans une seule des deux entités.
 
+Cependant, elle peut éventuellement être utilisée dans le cas d'informations qui sont renseignées peu 
+fréquemment, afin éviter d'avoir un ensemble d'attributs **null** dans l'entité propriétaire. Ou bien s'il n'y a
+pas de relations fortes (composition forte) entre les deux entités.
+
+Ces relations se gèrent globalement comme les relations **un-plusieurs** que nous avons abordé lors du point précédent. La seule
+différence est qu'il n'y a pas de collections à gérer. On aura une clé étrangère dans une des deux entités.
+
+Cependant, le choix des **cardinalités** minimum va potentiellement influer sur certains choix.
+
+Prenons l'exemple suivant : Un **joueur** peut posséder un **casier** qui a un identifiant, une taille et une couleur :
+
+* Si le joueur possède entre 0 et 1 casier et qu'un casier possède entre 0 et 1 propriétaire : 
+
+    * Il existe des joueurs sans casier et des casiers sans propriétaire. Dans ce cas, la ressource **casier** peut exister indépendamment et posséder ses propres routes.
+
+    * On a des routes `/casiers`, `/casier/{idCasier}`, etc. 
+    
+    * La suppression d'un joueur n'entraîne pas la suppression de son casier (s'il en a un), mais on désaffecte simplement le propriétaire.
+
+* Si le joueur possède obligatoirement un casier, mais qu'un casier possède entre 0 et 1 propriétaire :
+
+    * Le casier reste indépendant, mais on doit obligatoirement affecter un casier lors de la création d'un joueur (il faut donc qu'il en existe un avant, sans proprietaire).
+
+    * La suppression du joueur n'entraîne toujours pas la suppression du casier.
+
+* Si le joueur possède optionnellement un casier, mais qu'un casier possède obligatoirement un propriétaire :
+
+    * Le casier n'est plus vraiment indépendant (on doit toujours avoir un propriétaire), et va plutôt être lié fortement au joueur (composition forte).
+
+    * Le **casier** va probablement plutôt être une **sous-ressource** de **joueur** (comme pour les **résultat**).
+
+    * On aura des routes `/joueurs/{idJoueur}/casiers` et `/joueurs/{idJoueur}/casiers/{idCasier}`.
+
+Dans notre modélisation, nous allons faire le choix qu'un joueur possède optionnellement un casier et qu'un casier possède optionnellement un joueur.
+
+Le casier est donc indépendant : cela se traduit par le fait que la clé étrangère peut être **nulle**.
+
+<div style="margin:auto;width:75%">
+ ![modele e/a 1]({{site.baseurl}}/assets/complement2/ModeleEA2.PNG)
+</div>
+
+Ce qui donnerait le schéma relationnel suivant :
+
+* **Joueur**(<u>id</u>, nom, prenom, #idVille)
+* **Casier**(<u>id</u>, taille, couleur, #idJoueurProprietaire)
+
+Ou bien :
+
+* **Joueur**(<u>id</u>, nom, prenom, #idVille, #idCasier)
+* **Casier**(<u>id</u>, taille, couleur)
+
+Si on souhaite accéder à la fois au propriétaire d'un casier et au casier d'un joueur, en conception, on a affaire à 
+une relation **bi-directionnelle** et dans le cas de relations `OneToOne`, doctrine conseille généralement d'éviter cela quand c'est possible.
+
+Dans notre cas, nous allons décider de tout de même vouloir connaître le propriétaire d'un casier 
+(pour savoir s'il est affecté ou non) ainsi que le casier d'un joueur.
+
+<div style="margin:auto;width:75%">
+ ![modele e/a 1]({{site.baseurl}}/assets/complement2/DiagrammeClasses2.PNG)
+</div>
+
+Ce qui donnera, du côté de l'application :
+
+```php
+#[ORM\Entity(repositoryClass: CasierRepository::class)]
+#[ApiResource(
+    normalizationContext: ["groups" => ['casier:read']],
+)]
+class Casier
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups(['casier:read', 'joueur:read'])]
+    private ?int $id = null;
+
+    #[ORM\Column]
+    #[Groups(['casier:read', 'joueur:read'])]
+    private ?int $taille = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['casier:read', 'joueur:read'])]
+    private ?string $couleur = null;
+
+    #[ORM\OneToOne(inversedBy: 'casier', cascade: ['persist', 'remove'])]
+    #[Groups(['casier:read'])]
+    private ?Joueur $proprietaire = null;
+
+    //Methodes...
+}
+
+#[ORM\Entity(repositoryClass: JoueurRepository::class)]
+#[ApiResource(
+    normalizationContext: ["groups" => ['joueur:read']],
+    denormalizationContext: ["groups" => ['joueur:write', 'resultat:write']]
+)]
+class Joueur
+{
+    ...
+
+    #[ORM\OneToOne(mappedBy: 'proprietaire', cascade: ['persist', 'remove'])]
+    #[Groups(['joueur:read', 'joueur:write'])]
+    private ?Casier $casier = null;
+}
+```
+
+Bref, en conclusion, l'utilisation des relations **un-un** reste assez rare et nous utiliserons beaucoup plus les 
+relations **un-plusieurs** et **plusieurs-plusieurs**.
 
 ## Les relations plusieurs-plusieurs (ManyToMany), associations porteuses et n-aire
 
-### Utilisation d'une ressource dédiée
+La gestion des relations types **plusieurs-plusieurs** (**binaires**), ou qui impliquent plus de deux entités
+(**ternaires**, etc), incluant ou non des données (**association porteuse**) peut s'avérer compliquée de bien des manières !
+
+Pour illustrer cela, nous allons faire évoluter notre modélisation en incluant des **clubs** auxquels peut s'inscrire un joueur.
+Un joueur peut s'inscrire à différents **clubs** et un **club** peut possèder plusieurs **membres**.
+
+On va modéliser cela avec une association binaire **plusieurs-plusieurs** (`ManyToMany`) simple :
+
+<div style="margin:auto;width:75%">
+ ![modele e/a 1]({{site.baseurl}}/assets/complement2/ModeleEA3.PNG)
+</div>
+
+Ce qui donnerait alors le schéma relationnel suivant :
+
+* **Joueur**(<u>id</u>, nom, prenom, #idVille)
+* **Club**(<u>id</u>, nom)
+* **Inscription**(<u>#idJoueur</u>, <u>#idClub</u>)
+
+En effet, lors d'association n-aire, on crée une table dont la clé primaire est composée de clés étrangères référençant 
+les entités qui participent à l'association.
+
+Au niveau de la **conception**, on peut choisir d'avoir des **collections** d'un seul côté 
+(liste de **clubs** dans **Joueur** ou bien liste de **joueurs** dans **Club**) ou bien des deux côtés (bi-directionnelle).
+
+En conception, on évite généralement d'utiliser des **bi-directionnelles** quand cela est possible, car elles peuvent être compliquées
+à maintenir. Cependant, **Doctrine** gère très bien cela de façon automatique sans intervention du développeur. On peut donc les utiliser
+sans trop de problèmes (c'est ce que nous allons faire ici) :
+
+<div style="margin:auto;width:75%">
+ ![modele e/a 1]({{site.baseurl}}/assets/complement2/DiagrammeClasses3.PNG)
+</div>
+
+Ce qui donnera, du côté de l'application :
+
+```php
+#[ORM\Entity(repositoryClass: ClubRepository::class)]
+#[ApiResource(
+    normalizationContext: ["groups" => ['club:read']],
+    denormalizationContext: ["groups" => ['club:write']]
+)]
+class Club
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['club:read', 'joueur:read', 'club:write'])]
+    private ?string $nom = null;
+
+    /**
+     * @var Collection<int, Joueur>
+     */
+    #[ORM\ManyToMany(targetEntity: Joueur::class, inversedBy: 'clubs')]
+    #[Groups(['club:read', 'joueur:read', 'club:write'])]
+    private Collection $membres;
+
+    //Methodes...
+}
+
+#[ORM\Entity(repositoryClass: JoueurRepository::class)]
+#[ApiResource(
+    normalizationContext: ["groups" => ['joueur:read']],
+    denormalizationContext: ["groups" => ['joueur:write', 'resultat:write']]
+)]
+class Joueur
+{
+    ...
+
+    /**
+     * @var Collection<int, Club>
+     */
+    #[ORM\ManyToMany(targetEntity: Club::class, mappedBy: 'membres')]
+    #[Groups(['joueur:read', 'joueur:write'])]
+    private Collection $clubs;
+
+    ...
+}
+```
+
+Grâce à l'utilisation de `ManyToMany`, doctrine va automatiquement créer (lors de la migration) 
+une table correspondant à notre table `Inscription` du schéma relationnel :
+
+**Inscription**(<u>#idJoueur</u>, <u>#idClub</u>)
+
+Mais quels sont ces fameux problèmes que nous allons rencontrer ?
+
+En effet, actuellement, avec cette modélisation, il est tout à fait possible :
+
+* De créer un joueur et de fournir (éventuellement) la liste des clubs auxquels il est inscrit :
+
+    ```
+    POST https://localhost/api/joueurs
+    {
+        "nom": "Tarembois",
+        "prenom": "Guy",
+        "ville": "/api/villes/1",
+        "clubs" : [
+            "/api/clubs/1",
+            "/api/clubs/2"
+        ]
+    }
+    ```
+
+* De créer un club et de fournir (éventuellement) la liste des joueurs membres :
+
+    ```
+    POST https://localhost/api/clubs
+    {
+        "nom": "Club Sandwich",
+        "membres" : [
+            "/api/joueurs/2",
+            "/api/joueurs/7",
+            "/api/joueurs/13",
+        ]
+    }
+    ```
+
+* De modifier **complètement** la liste des clubs auxquels un joueur est inscrit :
+
+    ```
+    PATCH https://localhost/api/joueurs/17
+    {
+        "clubs" : [
+            "/api/clubs/5",
+            "/api/clubs/7",
+            "/api/clubs/33",
+        ]
+    }
+    ```
+
+* De modifier **complètement** la liste des joueurs membres d'un club.
+
+    ```
+    PATCH https://localhost/api/clubs/35
+    {
+        "clubs" : [
+            "/api/joueurs/9",
+            "/api/joueurs/13",
+        ]
+    }
+    ```
+
+Mais comment faire pour associer (inscrire) simplement **un joueur** à **un club** ? Ou pour supprimer cette association (désinscription) ?
+
+Comme montré dans l'exemple avec **PATCH**, cela est techniquement possible, mais il faut renvoyer à chaque fois **la liste complète** 
+des clubs (ou des membres). Cela est très contraignant (et lourd).
+
+De plus, ici, nous avons affaire à une association binaire simple.
+Gérer ces associations dans des cas plus évolués semble complexe (n-aire avec n > 2 et/ou porteuse de données).
+
+Dans l'idéal, il faudrait trouver un moyen simple de créer ou supprimer une **inscription** (d'un **joueur** à un **club**) sans avoir à 
+effectuer un `PATCH` du joueur ou du club. C'est la problématique que nous allons essayer de résoudre par la suite.
+
+Il va d'abord falloir faire des choix quant à la **méthode** utilisée afin d'implémenter cette fonctionnalité :
+
+* Pour les relations **binaires plusieurs-plusieurs** simples (non porteuses), on peut conserver l'utilisation de `ManyToMany` et utiliser une "ressource virtuelle" (non stockée). Nous en reparlerons.
+
+* Sinon, pour les relations **binaires** et autres cas (n-aire plus complexe, porteuse...) on peut ne pas utiliser `ManyToMany` :
+
+    * Dans notre exemple, créer une entité **Inscription** dont avec une [clé composite](https://www.doctrine-project.org/projects/doctrine-orm/en/3.3/tutorials/composite-primary-keys.html) liée à la fois à un **joueur** et un **club** :
+
+        * En base de données, cela génèrera une table **Inscription**(<u>#idJoueur</u>, <u>#idClub</u>) comme celle présentée dans le schéma relationnel.
+
+        * Notre entité `Inscription` à deux relations `ManyToOne` : une vers le `Joueur` et l'autre vers `Club`. 
+        
+        * Du côté de `Joueur` et `Club`, on a alors des **collections** d'entités `Inscription` (on supprime les relations `ManyToOne` entre **Club** et **Joueur**).
+
+        * On peut créer, supprimer ou mettre à jour des entités **Inscription** en utilisant les identifiants du joueur et du club concernés.
+
+        * Cette méthode respecte la modélisation initiale du modèle E/A.
+
+        * La contrainte d'unicité est naturellement gérée au travers de la clé (pas deux fois la même inscription d'un joueur à un club).
+
+        * Dans le pratique, même si Doctrine gère les **clés composites**, [il est déconseillé de les utiliser](https://www.doctrine-project.org/projects/doctrine-orm/en/3.3/reference/best-practices.html#avoid-composite-keys) par soucis de performance.
+
+        * La mise en place d'une telle méthode est difficile au travers d'API Platform (beaucoup de code à écrire).
+
+    * Ou alors, toujours dans notre exemple, créer une entité **Inscription** avec un **identifiant** (clé) numérique **simple** et deux attributs **joueur** et **club** (clés étrangères, mais ne font pas partie de la clé primaire).
+
+        * En base de données, cela génèrera une table **Inscription**(<u>idInscription</u>, #idJoueur, #idClub) correspondant à une **entité coordinatrice**.
+
+        * Notre entité `Inscription` à deux relations `ManyToOne` : une vers le `Joueur` et l'autre vers `Club`.
+
+        * Du côté de `Joueur` et `Club`, on a alors des **collections** d'entités `Inscription` (on supprime les relations `ManyToOne` entre **Club** et **Joueur**).
+
+        * `Inscription` est une ressource à part entière et possède **son propre identifiant**.
+
+        * On peut créer, supprimer ou mettre à jour des entités **Inscription** en utilisant leurs identifiants propres.
+
+        * Cette méthode ne respecte pas vraiment la modélisation initiale du modèle E/A, car elle utilise une **entité coordinatrice** au lieu d'une **association binaire**.
+
+        * Il faut explicitement gérer la **contrainte d'unicité** (et **NOT NULL**) sur le couple **(#idJoueur, #idClub)** (très facile avec **Symfony** et **Doctrine**).
+
+        * Solution la plus flexible en pratique, et facilement prise en charge par **Api Platform**, sans causer de soucis de performances avec **Doctrine**.
+
+        * De manière générale, l'utilisation de clés primaires simples (et donc de classes coordinatrices où la contrainte d'unicité est explicitement gérée) à la place d'associations "plusieurs-plusieurs" est recommandée par une partie des développeurs.
+
+En bref, même si la solution de la **clé composite** semble en adéquation avec le modèle E/A, il est assez déconseillé de choisir cette voie.
+
+Pour la suite, nous allons donc favoriser l'utilisation de la dernière option : création d'une entité et d'une ressource `Inscription` 
+dédiée qui possède ses propres identifiants. C'est la solution la plus flexible et adaptable dans toutes les situations.
+
+Nous verrons aussi l'utilisation d'une "ressource virtuelle" non stockée (seulement pour gérer les cas de `ManyToMany` simples).
+
+### Utilisation d'une entité et ressource dédiées
+
+
 
 ### Choix de la route
 
@@ -504,6 +830,8 @@ class Resultat
 
 #### Route composée avec les identifiants
 
-### Utilisation d'une ressource virtuelle
+### Utilisation d'une ressource virtuelle pour les Many-To-Many simples
+
+### Évolution de la ressource
 
 ## Conclusion
