@@ -39,7 +39,7 @@ Au niveau du **code**, on pourra avoir un attribut de type `A` dans `B` et éven
 
 Pour commencer, nous allons définir un modèle E/A de base (phase d'analayse) et l'enrichir au fur et à mesure des exemples :
 
-<div style="margin:auto;width:75%">
+<div>
  ![modele e/a 1]({{site.baseurl}}/assets/complement2/ModeleEA1.PNG)
 </div>
 
@@ -51,7 +51,7 @@ Ce qui donnerait le schéma relationnel suivant :
 
 Enfin, en conception, après certains choix, on obtiendrait alors le diagramme de classes suivant :
 
-<div style="margin:auto;width:75%">
+<div>
  ![diagramme de classes 1]({{site.baseurl}}/assets/complement2/DiagrammeClasses1.PNG)
 </div>
 
@@ -135,6 +135,11 @@ class Resultat
     //Methodes...
 }
 ```
+
+En conception, on évite généralement d'utiliser des **bi-directionnelles** quand cela est possible, car elles peuvent être compliquées
+à maintenir. Cependant, **Doctrine** gère très bien cela de façon automatique sans intervention du développeur. On peut donc les utiliser
+sans trop de problèmes. Nous n'allons pas le faire ici : un joueur connaît sa ville, mais la ville ne connaît pas (directement) la liste de ses
+habitants. On pourra toutefois rajouter une route afin d'obtenir cette information, plus tard.
 
 ### Ressource à part entière
 
@@ -314,6 +319,26 @@ GET https://localhost/api/joueurs/1/ville
     "id": 2,
     "nom": "Montpellier",
     "codePostal": 34000
+}
+```
+
+Ou bien la liste des habitants d'une ville :
+
+```php
+#[ApiResource(
+    uriTemplate: '/villes/{id}/joueurs',
+    operations: [new GetCollection()],
+    uriVariables: [
+        'id' => new Link(
+            fromProperty: 'ville',
+            fromClass: Ville::class
+        )
+    ],
+    normalizationContext: ["groups" => ['joueur:read']]
+)]
+class Joueur
+{
+    ...
 }
 ```
 
@@ -538,7 +563,7 @@ Dans notre modélisation, nous allons faire le choix qu'un joueur possède optio
 
 Le casier est donc indépendant : cela se traduit par le fait que la clé étrangère peut être **nulle**.
 
-<div style="margin:auto;width:75%">
+<div">
  ![modele e/a 1]({{site.baseurl}}/assets/complement2/ModeleEA2.PNG)
 </div>
 
@@ -558,7 +583,7 @@ une relation **bi-directionnelle** et dans le cas de relations `OneToOne`, doctr
 Dans notre cas, nous allons décider de tout de même vouloir connaître le propriétaire d'un casier 
 (pour savoir s'il est affecté ou non) ainsi que le casier d'un joueur.
 
-<div style="margin:auto;width:75%">
+<div>
  ![modele e/a 1]({{site.baseurl}}/assets/complement2/DiagrammeClasses2.PNG)
 </div>
 
@@ -620,7 +645,7 @@ Un joueur peut s'inscrire à différents **clubs** et un **club** peut possèder
 
 On va modéliser cela avec une association binaire **plusieurs-plusieurs** (`ManyToMany`) simple :
 
-<div style="margin:auto;width:75%">
+<div>
  ![modele e/a 1]({{site.baseurl}}/assets/complement2/ModeleEA3.PNG)
 </div>
 
@@ -636,11 +661,10 @@ les entités qui participent à l'association.
 Au niveau de la **conception**, on peut choisir d'avoir des **collections** d'un seul côté 
 (liste de **clubs** dans **Joueur** ou bien liste de **joueurs** dans **Club**) ou bien des deux côtés (bi-directionnelle).
 
-En conception, on évite généralement d'utiliser des **bi-directionnelles** quand cela est possible, car elles peuvent être compliquées
-à maintenir. Cependant, **Doctrine** gère très bien cela de façon automatique sans intervention du développeur. On peut donc les utiliser
-sans trop de problèmes (c'est ce que nous allons faire ici) :
+Comme **Doctrine** gère correctement les propriétés **bi-directionnelles**, nous allons décider d'avoir à la fois avoir 
+une collection listant les clubs d'un joueur (dans `Joueur`) et une autre collection listant les membres d'un club (dans `Club`).
 
-<div style="margin:auto;width:75%">
+<div>
  ![modele e/a 1]({{site.baseurl}}/assets/complement2/DiagrammeClasses3.PNG)
 </div>
 
@@ -680,6 +704,19 @@ class Club
 )]
 class Joueur
 {
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups(['joueur:read', 'club:read'])]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['joueur:read', 'joueur:write', 'club:read'])]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['joueur:read', 'joueur:write', 'club:read'])]
+    private ?string $prenom = null;
+
     ...
 
     /**
@@ -692,6 +729,9 @@ class Joueur
     ...
 }
 ```
+
+Et on peut bien sûr créer une route spéciale pour lister les clubs d'un joueur et 
+inversement (`/joueurs/{id}/clubs` et/ou `/clubs/{id}/membres`).
 
 Grâce à l'utilisation de `ManyToMany`, doctrine va automatiquement créer (lors de la migration) 
 une table correspondant à notre table `Inscription` du schéma relationnel :
@@ -820,15 +860,148 @@ Nous verrons aussi l'utilisation d'une "ressource virtuelle" non stockée (seule
 
 ### Utilisation d'une entité et ressource dédiées
 
+Dans la logique d'utiliser une **entité dédiée**, nous allons adapter notre **modèle E/A** en conséquence :
 
+<div>
+ ![modele e/a 1]({{site.baseurl}}/assets/complement2/ModeleEA4.PNG)
+</div>
+
+Ce qui donnerait alors le schéma relationnel suivant :
+
+* **Joueur**(<u>id</u>, nom, prenom, #idVille)
+* **Club**(<u>id</u>, nom)
+* **Inscription**(<u>id</u>, #idJoueur, #idClub)
+
+On constate bien que la contrainte d'unicité sur le couple de clés étrangères n'est donc plus gérée naturellement (car plus dans la clé primaire), il faudra la préciser nous-même.
+Il faudra aussi spécifier que `#idJoueur` et `#idClub` ne peuvent pas être **nuls** (tout cela peut se faire à travers **Symfony** et **Doctrine**).
+
+En termes de **conception**, on adapte aussi le **diagramme de classes de conception** en conséquence :
+
+<div>
+ ![modele e/a 1]({{site.baseurl}}/assets/complement2/DiagrammeClasses4.PNG)
+</div>
+
+À noter que la bidirectionnelle est facultative. 
+On pourrait éventuellement se passer des collections **inscirptions** d'un côté ou même des deux (on pourra toujours créer des routes dédiées pour trouver l'information).
+
+La mise en place de cette solution se fait en plusieurs étapes :
+
+1. On n'associe pas `Joueur` et `Club` avec une `ManyToMany`.
+
+2. À la place, on crée une nouvelle entité `Inscription` composée :
+
+    * D'un identifiant (généré automatiquement quand on crée l'entité avec la commande `make:entity`).
+
+    * D'une relation `ManyToOne` avec `Joueur` qui **ne doit pas pouvoir être nulle** qui peut être éventuellement bidirectionnelle (collection d'inscriptions dans `Joueur`).
+
+    * D'une relation `ManyToOne` avec `Club` qui **ne doit pas pouvoir être nulle** qui peut être éventuellement bidirectionnelle (collection d'inscriptions dans `Club`).
+
+3. On ajoute une **contrainte d'unicité pour la base de données** sur le couple de clés étrangères référençant `Joueur` et `Club` grâce à l'attribut `#[ORM\UniqueConstraint]`.
+
+4. On ajoute une **contrainte d'unicité pour l'application** sur le couple d'attributs `joueur` et `club` grâce à l'attribut `#[ORM\UniqueEntity]`.
+
+5. On met à jour la structure de la base de données avec doctrine.
+
+Si l'entité évolue (porteuse de données, ternaire, etc...) il suffira de rajouter de nouveaux attributs et/ou d'adapter les contraintes d'unicité.
+
+Tout cela donnera, du côté de l'application :
+
+```php
+#[ORM\Entity(repositoryClass: InscriptionRepository::class)]
+#[UniqueEntity(fields: ['joueur', 'club'], message: "Un joueur ne peut pas être inscrit plus d'une fois au même club.")]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_JOUEUR_CLUB', fields: ['joueur', 'club'])]
+#[ApiResource]
+class Inscription
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne(inversedBy: 'inscriptions')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['club:read'])]
+    private ?Joueur $joueur = null;
+
+    #[ORM\ManyToOne(inversedBy: 'inscriptions')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['joueur:read'])]
+    private ?Club $club = null;
+}
+
+#[ORM\Entity(repositoryClass: JoueurRepository::class)]
+#[ApiResource(
+    normalizationContext: ["groups" => ['joueur:read']],
+    denormalizationContext: ["groups" => ['joueur:write', 'resultat:write']]
+)]
+class Joueur
+{
+#[ORM\Id]
+
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups(['joueur:read', 'club:read'])]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['joueur:read', 'joueur:write', 'club:read'])]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['joueur:read', 'joueur:write', 'club:read'])]
+    private ?string $prenom = null;
+
+    ...
+
+    /**
+     * @var Collection<int, Inscription>
+     */
+    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'joueur', orphanRemoval: true)]
+    #[Groups(['joueur:read'])]
+    private Collection $inscriptions;
+}
+
+#[ORM\Entity(repositoryClass: ClubRepository::class)]
+#[ApiResource(
+    normalizationContext: ["groups" => ['club:read']],
+    denormalizationContext: ["groups" => ['club:write']]
+)]
+class Club
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups(['club:read', 'joueur:read'])]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['club:read', 'club:write', 'joueur:read'])]
+    private ?string $nom = null;
+
+    /**
+     * @var Collection<int, Inscription>
+     */
+    #[ORM\OneToMany(targetEntity: Inscription::class, mappedBy: 'club', orphanRemoval: true)]
+    #[Groups(['club:read'])]
+    private Collection $inscriptions;
+}
+```
+
+Attention, comme montré dans cet exemple, si on souhaite afficher des données sur les clubs/joueurs (autre que l'IRI) 
+quand on lit un club ou un joueur, il faut bien gérer les **groupes de sérialisation** (pour la lecture/normalisation). 
+
+Il faut faire attention de ne pas boucler (joueur affiche club qui affiche ses membres, qui affiche les clubs des 
+membres, qui affichent leurs membres...). Ici, quand on récupère un **joueur**, les données des **clubs** où il est inscrit 
+seront lues, mais pas la liste de ses membres de ses clubs. Et quand on récupère un **club**, la liste des joueurs **membres** 
+inscrits est lue, mais pas leurs **clubs**.
 
 ### Choix de la route
 
-#### Route par défaut
+#### Routes par défaut
 
-#### Route avec sous-ressource
+#### Routes avec sous-ressource
 
-#### Route composée avec les identifiants
+#### Routes composée avec les identifiants
 
 ### Utilisation d'une ressource virtuelle pour les Many-To-Many simples
 
