@@ -1034,6 +1034,9 @@ class InscriptionProcessor implements ProcessorInterface
         if(!$club) {
             throw new NotFoundHttpException("Club inexistant.");
         }
+        if(!$data) {
+            $data = new Inscription();
+        }
         $data->setJoueur($joueur);
         $data->setClub($club);
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
@@ -1214,9 +1217,7 @@ class InscriptionProvider implements ProviderInterface
 
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        $idJoueur = $uriVariables["idJoueur"];
-        $idClub = $uriVariables["idClub"];
-        return $this->repository->find(["joueur" => $idJoueur, "club" => $idClub]);
+        return $this->repository->find(["joueur" => $uriVariables["idJoueur"], "club" => $uriVariables["idClub"]]);
     }
 }
 
