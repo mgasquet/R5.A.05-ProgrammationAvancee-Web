@@ -39,3 +39,13 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
 
 1. Projet 1 (Symfony) : [Annuaire en ligne](tutorials/projet1)
 2. Projet 2 (API Platform, Symfony) : [API REST de gestion d'événements](tutorials/projet2)
+
+## Compléments de TDs
+
+Quelques guides et tutoriels en complément des TDs.
+
+### API Platform
+
+1. [Complément 1 - Utilisation d'identifiants simples à la place des IRIs](complements/complement1)
+2. [Complément 2 - Gestion des relations entre les entités 1/2](complements/complement2)
+3. [Complément 3 - Gestion des relations entre les entités 2/2](complements/complement3)

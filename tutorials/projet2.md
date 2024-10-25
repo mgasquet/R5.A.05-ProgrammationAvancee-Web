@@ -52,7 +52,13 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 * En TD, nous avons abordé la génération automatique de **groupes de validation**. Il est possible de faire la même chose pour les [groupes de sérialisation](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-dynamically).
 
-* Dans certains cas, les relations **ManyToMany** demandent un traitement et des choix particuliers au niveau de l'API. Nous vous donnerons prochainement quelques ressources et exemples pour vous aider à ce niveau.
+* Divers compléments de TDs qui pourraient vous être utiles :
+
+    * [Complément 1 - Utilisation d'identifiants simples à la place des IRIs](complements/complement1)
+    * [Complément 2 - Gestion des relations entre les entités 1/2](complements/complement2)
+    * [Complément 3 - Gestion des relations entre les entités 2/2](complements/complement3)
+
+* Dans certains cas, les relations **ManyToMany** demandent un traitement et des choix particuliers au niveau de l'API. Afin d'apprendre à gérer ces relations adéquatement dans votre API, vous pouvez lire le [3ᵉ complément de TD](complements/complement3).
 
 ## Premier rendu
 
