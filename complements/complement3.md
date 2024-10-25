@@ -318,8 +318,7 @@ particulier, on peut coder et fournir son propre **StateProvider**
 
 * Un **StateProcessor** pour l'opération `PUT`. Pour rappel, un **StateProcessor** est une classe qui permet
 de traiter et modifier un objet lors d'opérations qui vont changer son état. Elle est donc utilisée dans le cadre 
-des opérations `POST`, `PUT` et `PATCH`. Dans le [TD4]({{site.baseurl}}/tutorials/tutorial4), nous en avions utilisé deux pour affecter automatiquement 
-l'auteur d'un message, mais aussi pour hacher le mot de passe de l'utilisateur.
+des opérations `POST`, `PUT` et `PATCH`. Dans le [TD4]({{site.baseurl}}/tutorials/tutorial4), nous en avions utilisé deux pour affecter automatiquement l'auteur d'un message, mais aussi pour hacher le mot de passe de l'utilisateur.
 
 * Un **StateProcessor** pour l'opération `DELETE`.
 
@@ -398,7 +397,7 @@ Ensuite, on va créer le premier `StateProcessor` permettant de gérer l'opérat
 
     * On ajoute le club au joueur, avec la méthode `addClub` (automatiquement générée dans `Joueur` par Symfony).
 
-    * On sauvegarde la mise à jour de l'utilisateur en utilisant la méthode `flush` du service `EntityManager`.
+    * On sauvegarde la mise à jour du joueur en utilisant la méthode `flush` du service `EntityManager`.
 
     * On construit un objet `Inscription` en affectant le `Joueur` et le `Club` récupérés et on le retourne.
 
@@ -711,7 +710,7 @@ class Club
 Avec cette implémentation, il est possible de :
 
 * Créer des inscriptions d'un joueur à un club.
-* Désinscrire un utilisateur d'un club.
+* Désinscrire un joueur d'un club.
 * Récupérer les inscriptions d'un joueur (en lisant les données du joueur) ou d'un club (en lisant les données du club).
 
 ```
