@@ -232,7 +232,7 @@ POST https://localhost/api/utilisateurs
 }
 ```
 
-En interne, le `1` contenu dans le **payload** sera converti en `/api/utilisateurs/1`.
+En interne, le `1` contenu dans le **payload** sera converti en `/api/villes/1`.
 
 ## Conclusion
 
