@@ -159,7 +159,7 @@ Pour pouvoir gérer cela, il faut écrire un `Denormalizer` qui va permettre de 
 
 Ces classes de **dénormalisation** sont placées dans le dossier `src/Serializer`. Il faut en coder une pour chaque entité où l'on souhaite utiliser ce système.
 
-Dans notre cas, nous allons donc en coder une pour notre enitté `Utilisateur` :
+Dans notre cas, nous allons donc en coder une pour notre entité `Utilisateur` :
 
 ```php
 namespace App\Serializer;
@@ -206,7 +206,7 @@ class UtilisateurDenormalizer implements DenormalizerInterface, DenormalizerAwar
                 !isset($context[__CLASS__]);
     }
 
-    //Cette méthode covnertit l'identifiant simple en IRI puis reprend le processus normal de dénormalisation
+    //Cette méthode convertit l'identifiant simple en IRI puis reprend le processus normal de dénormalisation
     public function denormalize($data, $class, $format = null, array $context = [])
     {
         //Convertir le champ $data["ville"] contenant un id simple en IRI
