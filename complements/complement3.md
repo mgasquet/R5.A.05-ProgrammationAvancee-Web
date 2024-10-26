@@ -589,7 +589,7 @@ En termes de **conception**, on adapte aussi le **diagramme de classes de concep
 </div>
 
 À noter que la bidirectionnelle est facultative. 
-On pourrait éventuellement se passer des collections **inscirptions** d'un côté ou même des deux 
+On pourrait éventuellement se passer des collections **inscriptions** d'un côté ou même des deux 
 (on pourra toujours créer des routes dédiées pour trouver l'information).
 
 Notre entité `Inscription` possédera donc deux relations `ManyToOne` : une vers le `Joueur` et l'autre vers `Club`.
@@ -627,7 +627,7 @@ Concrètement, la mise en place de cette solution se fait en plusieurs étapes :
 
 4. On ajoute une **contrainte d'unicité pour l'application** sur le couple d'attributs `joueur` et `club` grâce à l'attribut `#[ORM\UniqueEntity]`.
 
-5. On ajoute des **asertions** `NotBlank` et `NotNull` sur `joueur` et `club`.
+5. On ajoute des **assertions** `NotBlank` et `NotNull` sur `joueur` et `club`.
 
 6. On met à jour la structure de la base de données avec doctrine.
 
