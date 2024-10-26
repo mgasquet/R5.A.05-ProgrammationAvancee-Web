@@ -422,7 +422,8 @@ Cette route aura alors la forme suivante :
 
 Avec cette nouvelle route, **on ne précisera alors plus explicitement l'identifiant du joueur**. Il sera affecté automatiquement (grâce à l'identifiant passé dans la route). On bloque aussi l'écriture du champ `joueur` afin d'empêcher le changement de propriétaire d'un résultat avec un `PATCH`.
 
-API Platform nous permet de mettre en place ce système en remplaçant l'attribut `[ApiPLatform]` par défaut dans l'entité `Resultat` :
+API Platform nous permet de mettre en place ce système en définissant des **routes** customisées en configurant correctement plusieurs  
+attributs `[ApiResource]` (et en supprimant celui par défaut) dans l'entité `Resultat` :
 
 ```php
 #[ORM\Entity(repositoryClass: ResultatRepository::class)]
