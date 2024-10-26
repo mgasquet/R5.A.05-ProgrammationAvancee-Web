@@ -64,24 +64,24 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 Concrètement, ce projet sera évalué en deux temps.
 
-Vous allez d'abord devoir rendre un premier rendu intermédiaire qui doit être suffisament avancé. 
+Vous allez d'abord devoir rendre un premier rendu intermédiaire qui doit être suffisamment avancé. 
 
-Cette première version de l'API n'a pas besoin de contenir toutes les foncitonnalités demandées dans la présentation du sujet, mais elle doit au moins inclure tous les aspects abordés dans le [TD4]({{site.baseurl}}/tutorials/tutorial4) : 
+Cette première version de l'API n'a pas besoin de contenir toutes les fonctionnalités demandées dans la présentation du sujet, mais elle doit au moins inclure tous les aspects abordés dans le [TD4]({{site.baseurl}}/tutorials/tutorial4) : 
 
-* Gestion d'utilisateurs
+* Gestion d'utilisateurs.
 * Groupes de normalisation, dénormalisation, validation.
-* Des ressources comme `/utilisateurs`, au moins une sous-ressource comme `/utilisateurs/{id}/publications`.
+* Quelques ressources en relation avec votre thème (comme `/utilisateurs`, `/evenements`, etc), et au moins une sous-ressource (nous avions créé la sous-ressource `/utilisateurs/{id}/publications` en TD).
 * Gestion des différents verbes (GET, POST, PATCH, DELETE...).
 * Authentification avec des JWTs qui renvoient des cookies et diverses informations (comme dans le TD).
 * Au moins un **StateProcessor**.
 * Gestion de la sécurité des actions.
 * Générateur de groupes (validation, normalisation, denormalisation).
 
-Par la suite, lorsque vous développerez le 3ème projet, vous allez être amené à étendre votre API.
+Par la suite, lorsque vous développerez le 3ᵉ projet, vous allez être amené à étendre votre API.
 
 La **deadline** de ce premier rendu est le **dimanche 27 octobre 2024 à 15h00**.
 
-Le projet sera à rendre sur **Moodle** [à cette adresse](https://moodle.umontpellier.fr/course/view.php?id=31511#coursecontentcollapse2).
+Le projet sera à rendre sur **Moodle** [à cette adresse](https://moodle.umontpellier.fr/course/view.php?id=31511).
 Un seul membre du trinôme dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3.zip`.
 
 Cette archive devra contenir :

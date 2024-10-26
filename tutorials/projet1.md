@@ -77,7 +77,7 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 La **deadline** du projet est le **samedi 28 septembre 2024, 23h59**.
 
-Le projet sera à rendre sur **Moodle** [à cette adresse](https://moodle.umontpellier.fr/course/view.php?id=31511#coursecontentcollapse2). Un seul membre du trinôme dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3.zip`.
+Le projet sera à rendre sur **Moodle** [à cette adresse](https://moodle.umontpellier.fr/course/view.php?id=31511). Un seul membre du trinôme dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3.zip`.
 
 Cette archive devra contenir :
 
