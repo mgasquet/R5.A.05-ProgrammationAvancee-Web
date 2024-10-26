@@ -133,8 +133,7 @@ Renvoi :
     "id": 1,
     "nom": "Smith",
     "prenom": "John",
-    "ville": "/api/villes/1",
-    "resultats" : []
+    "ville": "/api/villes/1"
 }
 ```
 
