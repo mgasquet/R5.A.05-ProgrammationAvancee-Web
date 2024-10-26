@@ -39,7 +39,7 @@ de l'entité `B` (qui peut être nulle ou non).
 
 Au niveau du **code**, on pourra avoir un attribut de type `A` dans `B` et éventuellement une collection d'entités `B` dans `A`.
 
-Pour commencer, nous allons définir un modèle E/A de base (phase d'analayse) et l'enrichir au fur et à mesure des exemples :
+Pour commencer, nous allons définir un modèle E/A de base (phase d'analyse) et l'enrichir au fur et à mesure des exemples :
 
 <div>
  ![modele e/a 1]({{site.baseurl}}/assets/complement2/ModeleEA1.PNG)
@@ -630,7 +630,7 @@ Dans notre modélisation, nous allons faire le choix qu'un joueur possède optio
 
 Le casier est donc indépendant : cela se traduit par le fait que la clé étrangère peut être **nulle**.
 
-<div">
+<div>
  ![modele e/a 1]({{site.baseurl}}/assets/complement2/ModeleEA2.PNG)
 </div>
 
