@@ -368,17 +368,17 @@ class Joueur
 GET https://localhost/api/villes/2/joueurs
 
 {
-    "@id": "/demo_complement/public/api/villes/2/joueurs",
+    "@id": "/api/villes/2/joueurs",
     "@type": "Collection",
     "totalItems": 3,
     "member": [
         {
-            "@id": "/demo_complement/public/api/joueurs/1",
+            "@id": "/api/joueurs/1",
             "@type": "Joueur",
             "id": 1,
             "nom": "Smith",
             "prenom": "John",
-            "ville": "/demo_complement/public/api/villes/2",
+            "ville": "/api/villes/2",
         },
         {
             ...
