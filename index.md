@@ -29,11 +29,9 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
     2. Séance 2 : Suite du [TD 4](tutorials/tutorial4).
 5. Semaine du 21 octobre 2024 -- Suite et fin du [TD 4](tutorials/tutorial4).
 
-<!--
 ## TDs de Vue.js
 
 [Page des TDs de Vue.Js](https://matthieu-rosenfeld.github.io/)
--->
 
 ## Projets
 
