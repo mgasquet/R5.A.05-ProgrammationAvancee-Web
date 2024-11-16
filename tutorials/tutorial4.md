@@ -1288,11 +1288,11 @@ services:
 
 Nous avons mis en place un système d'authentification grâce aux JWT et nous pouvons maintenant "connecter" un utilisateur en utilisant la route `/api/auth`. Cependant, il reste un problème à régler : comment "déconnecte" t-on un utilisateur quand on utilise un JWT.
 
-Ici, le terme de "déconnexion" (comme le terme de "connexion") est un abus de langage. On ne connecte pas vraiment l'utilisateur : on lui délivre un token qui lui permettra de s'authentifier à chaque requête. Il n'y a pas de système de session qui débute ou est terminée comme dans un site web classique. La question est donc de savoir comment faire pour que l'utilisateur puisse décider de faire en sorte que son `JWT` ne soit plus valide **avant la durée d'expiration prévue** et aussi comment faire en sorte que le **client** (navigateur ou autre) n'utilise plus ce token invalide.
+Ici, le terme de "déconnexion" (comme le terme de "connexion") est un abus de langage. On ne connecte pas vraiment l'utilisateur : on lui délivre un token qui lui permettra de s'authentifier à chaque requête. Il n'y a pas de système de session qui débute ou est terminé comme dans un site web classique. La question est donc de savoir comment faire pour que l'utilisateur puisse décider d'invalider son `JWT` ne soit plus valide **avant la durée d'expiration prévue** et aussi comment faire en sorte que le **client** (navigateur ou autre) n'utilise plus ce token invalide.
 
 On a donc deux étapes à gérer : **l'invalidation du token** (pour qu'il devienne inutilisable) et la suppression de ce dernier côté client, dans l'espace dans lequel il est stocké.
 
-Pour la **première étape**, on peut utiliser un système de **liste de blocage** gérée en mémoire g^race au bundle `LexikJWTAuthenticationBundle`. Quand on décide **d'invalider le JWT**, il est alors répertorié dans un cache. Le token est supprimé de la liste quand il arrive à expiration. Ainsi, même si une requête est envoyée avec un `JWT` valide (signature correcte, non expiré), s'il est présent dans la liste de blocage, la requête échouera. Cela renforce également la sécurité globale de l'application : si le `JWT` est volé, si l'utilisateur décide de l'invalider (en se "déconnectant") alors le voleur ne pourra plus utiliser ce token.
+Pour la **première étape**, on peut utiliser un système de **liste de blocage** gérée en mémoire grâce au bundle `LexikJWTAuthenticationBundle`. Quand on décide **d'invalider le JWT**, il est alors répertorié dans un cache. Le token est supprimé de la liste quand il arrive à expiration. Ainsi, même si une requête est envoyée avec un `JWT` valide (signature correcte, non expiré), s'il est présent dans la liste de blocage, la requête échouera. Cela renforce également la sécurité globale de l'application : si le `JWT` est volé, si l'utilisateur décide de l'invalider (en se "déconnectant") alors le voleur ne pourra plus utiliser ce token.
 
 Les données **mises en cache** n'ont généralement pas pour vocation d'êtres gardée pendant une longue durée (plusieurs jours, plusieurs mois, etc). C'est parfait, car nos `JWT` ont une durée de vie courte ! (généralement une heure).
 
@@ -1300,9 +1300,9 @@ Il faut donc que la demande d'invalidation du token soit faite par le client aup
 
 Pour la **deuxième étape**, cela dépend de la façon dont est envoyé le `JWT` au client, et comment il est stocké :
 
-* S'il est envoyé dans le corps de la réponse d'authentification et stocké par le client (dans le `localStorage`par exemple), alors, quand l'utilisateur doit se déconnecter, après avoir demandé au serveur d'invalider le token, il suffit au code client de le supprimer de là où il est stocké. Nous avions vu que cette approche était plutôt **déconseillée**.
+* S'il est envoyé dans le corps de la réponse d'authentification et stocké par le client (dans le `localStorage` par exemple), alors, quand l'utilisateur doit se déconnecter, après avoir demandé au serveur d'invalider le token, il suffit au code client de le supprimer de là où il est stocké. Nous avions vu que cette approche était plutôt **déconseillée**.
 
-* S'il est stocké dans un **cookie httpOnly** alors le code client (du moins, le `javascript` dans un navigateur) n'y a pas accès ! Le serveur doit demander explicitement au client (navigateur) de supprimer le cookie contenant le `JWT` (en utilisant les `Headers` de la réponse).
+* S'il est stocké dans un **cookie httpOnly** alors le code client (du moins, le JavaScript dans un navigateur) n'y a pas accès ! Le serveur doit demander explicitement au client (navigateur) de supprimer le cookie contenant le `JWT` (en utilisant une en-tête de réponse `SetCookie` avec une date d'expiration passée).
 
 Nous sommes donc dans le second cas. La demande de suppression du cookie pourra être regroupée avec la route permettant d'invalider le `JWT`. Ce sera en quelque sorte notre "route de déconnexion".
 
@@ -1312,48 +1312,48 @@ Voici les étapes pour mettre en place cette route :
 
 1. Tout d'abord, on déclare la route dans le fichier `config/routes.yaml` :
 
-        ```yaml
-        # Dans config/routes.yaml
-        api_token_invalidate:
-            path: /api/token/invalidate
-            methods: ['POST']
-        ```
+   ```yaml
+   # Dans config/routes.yaml
+   api_token_invalidate:
+       path: /api/token/invalidate
+       methods: ['POST']
+   ```
 
-        On n'utilise pas de contrôleur, car le code gérant le blocage du `JWT` (et la suppression du cookie correspondant) est automatiquement géré par Symfony (et le bundle `LexikJWTAuthenticationBundle` gérant les `JWT`).
+   On n'utilise pas de contrôleur, car le code gérant le blocage du `JWT` (et la suppression du cookie correspondant) est automatiquement géré par Symfony (et le bundle `LexikJWTAuthenticationBundle` gérant les `JWT`).
 
 2. On édite ensuite le fichier `config/packages/lexik_jwt_authentication.yaml` afin d'activer la liste de blocage des `JWT` :
 
-        ```yaml
-        # Dans config/packages/lexik_jwt_authentication.yaml
-        lexik_jwt_authentication:
-            ...
-            blocklist_token:
-                enabled: true
-                cache: cache.app
-        ```
+   ```yaml
+   # Dans config/packages/lexik_jwt_authentication.yaml
+   lexik_jwt_authentication:
+       ...
+       blocklist_token:
+           enabled: true
+           cache: cache.app
+   ```
 
-        Cette liste sera utilisée pour vérifier le token lors de chaque requête nécessitant d'être authentifié et sera mise à jour dès qu'on provoquera une déconnexion au niveau de Symfony.
+   Cette liste sera utilisée pour vérifier le token lors de chaque requête nécessitant d'être authentifié et sera mise à jour dès qu'on provoquera une déconnexion au niveau de Symfony.
 
 3. Enfin, on édite le fichier `config/packages/security.yaml` afin d'indiquer à Symfony quelle est la route utilisée pour se déconnecter. On indique alors aussi de faire une demande de suppression du cookie `BEARER` (qui contient le `JWT`) dès que la déconnexion se produit :
 
-        ```yaml
-        # Dans config/packages/security.yaml
-        security:
-            ...
-            firewalls:
-                ...
-                main:
-                    ...
-                    logout:
-                        path: api_token_invalidate
-                        delete_cookies: ['BEARER']
-        ```
+   ```yaml
+   # Dans config/packages/security.yaml
+   security:
+       ...
+       firewalls:
+           ...
+           main:
+               ...
+               logout:
+                   path: api_token_invalidate
+                   delete_cookies: ['BEARER']
+   ```
 
 Avec tout cela, le système de déconnexion est complet ! (pour le moment...)
 
 <div class="exercise">
 
-1. Éditez les trois fichiers nécessaires pour mettre en place le système de déconnexion (ou plutôt, invalidation de token et supressio nde cookie).
+1. Éditez les trois fichiers nécessaires pour mettre en place le système de déconnexion (ou plutôt, invalidation de token et supression de cookie).
 
 2. Retirez temporairement la ligne `delete_cookies: ['BEARER']` du fichier `config/packages/security.yaml`. En utilisant `Postman`, authentifiez-vous (avec la route `/api/auth`) et vérifiez que vous possédez bien le cookie `BEARER` dans le menu **Cookies** (accessible sous le bouton **Send**). 
 
