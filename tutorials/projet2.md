@@ -40,7 +40,7 @@ Voici les détails de l'**API REST** qui devra être développée :
 Attention, le **thème** que vous allez choisir doit être soumis à la validation de votre enseignant. 
 Il est interdit de prendre un sujet déjà pris par une autre équipe de votre groupe TD. Premiers arrivés, premiers servis !
 
-Ce projet sera fortement lié au **3ème projet** qui consistera à la réalisation d'une interface (front-end en Vue.js) qui explopitera votre API.
+Ce projet sera fortement lié au **3ème projet** qui consistera à la réalisation d'une interface (front-end en Vue.js) qui exploitera votre API.
 
 ## Aide et pistes
 
