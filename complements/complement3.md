@@ -72,6 +72,7 @@ class Club
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['club:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -87,7 +88,8 @@ class Club
 
     //Methodes...
 }
-
+```
+```php
 #[ORM\Entity(repositoryClass: JoueurRepository::class)]
 #[ApiResource(
     normalizationContext: ["groups" => ['joueur:read', 'ville:read', 'resultat:read']],
@@ -670,7 +672,8 @@ class Inscription
     #[Groups(['inscription:read', 'inscription:write', 'joueur:read'])]
     private ?Club $club = null;
 }
-
+```
+```php
 #[ORM\Entity(repositoryClass: JoueurRepository::class)]
 #[ApiResource(
     normalizationContext: ["groups" => ['joueur:read', 'ville:read', 'resultat:read']],
@@ -688,7 +691,8 @@ class Joueur
     #[Groups(['joueur:read'])]
     private Collection $inscriptions;
 }
-
+```
+```php
 #[ORM\Entity(repositoryClass: ClubRepository::class)]
 #[ApiResource(
     normalizationContext: ["groups" => ['club:read']]
@@ -775,7 +779,8 @@ class Inscription
     #[Groups(['inscription:read', 'inscription:write', 'inscription:club:read'])]
     private ?Club $club = null;
 }
-
+```
+```php
 #[ORM\Entity(repositoryClass: JoueurRepository::class)]
 #[ApiResource(
     normalizationContext: ["groups" => ['joueur:read', 'ville:read', 'resultat:read', 'inscription:club:read']],
@@ -808,7 +813,8 @@ class Joueur
     #[Groups(['joueur:read'])]
     private Collection $inscriptions;
 }
-
+```
+```php
 #[ORM\Entity(repositoryClass: ClubRepository::class)]
 #[ApiResource(
     normalizationContext: ["groups" => ['club:read', 'inscription:joueur:read']],
@@ -1012,7 +1018,8 @@ class InscriptionProvider implements ProviderInterface
        return $this->inscriptionRepository->findOneBy(["joueur" => $uriVariables["idJoueur"], "club" => $uriVariables["idClub"]]);
     }
 }
-
+```
+```php
 namespace App\State;
 class InscriptionProcessor implements ProcessorInterface
 {
@@ -1206,7 +1213,8 @@ class Inscription
     #[Assert\NotNull(groups: ['inscription:club:write'])]
     private ?Club $club = null;
 }
-
+```
+```php
 class InscriptionProvider implements ProviderInterface
 {
 
@@ -1219,7 +1227,8 @@ class InscriptionProvider implements ProviderInterface
         return $this->repository->find(["joueur" => $uriVariables["idJoueur"], "club" => $uriVariables["idClub"]]);
     }
 }
-
+```
+```php
 class InscriptionProcessor implements ProcessorInterface
 {
     public function __construct(

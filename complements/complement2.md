@@ -89,7 +89,8 @@ class Ville
 
     //Methodes...
 }
-
+```
+```php
 #[ORM\Entity(repositoryClass: JoueurRepository::class)]
 #[ApiResource]
 class Joueur
@@ -116,7 +117,8 @@ class Joueur
 
     //Methodes...
 }
-
+```
+```php
 #[ORM\Entity(repositoryClass: ResultatRepository::class)]
 #[ApiResource]
 class Resultat
@@ -230,15 +232,16 @@ On peut ensuite utiliser la **normalisation** afin de montrer les détails de la
 )]
 class Joueur
 {
-    ...
+    // ...
 
     #[ORM\ManyToOne]
     #[Groups(['joueur:read'])]
     private ?Ville $ville = null;
 
-    ...
+    // ...
 }
-
+```
+```php
 #[ApiResource(
     normalizationContext: ["groups" => ['ville:read']]
 )]
@@ -285,7 +288,7 @@ On peut aussi créer une route spéciale pour directement obtenir les détails d
 ```php
 #[ApiResource]
 #[ApiResource(
-    uriTemplate: '/joueurs/{idJoueur}/ville',
+    uriTemplate: '/joueurs/{idJoueur}/villes',
     operations: [new Get()],
     uriVariables: [
         'idJoueur' => new Link(
@@ -320,7 +323,7 @@ Si nous avions eu la liste des joueurs dans `Ville` (avec une propriété `habit
 
 ```php
 #[ApiResource(
-    uriTemplate: '/joueurs/{idJoueur}/ville',
+    uriTemplate: '/joueurs/{idJoueur}/villes',
     operations: [new Get()],
     uriVariables: [
         'idJoueur' => new Link(
@@ -330,10 +333,13 @@ Si nous avions eu la liste des joueurs dans `Ville` (avec une propriété `habit
     ],
     normalizationContext: ["groups" => ["ville:read"]]
 )]
+class Ville {
+    // ...
+}
 ```
 
 ```
-GET https://localhost/api/joueurs/1/ville
+GET https://localhost/api/joueurs/1/villes
 
 {
     "@id": "/api/joueurs/1/ville",
@@ -360,7 +366,7 @@ Ou bien la liste des habitants d'une ville :
 )]
 class Joueur
 {
-    ...
+    // ...
 }
 ```
 
@@ -422,8 +428,9 @@ Cette route aura alors la forme suivante :
 
 Avec cette nouvelle route, **on ne précisera alors plus explicitement l'identifiant du joueur**. Il sera affecté automatiquement (grâce à l'identifiant passé dans la route). On bloque aussi l'écriture du champ `joueur` afin d'empêcher le changement de propriétaire d'un résultat avec un `PATCH`.
 
-API Platform nous permet de mettre en place ce système en définissant des **routes** customisées en configurant correctement plusieurs  
-attributs `[ApiResource]` (et en supprimant celui par défaut) dans l'entité `Resultat` :
+API Platform nous permet de mettre en place ce système en définissant des
+**routes** customisées en configurant correctement plusieurs attributs
+`[ApiResource]` (et en supprimant celui par défaut) dans l'entité `Resultat` :
 
 ```php
 #[ORM\Entity(repositoryClass: ResultatRepository::class)]
@@ -459,7 +466,7 @@ attributs `[ApiResource]` (et en supprimant celui par défaut) dans l'entité `R
 )]
 class Resultat
 {
-    ...
+    // ...
 
     #[ApiProperty(writable: false)]
     #[ORM\ManyToOne(inversedBy: 'resultats')]
@@ -530,7 +537,7 @@ Pour cela, on doit explicitement autoriser l'écriture de la **Collection** `$re
 )]
 class Joueur
 {
-    ...
+    // ...
 
     /**
      * @var Collection<int, Resultat>
@@ -539,36 +546,37 @@ class Joueur
     #[Groups(['joueur:read', 'joueur:write'])]
     private Collection $resultats;
 
-    ...
+    // ...
 }
-
+```
+```php
 #[ORM\Entity(repositoryClass: ResultatRepository::class)]
 #[ApiResource(
     uriTemplate: '/joueurs/{idJoueur}/resultats',
-    ...
+    // ...
     normalizationContext: ["groups" => ['resultat:read']],
     denormalizationContext: ["groups" => ['resultat:write']]
 )]
 #[ApiResource(
     uriTemplate: '/joueurs/{idJoueur}/resultats/{idResultat}',
-    ...
+    // ...
     normalizationContext: ["groups" => ['resultat:read']],
     denormalizationContext: ["groups" => ['resultat:write']]
 )]
 class Resultat
 {
-    ...
+    // ...
 
     #[ORM\Column]
     #[Groups(['resultat:read', 'resultat:write'])]
     private ?int $nombrePoints = null;
 
-    ...
+    // ...
 }
 ```
 
 Attention, toutefois, cette implémentation est assez **dangereuse** !
-en effet, maintenant, on pourrait simplement écrire :
+En effet, maintenant, on pourrait simplement écrire :
 
 ```
 PATCH https://localhost/api/joueurs/3
@@ -692,13 +700,15 @@ class Casier
 
     //Methodes...
 }
+```
+```php
 
 #[ORM\Entity(repositoryClass: JoueurRepository::class)]
 #[ApiResource(
     normalizationContext: ["groups" => ['joueur:read', 'ville:read', 'resultat:read']],
     denormalizationContext: ["groups" => ['joueur:write', 'resultat:write']]
 )]
-...
+// ...
 #[ApiResource(
     uriTemplate: '/casiers/{idCasier}/joueur',
     operations: [
@@ -714,7 +724,7 @@ class Casier
 )]
 class Joueur
 {
-    ...
+    // ...
 
     #[ORM\OneToOne(mappedBy: 'proprietaire', cascade: ['persist', 'remove'])]
     #[ApiProperty(writable: false)]
