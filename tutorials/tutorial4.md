@@ -1284,104 +1284,23 @@ services:
 
 </div>
 
-### Suppression du cookie et invalidation du token (déconnexion)
-
-Nous avons mis en place un système d'authentification grâce aux JWT et nous pouvons maintenant "connecter" un utilisateur en utilisant la route `/api/auth`. Cependant, il reste un problème à régler : comment "déconnecte" t-on un utilisateur quand on utilise un JWT.
-
-Ici, le terme de "déconnexion" (comme le terme de "connexion") est un abus de langage. On ne connecte pas vraiment l'utilisateur : on lui délivre un token qui lui permettra de s'authentifier à chaque requête. Il n'y a pas de système de session qui débute ou est terminé comme dans un site web classique. La question est donc de savoir comment faire pour que l'utilisateur puisse décider d'invalider son `JWT` ne soit plus valide **avant la durée d'expiration prévue** et aussi comment faire en sorte que le **client** (navigateur ou autre) n'utilise plus ce token invalide.
-
-On a donc deux étapes à gérer : **l'invalidation du token** (pour qu'il devienne inutilisable) et la suppression de ce dernier côté client, dans l'espace dans lequel il est stocké.
-
-Pour la **première étape**, on peut utiliser un système de **liste de blocage** gérée en mémoire grâce au bundle `LexikJWTAuthenticationBundle`. Quand on décide **d'invalider le JWT**, il est alors répertorié dans un cache. Le token est supprimé de la liste quand il arrive à expiration. Ainsi, même si une requête est envoyée avec un `JWT` valide (signature correcte, non expiré), s'il est présent dans la liste de blocage, la requête échouera. Cela renforce également la sécurité globale de l'application : si le `JWT` est volé, si l'utilisateur décide de l'invalider (en se "déconnectant") alors le voleur ne pourra plus utiliser ce token.
-
-Les données **mises en cache** n'ont généralement pas pour vocation d'êtres gardée pendant une longue durée (plusieurs jours, plusieurs mois, etc). C'est parfait, car nos `JWT` ont une durée de vie courte ! (généralement une heure).
-
-Il faut donc que la demande d'invalidation du token soit faite par le client auprès du serveur, via une **route**, par exemple.
-
-Pour la **deuxième étape**, cela dépend de la façon dont est envoyé le `JWT` au client, et comment il est stocké :
-
-* S'il est envoyé dans le corps de la réponse d'authentification et stocké par le client (dans le `localStorage` par exemple), alors, quand l'utilisateur doit se déconnecter, après avoir demandé au serveur d'invalider le token, il suffit au code client de le supprimer de là où il est stocké. Nous avions vu que cette approche était plutôt **déconseillée**.
-
-* S'il est stocké dans un **cookie httpOnly** alors le code client (du moins, le JavaScript dans un navigateur) n'y a pas accès ! Le serveur doit demander explicitement au client (navigateur) de supprimer le cookie contenant le `JWT` (en utilisant une en-tête de réponse `SetCookie` avec une date d'expiration passée).
-
-Nous sommes donc dans le second cas. La demande de suppression du cookie pourra être regroupée avec la route permettant d'invalider le `JWT`. Ce sera en quelque sorte notre "route de déconnexion".
-
-L'objectif est donc de mettre en place une route `/api/token/invalidate` qui permettra de bloquer l'utilisation du `JWT` et permettra au serveur par la même occasion de demander la suppression du cookie contenant le `JWT` au client.
-
-Voici les étapes pour mettre en place cette route :
-
-1. Tout d'abord, on déclare la route dans le fichier `config/routes.yaml` :
-
-   ```yaml
-   # Dans config/routes.yaml
-   api_token_invalidate:
-       path: /api/token/invalidate
-       methods: ['POST']
-   ```
-
-   On n'utilise pas de contrôleur, car le code gérant le blocage du `JWT` (et la suppression du cookie correspondant) est automatiquement géré par Symfony (et le bundle `LexikJWTAuthenticationBundle` gérant les `JWT`).
-
-2. On édite ensuite le fichier `config/packages/lexik_jwt_authentication.yaml` afin d'activer la liste de blocage des `JWT` :
-
-   ```yaml
-   # Dans config/packages/lexik_jwt_authentication.yaml
-   lexik_jwt_authentication:
-       ...
-       blocklist_token:
-           enabled: true
-           cache: cache.app
-   ```
-
-   Cette liste sera utilisée pour vérifier le token lors de chaque requête nécessitant d'être authentifié et sera mise à jour dès qu'on provoquera une déconnexion au niveau de Symfony.
-
-3. Enfin, on édite le fichier `config/packages/security.yaml` afin d'indiquer à Symfony quelle est la route utilisée pour se déconnecter. On indique alors aussi de faire une demande de suppression du cookie `BEARER` (qui contient le `JWT`) dès que la déconnexion se produit :
-
-   ```yaml
-   # Dans config/packages/security.yaml
-   security:
-       ...
-       firewalls:
-           ...
-           main:
-               ...
-               logout:
-                   path: api_token_invalidate
-                   delete_cookies: ['BEARER']
-   ```
-
-Avec tout cela, le système de déconnexion est complet ! (pour le moment...)
-
-<div class="exercise">
-
-1. Éditez les trois fichiers nécessaires pour mettre en place le système de déconnexion (ou plutôt, invalidation de token et supression de cookie).
-
-2. Retirez temporairement la ligne `delete_cookies: ['BEARER']` du fichier `config/packages/security.yaml`. En utilisant `Postman`, authentifiez-vous (avec la route `/api/auth`) et vérifiez que vous possédez bien le cookie `BEARER` dans le menu **Cookies** (accessible sous le bouton **Send**). 
-
-3. Maintenant, "déconnectez-vous" en utilisant la route `/api/token/invalidate` (avec la méthode `POST`). Vérifiez que vous possédez toujours le cookie `Bearer` (et donc votre `JWT`). Essayez de créer une publication. L'action devrait vous être refusée (car le `JWT` a été invalidé).
-
-4. Restaurez la ligne `delete_cookies: ['BEARER']` dans le fichier `config/packages/security.yaml`.
-
-5. Supprimez à la main le cookie `Bearer` sur Postman. Authentifiez-vous de nouveau et observez le retour du cookie.
-
-6. Enfin, "déconnectez-vous" de nouveau en utilisant la route `/api/token/invalidate`. Cette fois, le cookie devrait avoir disparu !
-
-</div>
-
 ### Token de rafraîchissement
 
 Plus tôt, nous avions évoqué le **système de rafraîchissement** pour permettre une plus grande sécurité. La logique est la suivante :
 
 * Les JWT émis par l'application suite à l'authentification ont une faible durée de vie (3600 secondes par défaut). C'est une bonne chose que ce `JWT` d’authentification qui est transmis dans **beaucoup de requêtes** ne soit valide que sur une courte durée. Ainsi, on limite les risques en cas de vol ou autre. Cependant, en l'état, cela n'est pas très pratique, car cela voudrait dire que l'utilisateur est déconnecté de force dès que le token expire (et doit donc se reconnecter après 3600 secondes).
 
-* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraîchissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, un mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraîchir notre JWT, en transmettant le token de rafraîchissement. Un nouveau JWT est transmis et la durée de vie du token de rafraîchissement est soit réinitialisé (durée de vie remise au maximum), ou alors, un nouveau token de rafraîchissement est émis. Côté serveur, les tokens de rafraîchissement seront automatiquement détruits lors de l'appel à la route de "déconnexion" (notre route `api/token/invalidate`).
+* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraîchissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, un mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraîchir notre JWT, en transmettant le token de rafraîchissement. Un nouveau JWT est transmis et la durée de vie du token de rafraîchissement est soit réinitialisé (durée de vie remise au maximum), ou alors, un nouveau token de rafraîchissement est émis. 
 
 La route de rafraîchissement peut aussi être utilisée à chaque ouverture de l'application afin d'obtenir un nouveau `JWT`.
 
-Contrairement au JWT, le token de rafraîchissement peut être gardé de manière plus sécurisée et n'est pas transmis à chaque requête. Si un client n'est pas actif pendant une longue période (par exemple, une semaine) il ne sera pas déconnecté, mais quand il retournera sur l'application, son JWT sera renouvelé grâce au token de rafraîchissement. Au bout d'une trop longue période d'inactivité (par exemple, plusieurs mois) l'utilisateur sera déconnecté par sécurité, à cause de l'expiration de son token de rafraîchissement. 
+Contrairement au JWT d'authentification, le token de rafraîchissement peut être gardé de manière plus sécurisée et n'a pas besoin d'être transmis à chaque requête. Si un client n'est pas actif pendant une longue période (par exemple, une semaine) son JWT d'authentification (avec une courte durée de vie) aura expiré, mais il ne sera pas "déconnecté" pour autant, car si **token de rafraîchissement** n'aura pas expiré. En fait, quand il retournera sur l'application, son JWT d'authentification sera renouvelé grâce au token de rafraîchissement. Cependant, au bout d'une trop longue période d'inactivité (par exemple, plusieurs mois) l'utilisateur sera naturellement "déconnecté" à cause de l'expiration de son token de rafraîchissement.
 
-Contrairement aux tokens d’authentification (à courte durée de vie), les tokens de rafraîchissement sont stockés dans la base de données, car ils ont une durée de vie potentiellement longue (plusieurs mois). Ainsi, si un utilisateur est compromis, il suffit de supprimer le token de rafraîchissement de la base. En cas d’invalidation du token, on n'utilise donc pas de liste de blocage avec cache (comme pour les `JWT` d'authentification) : le système d'invalidation et de blocage est directement géré grâce aux données stockées dans la base.
+Lorsque le token de rafraichissement est utilisé, on peut prolonger sa durée de vie ou bien en générer un nouveau.
 
-La sécurisation de ce token est aussi primordiale, car il permet d'obtenir de nouveaux JWTs de manière illimitée (pendant toute la durée de vie du token). Ici aussi, il est alors judicieux de s'orienter vers un stockage **dans un cookie sécurisé** (comme nous l'avons fait pour le `JWT` d'authentification), plutôt que de renvoyer directement le token dans le corps de la réponse. Ici, il n'y a pas besoin d'explicitement demander de supprimer le cookie contenant le token de rafraîchissement lors de la déconnexion. Le bundle s'en charge automatiquement.
+Contrairement aux tokens d’authentification (à courte durée de vie), les tokens de rafraîchissement sont stockés dans la base de données, car ils ont une durée de vie potentiellement longue (plusieurs mois). Ainsi, si un utilisateur est compromis, il suffit de supprimer le token de rafraîchissement de la base.
+
+La sécurisation de ce token est aussi primordiale, car il permet d'obtenir de nouveaux JWTs de manière illimitée (pendant toute la durée de vie du token). Ici aussi, il est alors judicieux de s'orienter vers un stockage **dans un cookie sécurisé** (comme nous l'avons fait pour le `JWT` d'authentification), plutôt que de renvoyer directement le token dans le corps de la réponse.
 
 Pour mettre en place tout cela, nous allons nous servir du bundle `JWTRefreshTokenBundle`. La configuration est assez simple.
 
@@ -1440,22 +1359,18 @@ gesdinet_jwt_refresh_token:
     # Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de le renvoyer dans le corps de la réponse.
     cookie:
         enabled: true
-    # Le firewall (section définie dans security.yaml) paramétrant notre système de déconnexion / d'invalidation de token.
-    logout_firewall: main
 ```
 
-Maintenant, quand vous vous authentifierez avec la route `/api/auth`, vous obtiendrez votre `token` (JWT) habituel ainsi qu'un token `refresh_token`. Vous pourrez alors l'utiliser dans le payload des routes suivantes :
+Maintenant, quand vous vous authentifierez avec la route `/api/auth`, vous obtiendrez votre `token` (JWT) habituel ainsi qu'un token `refresh_token`. Celui-ci sera notamment utilisé lors de l'accès à la route suivante :
 
 * `/api/token/refresh` (en POST) : rafraîchit votre JWT et réinitialise la durée de vie du token de rafraîchissement.
  
-On a aussi accès à quelques commandes utiles, comme :
+On a aussi accès à cette commande qui permet de supprimer tous les tokens de rafraîchissement ayant expiré :
 
 ```bash
 php bin/console gesdinet:jwt:clear
-php bin/console gesdinet:jwt:revoke TOKEN
-```
 
-La première commande permet de supprimer tous les tokens de rafraîchissement ayant expiré. La seconde permet de révoquer un token précis (par exemple, si le compte de l'utilisateur est compromis).
+```
 
 Maintenant, à vous de jouer !
 
@@ -1483,8 +1398,6 @@ Maintenant, à vous de jouer !
 
     * Testez la route permettant de rafraîchir votre JWT. Dans vos cookies, vous pourrez alors constater que le cookie `BEARER` contenant le `JWT` d'authentification est mis à jour.
 
-    * Testez la route permettant d'invalider votre token. Il doit alors aussi disparaître de vos **cookies**. Normalement, si après cela vous essayez de rafraîchir votre JWT, il doit y avoir une erreur.
-
     * Vous pouvez aussi observer la table gérant les **tokens de rafraîchissement** dans votre base de données.
 
 </div>
@@ -1492,6 +1405,113 @@ Maintenant, à vous de jouer !
 Dans l'absolu, nous pourrions aussi inclure (lors de l'authentification ou du rafraîchissement) des informations sur le token de rafraîchissement (notamment, sa date d'expiration). Cependant, dans l'absolu, le client n'en a pas vraiment besoin. S'il essaye de rafraîchir le `JWT` alors que le token de rafraîchissement a expiré, le serveur renverra une erreur `401` (Unauthorized) et le client sera alors au courant que le token a expiré. À l'inverse, pour le `JWT` d'authentification, il semble utile que le client connaisse la date d'expiration afin d'utiliser le token de rafraîchissement au moment opportun.
 
 Si toutefois on a vraiment besoin de donner certaines informations du JWT au client (dans le corps de la réponse `JSON`), on peut alors adapter la classe `AuthenticationSuccessListener` et décoder le token de rafraîchissement qui est associé à la clé `refresh_token` dans `$data`.
+
+### Suppression du cookie et invalidation du token (déconnexion)
+
+Nous avons mis en place un système d'authentification grâce aux **JWT** et nous pouvons maintenant "connecter" un utilisateur en utilisant la route `/api/auth` et également obtenir un **token de rafraichissement** permettant de renouveler notre **JWT** grâce à la route `/api/token/refresh`. Cependant, il reste un problème à régler : comment "déconnecte" t-on un utilisateur quand on utilise ces tokens.
+
+Ici, le terme de "déconnexion" (comme le terme de "connexion") est un abus de langage. On ne connecte pas vraiment l'utilisateur : on lui délivre des **tokens** qui lui permettront de s'authentifier à chaque requête. Il n'y a pas de système de session qui débute ou est terminée comme dans un site web classique. La question est donc de savoir comment faire pour que l'utilisateur puisse décider d'invalider son **JWT d'authentification** et son **token de rafraichissement** ne soit plus valident **avant la durée d'expiration prévue** et aussi comment faire en sorte que le **client** (navigateur ou autre) n'utilise plus ces tokens invalides.
+
+On a donc deux étapes à gérer : **l'invalidation des tokens** (pour qu'il devienne inutilisable) et la suppression de ces derniers côté client, dans l'espace dans lequel ils sont stockés.
+
+Pour la **première étape** :
+
+* Concernant le **JWT d'authentification**, on peut utiliser un système de **liste de blocage** gérée en mémoire grâce au bundle `LexikJWTAuthenticationBundle`. Quand on décide **d'invalider le JWT**, il est alors répertorié dans un cache. Le token est supprimé de la liste quand il arrive à expiration. Ainsi, même si une requête est envoyée avec un `JWT` valide (signature correcte, non expiré), s'il est présent dans la liste de blocage, la requête échouera. Cela renforce également la sécurité globale de l'application : si le `JWT` est volé, si l'utilisateur décide de l'invalider (en se "déconnectant") alors le voleur ne pourra plus utiliser ce token.
+
+Les données **mises en cache** n'ont généralement pas pour vocation d'êtres gardée pendant une longue durée (plusieurs jours, plusieurs mois, etc). C'est parfait, car nos `JWT` ont une durée de vie courte ! (généralement une heure). Ces tokens seront automatiquement détruits (et donc retiré de la liste de blocage) lors de leur expiration.
+
+* Concernant le **token de rafraichissement**, un système d'invalidation est prévu par le bundle `JWTRefreshTokenBundle`. On n'utilise donc pas de liste de blocage avec cache (comme pour les **JWT** d'authentification) : le système d'invalidation et de blocage est directement géré grâce aux données stockées dans la base. Les tokens de rafraîchissement seront automatiquement détruits et retirés de la base de données lors de l'invalidation.
+
+On a aussi accès à cette commande qui permet de révoquer un token précis (par exemple, si le compte de l'utilisateur est compromis) :
+
+```bash
+php bin/console gesdinet:jwt:revoke TOKEN
+```
+
+Dans tous les cas, il faut que la demande d'invalidation du token soit faite par le client auprès du serveur, via une **route**, par exemple.
+
+Pour la **deuxième étape**, cela dépend de la façon dont sont envoyés les **tokens** au client, et comment ils sont stockés :
+
+* S'ils sont envoyés dans le corps de la réponse d'authentification et stockés par le client (dans le `localStorage` par exemple), alors, quand l'utilisateur doit se déconnecter, après avoir demandé au serveur d'invalider les tokens, il suffit au code client de le supprimer de là où il est stocké. Nous avions vu que cette approche était plutôt **déconseillée**.
+
+* S'ils sont stockés dans des **cookies httpOnly** alors le code client (du moins, le JavaScript dans un navigateur) n'y a pas accès ! Le serveur doit demander explicitement au client (navigateur) de supprimer les cookies contenant le **JWT d'authentification** et le **token de rafraîchissement** (en utilisant des en-têtes de réponse `Set-Cookie` avec une date d'expiration passée).
+
+Nous sommes donc dans le second cas. La demande de suppression des cookies pourra être regroupée avec la route permettant d'invalider nos tokens. Ce sera en quelque sorte notre "route de déconnexion".
+
+L'objectif est donc de mettre en place une route `/api/token/invalidate` qui permettra de bloquer l'utilisation du **JWT d'authentification** et du **token de rafraichissement** et permettra au serveur par la même occasion de demander la suppression des cookies contenant les tokens au client.
+
+Voici les étapes pour mettre en place cette route :
+
+1. Tout d'abord, on déclare la route dans le fichier `config/routes/gesdinet_jwt_refresh_token.yaml` :
+
+   ```yaml
+   # Dans config/routes/gesdinet_jwt_refresh_token.yaml
+   api_token_invalidate:
+       path: /api/token/invalidate
+       methods: ['POST']
+   ```
+
+   On n'utilise pas de contrôleur, car le code gérant le blocage du `JWT` (et la suppression du cookie correspondant) est automatiquement géré par Symfony (et les bundle `LexikJWTAuthenticationBundle` et `JWTRefreshTokenBundle` qui gèrent les différents **tokens**).
+
+2. On édite ensuite le fichier `config/packages/lexik_jwt_authentication.yaml` afin d'activer la liste de blocage des `JWT` :
+
+   ```yaml
+   # Dans config/packages/lexik_jwt_authentication.yaml
+   lexik_jwt_authentication:
+       ...
+       blocklist_token:
+           enabled: true
+           cache: cache.app
+   ```
+
+   Cette liste sera utilisée pour vérifier le **JWT d'authentification** lors de chaque requête nécessitant d'être authentifié et sera mise à jour dès qu'on provoquera une déconnexion au niveau de Symfony.
+
+3. Après, on édite le fichier `config/packages/gesdinet_jwt_refresh_token.yaml` :
+
+    ```yaml
+    # Dans config/packages/gesdinet_jwt_refresh_token.yaml
+    gesdinet_jwt_refresh_token:
+        ...
+        # Le firewall (section définie dans security.yaml) paramétrant notre système de déconnexion / d'invalidation de token.
+        logout_firewall: main
+    ```
+
+4. Enfin, on édite le fichier `config/packages/security.yaml` afin d'indiquer à Symfony quelle est la route utilisée pour se déconnecter. On indique alors aussi de faire une demande de suppression du cookie `BEARER` (qui contient le **JWT d'authentification**) dès que la déconnexion se produit :
+
+   ```yaml
+   # Dans config/packages/security.yaml
+   security:
+       ...
+       firewalls:
+           ...
+           main:
+               ...
+               logout:
+                   path: api_token_invalidate
+                   delete_cookies: ['BEARER']
+   ```
+
+   Concernant le cookie contenant le **token de rafraichissement** (`refresh_token`), il n'y a pas besoin de le préciser. Le bundle correspondant le supprimera automatiquement lors de la déconnexion.
+
+Avec tout cela, le système de déconnexion est complet !
+
+<div class="exercise">
+
+1. Éditez les quatre fichiers nécessaires pour mettre en place le système de déconnexion (ou plutôt, **invalidation** des **tokens** et suppression des cookies).
+
+2. En utilisant `Postman`, authentifiez-vous (avec la route `/api/auth`) et vérifiez que vous possédez bien les cookies `BEARER` et `refresh_token` dans le menu **Cookies** (accessible sous le bouton **Send**). Allez voir le **token de rafraichissement** dans la base de données.
+
+3. Retirez temporairement la ligne `delete_cookies: ['BEARER']` du fichier `config/packages/security.yaml` puis "déconnectez-vous" en utilisant la route `/api/token/invalidate` (avec la méthode `POST`). Vérifiez que vous possédez toujours le cookie `BEARER` (et donc votre **JWT d'authentification**) mais plus le `refresh_token`. Essayez de créer une publication. L'action devrait vous être refusée (car le **JWT d'authentification** a été invalidé).
+
+4. Vérifiez que le **token de rafraichissement** a aussi bien disparu de la table dédiée dans la base de données.
+
+5. Restaurez la ligne `delete_cookies: ['BEARER']` dans le fichier `config/packages/security.yaml`.
+
+6. Supprimez à la main le cookie `BEARER` sur Postman. Authentifiez-vous de nouveau et observez le retour du cookie.
+
+7. Enfin, "déconnectez-vous" de nouveau en utilisant la route `/api/token/invalidate`. Cette fois, tous les cookies devraient avoir disparu !
+
+</div>
 
 ## Sécurité
 
