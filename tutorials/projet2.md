@@ -50,7 +50,7 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 * La [documentation officielle](https://api-platform.com/docs/symfony/) d'API Platform est assez complète et peut beaucoup vous aider!
 
-* En TD, nous avons abordé la génération automatique de **groupes de validation**. Il est possible de faire la même chose pour les [groupes de sérialisation](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-dynamically).
+* En TD, nous avons abordé la génération automatique de **groupes de validation**. Il est possible de faire la même chose pour les [groupes de sérialisation](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony).
 
 * Divers compléments de TDs qui pourraient vous être utiles :
 
