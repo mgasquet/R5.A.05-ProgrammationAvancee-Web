@@ -516,7 +516,7 @@ Une autre fonctionnalité intéressante à rajouter (dans ce contexte) est le fa
 ```
 POST https://localhost/api/joueurs
 {
-    "nom": "Kaecoute",
+    "nom": "Kaecouter",
     "prenom": "Xavier",
     "ville": "/api/villes/1",
     "resultats": [

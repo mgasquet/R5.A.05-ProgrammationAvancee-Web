@@ -231,7 +231,7 @@ Dans notre exemple :
 Attention, cette forme de route peut sembler ambiguë : on pourrait croire qu'on modifie (ou qu'on supprime) 
 les données d'un club (d'un joueur) : ce n'est pas le cas, nous modifions ou nous supprimons seulement l'association entre ces deux entités.
 
-On utilise ici le verbe `PUT` au lieu de `POST`, car on ne créé pas vraiment de ressource, on fait une mise à jour en liant deux entités déjà existantes.
+On utilise ici le verbe `PUT` au lieu de `POST`, car on ne crée pas vraiment de ressource, on fait une mise à jour en liant deux entités déjà existantes.
 
 Nous allons commencer par créer les bases de notre entité virtuelle. Elle sera nommée `Inscription` et sera composée d'un `Joueur` et d'un `Club`.
 
@@ -1118,13 +1118,13 @@ class Inscription
 ```
 
 L'idée ne serait pas forcément de remplacer les routes précédentes, mais elles pourraient éventuellement remplacer (ou compléter) celles qui permettent de créer, lire et supprimer une inscription.
-Pour la **lecture** et la **supression**, on a uniquement besoin de connaître les identifiants du **joueur** et du **club** concerné, sans avoir besoin de connaître l'identifiant "technique" de l'entité inscription.
+Pour la **lecture** et la **suppression**, on a uniquement besoin de connaître les identifiants du **joueur** et du **club** concerné, sans avoir besoin de connaître l'identifiant "technique" de l'entité inscription.
 
 **Note à part** : en codant des **StateProviders** adéquats, on pourrait coder la logique des routes suivantes `api/joueurs/{id}/clubs` (dans `Club`) et `api/clubs/{id}/joueurs` (dans `Joueur`).
 
 ### Utilisation d'une entité avec une clé composite
 
-Une dernière solution (que nous allons présenter birèvement) serait d'utiliser une entité avec une 
+Une dernière solution (que nous allons présenter brièvement) serait d'utiliser une entité avec une 
 [clé composite](https://www.doctrine-project.org/projects/doctrine-orm/en/3.3/tutorials/composite-primary-keys.html) liée à la fois à un **joueur** et un **club** :
 
 En base de données, cela génèrera une table **Inscription**(<u>#idJoueur</u>, <u>#idClub</u>) comme celle présentée dans le schéma relationnel initial.
@@ -1151,7 +1151,7 @@ Dans l'idée, pour mettre en place cette solution, il faudrait suivre ces étape
 
     * D'une **clé composite** composée du `joueur` et du `club`.
 
-3. On ajoute des **asertions** `NotBlank` et `NotNull` sur `joueur` et `club`.
+3. On ajoute des **assertions** `NotBlank` et `NotNull` sur `joueur` et `club`.
 
 4. On met à jour la structure de la base de données avec doctrine.
 
