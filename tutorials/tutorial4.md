@@ -81,9 +81,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
     Le projet est accessible sur votre machine (hors conteneur) dans le dossier `shared/public_html/the_feed_api`.
 
-2. Téléchargez le [fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess), renommez-le `.htaccess` et placez-le dans le sous-dossier `public` du projet `the_feed_api`.
-
-3. Toujours dans votre conteneur, installez maintenant la librairie spécifique à API Platform :
+2. Toujours dans votre conteneur, installez maintenant la librairie spécifique à API Platform :
 
     * Dans le dossier du projet, exécutez la commande suivante :
 
@@ -93,15 +91,23 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
         Répondez `n` (no) à la question posée.
 
-4. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter depuis la racine du projet) :
+        Puis (pour générer le fichier `.htaccess` dans `public`) :
+
+        ```bash
+        composer require symfony/apache-pack
+        ```
+
+        Répondez `y` (oui) à la question posée.
+
+3. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter depuis la racine du projet) :
 
    ```bash
-   chown -R root:www-data .
+   chown -R 1000:www-data .
    ```
 
    Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
 
-5. Ouvrez le fichier `config/packages/api_plaform.yaml` et éditez-le ainsi :
+4. Ouvrez le fichier `config/packages/api_plaform.yaml` et éditez-le ainsi :
 
    ```yaml
    api_platform:
@@ -117,21 +123,21 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
     Les deux options dans `formats` vont nous permettre d'utiliser deux formats pour la lecture et l'écriture de données : `json` (que vous connaissez bien) mais aussi un format plus évolué, le `ld+json`.
 
-6. Nous allons maintenant configurer la base de données dans le fichier `.env`. Configurez donc une nouvelle base (nouveau nom) et ne réutilisez pas la précédente (par exemple, nommez la base `the_feed_api`). Pour rappel, comme nous sommes dans le conteneur, l'adresse hôte à utiliser est `db`, le login `root` et le mot de passe `root`. Le port est `3306`.
+5. Nous allons maintenant configurer la base de données dans le fichier `.env`. Configurez donc une nouvelle base (nouveau nom) et ne réutilisez pas la précédente (par exemple, nommez la base `the_feed_api`). Pour rappel, comme nous sommes dans le conteneur, l'adresse hôte à utiliser est `db`, le login `root` et le mot de passe `root`. Le port est `3306`.
 
-7. Exécutez la commande suivante afin de créer la base :
+6. Exécutez la commande suivante afin de créer la base :
 
     ```bash
     php bin/console doctrine:database:create
     ```
     
-8. En vous rendant dans le dossier du projet, videz le cache :
+7. En vous rendant dans le dossier du projet, videz le cache :
 
     ```bash
     php bin/console cache:clear
     ```
 
-9. Rendez-vous sur votre site à l'adresse : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
+8. Rendez-vous sur votre site à l'adresse : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
 
 </div>
 

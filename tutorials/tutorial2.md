@@ -358,7 +358,7 @@ $valeurChamp = $form["monChamp"]->getData();
 2. En vous plaçant à la racine du projet, donnez les droits nécessaires au serveur pour qu'il puisse créer et éditer des fichiers à l'intérieur de ce dossier :
 
     ```
-    chown -R root:www-data ./public/img/utilisateurs/uploads
+    chown -R 1000:www-data ./public/img/utilisateurs/uploads
     chmod g+w ./public/img/utilisateurs/uploads
     ```
 

@@ -97,18 +97,26 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
    Cet ensemble de commandes crée les fichiers de base de votre projet et télécharge les briques logicielles essentielles pour le développement d'un site web.
 
-3. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter **depuis la racine du projet**) :
+3. Afin de gérer correctement la redirection d'URL avec Apache, il nous faut un fichier `.htaccess` pour l'application (comme vous l'avez vu en cours de complément web l'an dernier si vous étiez dans le parcours RACDV). Au lieu de créer manuellement ce fichier, il est possible de le générer facilement en installant le paquetage `symfony/apache-pack` grâce à `composer`. Pour cela, exécutez donc la commande suivante (toujours dans le conteneur docker) :
+
+    ```bash
+    composer require symfony/apache-pack
+    ```
+
+    **Important** : une question vous sera posée dans le terminal, répondez `y` (oui).
+
+    Pour vérifier que cela a bien fonctionné, affichez les fichiers cachés dans le sous-dossier `public` de l'application afin de vérifier que le fichier `.htaccess` a bien été généré (`ls -la` dans un terminal, ou bien `CTRL+H` dans l'explorateur de fichiers).
+
+4. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter **depuis la racine du projet**) :
 
    ```bash
-   chown -R root:www-data .
+   chown -R 1000:www-data .
    ```
-   On rappelle encore une fois qu'il faut exécuter ces commandes dans le terminal qui s'exécute dans votre conteneur docker.
+   On rappelle encore une fois qu'il faut exécuter ces commandes dans le terminal qui s'exécute dans votre conteneur docker (cette commande donne les permissions à l'utilisateur `1000` dans le conteneur qui fait le lien avec l'utilisateur qui exécute docker sur la machine hôte, puis au groupe `www-data` qui correspond à apache).
 
    Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
 
-4. Sur votre machine, ouvrez le répertoire du projet (`the_feed`) avec votre **IDE** favori (de préférence, `PHPStorm`). Celui-ci se trouve dans le dossier partagé `shared/public_html` (là où vous avez installé le conteneur docker).
-
-5. Téléchargez le {% endraw %}[fichier d'accès au serveur]({{site.baseurl}}/assets/TD1/htaccess){% raw %}, renommez-le `.htaccess` et placez-le dans le sous-dossier `public` du projet.
+5. Sur votre machine, ouvrez le répertoire du projet (`the_feed`) avec votre **IDE** favori (de préférence, `PHPStorm`). Celui-ci se trouve dans le dossier partagé `shared/public_html` (là où vous avez installé le conteneur docker).
 
 6. Testez que votre projet a bien été initialisé en vous rendant à l'adresse [https://localhost/the_feed/public](https://localhost/the_feed/public)
 
