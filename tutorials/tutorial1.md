@@ -193,7 +193,7 @@ Un attribut se présente ainsi :
 #[ClasseAttribut(param1: ..., param2: ...)]
 ```
 
-En réalité, un **attribut** est une classe. Les paramètres que l'on précise quand on utilise un attribut sont des données passées au constructeur de l'attribut (en fait, on a créé une nouvelle instance chaque fois quand précise un attribut). Il est ensuite possible d'analyser une classe, une fonction, etc... afin de récupérer ses attributs (il y a des méthodes PHP dédiées, par exemple : [ReflectionProperty::getAttributes](https://www.php.net/manual/en/reflectionproperty.getattributes.php), [ReflectionClass::getAttributes](https://www.php.net/manual/en/reflectionclass.getattributes.php)).
+En réalité, un **attribut** est une classe. Les paramètres que l'on précise quand on utilise un attribut sont des données passées au constructeur de l'attribut (en fait, on crée une nouvelle instance chaque fois qu'on précise un attribut). Il est ensuite possible d'analyser une classe, une fonction, etc... afin de récupérer ses attributs (il y a des méthodes PHP dédiées, par exemple : [ReflectionProperty::getAttributes](https://www.php.net/manual/en/reflectionproperty.getattributes.php), [ReflectionClass::getAttributes](https://www.php.net/manual/en/reflectionclass.getattributes.php)).
 
 Lors de l'utilisation de l'application, les différentes briques qui composent Symfony se chargent de lire ces attributs et d'exécuter des actions dans différents contextes, par exemple, pour enregistrer les informations sur les routes de l'application, ou bien sur les permissions.
 
