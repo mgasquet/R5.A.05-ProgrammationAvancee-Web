@@ -57,7 +57,7 @@ Voici les détails du service qui devra être développé :
 
 * La fonction [hash](https://www.php.net/manual/en/function.hash.php) peut vous aider à encoder certaines données en `SHA256`.
 
-* Le lieu où sont stockées les photos de profil ne doit pas être accessible publiquement par un client (notamment car un utilisateur peut masquer son profil à certains moments). Il ne faut pas stocker ces images dans `public`, par exemple. Il faudra donc faire en sorte que **Symfony serve le fichier via une action d'un contrôleur** quand quelqu'un souhaite accéder à un avatar (par exemple, via une route `/avatar/{hash}`), et que le client n'accède jamais directement au fichier via un chemin vers le répertoire de stockage des photos.
+* Le lieu où sont stockées les photos de profil ne doit pas être accessible publiquement par un client (notamment car un utilisateur peut masquer son profil à certains moments). Il ne faut pas stocker ces images dans `public`, par exemple. Il faudra donc faire en sorte que **Symfony serve le fichier via une action d'un contrôleur** quand quelqu'un souhaite accéder à un avatar (par exemple, via une route `/avatar/{hash}`), et que le client n'accède jamais directement au fichier via un chemin vers le répertoire de stockage des photos. Symfony peut retourner une donnée de type [BinaryFileResponse](https://symfony.com/doc/current/components/http_foundation.html#serving-files) (par exemple, pour répondre avec une image) dans une action d'un contrôleur (à la place d'utiliser `$this->render` pour renvoyer une page web générée avec twig).
 
 * Attention, lors de l'édition de profil, il faudra bien penser à mettre certaines données à jour en cas de modification de l'adresse email (car le hash `SHA256` ne sera plus le même !).
 
@@ -71,13 +71,11 @@ Voici les détails du service qui devra être développé :
 
 Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
-* Symfony peut retourner une donnée de type [BinaryFileResponse](https://symfony.com/doc/current/components/http_foundation.html#serving-files)  (par exemple, pour répondre avec une image) dans une action d'un contrôleur.
-
 * Normalement, dans un contexte réel, la racine du site pointe sur le dossier `public` de l'application, ce qui fait que les autres répertoires (au-dessus) ne sont naturellement pas accessibles par le client/navigateur. Cependant, comme nous utilisons une architecture particulière en TD, vous pouvez renforcer la sécurité des autres répertoires en interdisant leur accès en ajoutant un fichier `.htaccess` qui contient l'instruction `Require all denied` à la racine de votre projet.
 
 * Pour **modifier** un objet (entité) déjà existant (par exemple, un utilisateur), on récupère simplement l'objet correspondant et on applique les modifications (par exemple, via un formulaire). Ensuite, on utilise là-aussi le service `EntityManager` afin de synchroniser les modifications avec la base de données en utilisant la méthode `flush`. Plus d'information à ce propos sur [la documentation officielle](https://symfony.com/doc/current/doctrine.html#updating-an-object).
 
-* Pour la modification de l'image de profil d'un utilisateur, vous allez probablement passer par un formulaire qui permettra de transmettre la nouvelle image. Cependant, la gestion de ce formulaire est un peu spéciale, car il ne sera (probablement) pas directement lié à une entité (un objet instancié) comme nous l'avons fait en TD (ou comme dans le point concernant la mise à jour cité au-dessus), parce qu'on envoie seulement une image, qui devra être traitée par l'application, sans directement l'injecter telle quelle dans l'utilisateur courant (par contre, on pourra ultimement stocker son nom ou autre...). **Symfony permet de récupérer et traiter les données d'un formulaire sans nécessairement passer par une entité** (mais on peut quand même utiliser une classe qui étend `AbstractType`). Plus d'information à ce propos sur [la documentation officielle](https://symfony.com/doc/current/form/without_class.html).
+* Pour la modification de l'image de profil d'un utilisateur, comme elle se fait à part de la modification des informations de l'utilisateur, vous allez probablement passer par un formulaire qui permettra de transmettre la nouvelle image. Cependant, la gestion de ce formulaire est un peu spéciale, car il ne sera (probablement) pas directement lié à une entité (un objet instancié) comme nous l'avons fait en TD (ou comme dans le point concernant la mise à jour cité au-dessus), parce qu'on envoie seulement une image, qui devra être traitée par l'application, sans directement l'injecter telle quelle dans l'utilisateur courant (par contre, on pourra ultimement stocker son nom ou autre...). **Symfony permet de récupérer et traiter les données d'un formulaire sans nécessairement passer par une entité** (mais on peut quand même utiliser une classe qui étend `AbstractType`). Plus d'information à ce propos sur [la documentation officielle](https://symfony.com/doc/current/form/without_class.html).
 
 * Vous avez déjà eu à gérer une **image de profil** envoyée via un **formulaire** dans le [TD2]({{site.baseurl}}/tutorials/tutorial2).
 
@@ -91,14 +89,20 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 L'application doit être hébergée dans le dossier `public_html` d'un des membres de l'équipe (sur le serveur de l'IUT).
 
-Il faudra bien vérifier que votre application est bien accessible depuis l'extérieur de l'iut sur l'adresse : [http://webinfo.iutmontp.univ-montp2.fr/~login_depot/sous-adresse-du-projet](http://webinfo.iutmontp.univ-montp2.fr/~login_depot/sous-adresse-du-projet).
+Il faudra installer les sources (sans le dossier vendor) dans le dossier (avec `FTP` par exemple), puis exécuter un `composer install` à la racine de l'application (qui installera les différentes dépendances). Vous pouvez utiliser `SSH` pour cela, en vous connectant à votre session sur le serveur de l'IUT.
 
-Il ne faut pas oublier de donner au serveur de l'IUT les droits d'écriture sur vos projets contenu dans `public_html` (une fois le projet dépose). Par exemple, depuis `SSH` :
+Il ne faut pas oublier de donner au serveur de l'IUT les droits d'écriture sur vos projets contenu dans `public_html` (une fois le projet installé). Par exemple, depuis `SSH` :
 
 ```bash
 setfacl -R -m u:www-data:r-w-x ~/public_html
 setfacl -R -m d:u:www-data:r-w-x ~/public_html
 ```
+
+Une fois installé, il faudra bien vérifier que votre application est bien accessible depuis l'extérieur de l'iut sur l'adresse : [http://webinfo.iutmontp.univ-montp2.fr/~login_depot/sous-adresse-du-projet](http://webinfo.iutmontp.univ-montp2.fr/~login_depot/sous-adresse-du-projet).
+
+Concernant la base de données, vous pourrez utiliser la base de données MySQL ou PostgreSQL d'un des membres de l'équipe, mises à dispositions par l'IUT.
+
+Vous trouverez toutes les informations à propos de la connexion en [FTP et SSH](https://iutdepinfo.iutmontp.univ-montp2.fr/intranet/acces-aux-serveurs/) et aux [bases de données](https://iutdepinfo.iutmontp.univ-montp2.fr/intranet/bases-de-donnees/) sur [l'intranet](https://iutdepinfo.iutmontp.univ-montp2.fr/intranet) du département informatique.
 
 ## Rendu
 
