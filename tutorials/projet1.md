@@ -5,7 +5,7 @@ layout: tutorial
 lang: fr
 ---
 
-## Sujet - My Avatar
+## Sujet
 
 Ce projet se fera en **quadrinôme** ou en **trinôme** et s'intéressera au développement d'une application de **gestion d'avatar**.
 
@@ -108,7 +108,7 @@ Vous trouverez toutes les informations à propos de la connexion en [FTP et SSH]
 
 La **deadline** du projet est le **samedi 26 octobre 2025, 23h59**.
 
-Le projet sera à rendre sur **Moodle** [à cette adresse](https://moodle.umontpellier.fr/course/view.php?id=31511). Un seul membre du groupe projet dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
+Le projet sera à rendre sur **Moodle** [à cette adresse](https://moodle.umontpellier.fr/course/section.php?id=237151). Un seul membre du groupe projet dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
 
 Cette archive devra contenir :
 

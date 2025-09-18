@@ -19,23 +19,27 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
     1. Séance 1 : Début du [TD 1](tutorials/tutorial1) -- Découverte du framework Symfony 1/2
     2. Séance 2 : Suite et fin du [TD 1](tutorials/tutorial1) puis début du [TD 2](tutorials/tutorial2) -- Découverte du framework Symfony 2/2
     3. Séance 3 : Suite et fin du [TD 2](tutorials/tutorial2).
-	
+	4. Fin de semaine : Lancement du [premier projet](tutorials/projet1)	
+2. Semaine du 22 septembre 2025 -- [TD 3](tutorials/tutorial3) -- Amélioration du site
+
 {% comment %}
-3. Semaine du 22 septembre 2025 -- [TD 3](tutorials/tutorial3) -- Amélioration du site
-4. Semaine du 13 octobre 2025 : Suite et fin du [TD 3](tutorials/tutorial3) puis suivi du [premier projet](tutorials/projet1).
-5. Semaine du 20 octobre 2025 :
+3. Semaine du 13 octobre 2025 : Suite et fin du [TD 3](tutorials/tutorial3) puis suivi du [premier projet](tutorials/projet1).
+4. Semaine du 20 octobre 2025 :
     1. Séance 1 : [TD 4](tutorials/tutorial4) -- Création d'une API REST avec API Platform
     2. Séance 2 : Suite du [TD 4](tutorials/tutorial4).
-6. Semaine du 10 novembre 2025 : -- Suite et fin du [TD 4](tutorials/tutorial4).
-7. Semaine du 17 novembre 2025 : -- Début des [TDs de Vue.Js](https://matthieu-rosenfeld.github.io/).
+5. Semaine du 10 novembre 2025 : -- Suite et fin du [TD 4](tutorials/tutorial4).
+6. Semaine du 17 novembre 2025 : -- Début des [TDs de Vue.Js](https://matthieu-rosenfeld.github.io/).
 
 ## TDs de Vue.js
 
 [Page des TDs de Vue.Js](https://matthieu-rosenfeld.github.io/)
+{% endcomment %}
 
 ## Projets
 
-1. Projet 1 (Symfony) : [Annuaire en ligne](tutorials/projet1)
+1. Projet 1 (Symfony) : [My Avatar](tutorials/projet1)
+
+{% comment %}
 2. Projet 2 (API Platform, Symfony) : [API REST de gestion d'événements](tutorials/projet2)
 
 ## Compléments de TDs
