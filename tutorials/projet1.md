@@ -102,7 +102,7 @@ setfacl -R -m d:u:www-data:r-w-x ~/public_html
 
 ## Rendu
 
-La **deadline** du projet est le **samedi 26 octobre 2025, 23h59**.
+La **deadline** du projet est le **dimanche 26 octobre 2025, 23h59**.
 
 Le projet sera à rendre sur **Moodle** [à cette adresse](https://moodle.umontpellier.fr/course/view.php?id=31511). Un seul membre du groupe projet dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
 
