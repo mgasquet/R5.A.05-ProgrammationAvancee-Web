@@ -701,16 +701,16 @@ Cependant, comme nous l'avons vu, dans le cadre d'un formulaire, nous pouvons re
 
 #### Notification de connexion
 
-Comme notre système de connexion/déconnexion est géré par Symfony, nous ne pouvons pas ajouter de messages flash comme pour une route normale. Mais heureusement, pour cela, il y a les **événements** ! Durant le cycle de vie de l'application, certains **événements** comme la connexion ou la déconnexion de l'utilisateur peuvent être captés par le développeur afin de réaliser des actions complémentaires. Les classes qui traitent ces événements sont appelées `EventSubscriber`.
+Comme notre système de connexion/déconnexion est géré par Symfony, nous ne pouvons pas ajouter de messages flash comme pour une route normale. Mais heureusement, pour cela, il y a les **événements** ! Durant le cycle de vie de l'application, certains **événements** comme la connexion ou la déconnexion de l'utilisateur peuvent être captés par le développeur afin de réaliser des actions complémentaires. Les classes qui traitent ces événements sont appelées `EventListener`.
 
-Ces classes sont regroupées dans le dossier `src/EventSubscriber` de l'application et se présentent ainsi : 
+Ces classes sont regroupées dans le dossier `src/EventListener` de l'application et se présentent ainsi : 
 
 ```php
-namespace App\EventSubscriber;
+namespace App\EventListener;
 
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class MonEventSubscriber {
+class MonEventListener {
 
     public function __construct(/* Injection de dépendances possible ici*/){}
 
@@ -743,9 +743,9 @@ $flashBag->add(categorie, message);
 
 <div class="exercise">
 
-1. Créez un dossier `EventSubscriber` dans `src`.
+1. Créez un dossier `EventListener` dans `src`.
 
-2. Dans votre nouveau dossier, créez la classe `AuthenticationSubscriber` qui devra posséder trois méthodes :
+2. Dans votre nouveau dossier, créez la classe `AuthenticationEventListener` qui devra posséder trois méthodes :
 
     * Une méthode permettant de gérer l'événement `LoginSuccessEvent` et qui ajoute le message flash de type `success` : "Connexion réussie !".
 

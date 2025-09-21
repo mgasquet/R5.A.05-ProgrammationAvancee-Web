@@ -258,8 +258,6 @@ Dans le premier TD, nous avons vu comment générer cette date automatiquement, 
 
 * `readable: true/false` : renvoie ou non la propriété lorsqu'on lit la ressource (par défaut, autorisé).
 
-* `required : true/false` : oblige ou non l'écriture de la propriété lors de la création/modification. On précise cette propriété dans le cas où la logique à appliquer est la même pour toutes les opérations (on verra que ce n'est pas toujours souhaitable). On préférera plutôt utiliser les assertions `Blank` ou `NotBlank` avec des **groupes de validation**.
-
 * `description : ...` : permet de décrire le rôle de la propriété plus en détail (pour la documentation destinée aux personnes souhaitant utiliser l'API).
 
 Si on prend l'exemple suivant :
@@ -269,13 +267,15 @@ use ApiPlatform\Metadata\ApiProperty;
 
 class Exemple {
 
-    #[ApiProperty(description: 'Description de la propriété...', readable: false, required: true)]
+    #[ApiProperty(description: 'Description de la propriété...', readable: false)]
     private ?string $propriete = null;
 
 }
 ```
 
-Quand je vais effectuer une requête POST/PUT/PATCH, je suis obligé de la préciser dans le payload. Mais elle n'apparaitra jamais quand je vais lire les données d'une entité `Exemple`. La description permet d'enrichir la page de documentation automatique générée par API Platform.
+Quand je vais effectuer une requête, la propriété n’apparaîtra jamais quand je vais lire les données d'une entité `Exemple`. Cependant, il faut impérativement qu'elle soit envoyée dans le `payload` dans le cas d'une requête d'écriture. La description permet d'enrichir la page de documentation automatique générée par API Platform.
+
+Les attributs `write` et `read` sont utiles quand on souhaite appliquer la même logique dans n'importe quel contexte. Cependant, pour pouvoir autoriser la lecture ou l'écriture d'une propriété (ou d'une ressource) selon le contexte (droits d'accès, groupe, type de requête...) on utilisera plutôt les **groupes de validation** et les **groupes de sérialisation**.
 
 Dans l'annotation `#[ApiResource]` au-dessus de la classe, il est possible de rajouter un paramètre `order` pour spécifier comment sont ordonnés les résultats d'une requête renvoyant une collection de cette ressource. 
 
@@ -451,7 +451,7 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
 
 3. Activez le mode de chargement `EAGER` (eager loading) pour la récupération des données de l'auteur.
 
-4. Ajoutez les attributs nécessaires pour "forcer" l'utilisateur à préciser l'auteur lorsqu'il crée une publication.
+4. Ajoutez les attributs (assertions) nécessaires pour "forcer" l'utilisateur à préciser l'auteur lorsqu'il crée une publication. Il faut que l'auteur ne soit pas absent du payload de la requête, et qu'il ne soit pas **null**...
 
 5. Dans votre base de données, supprimez toutes vos publications (un champ non null va être ajouté ce qui va causer des problèmes si on laisse les publications actuelles, sans auteur).
 
@@ -500,17 +500,17 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     ...
-    normalizationContext: ["groups" => ["etudiant:read"]],
+    normalizationContext: ["groups" => ["serialization:etudiant:read"]],
 )]
 class Etudiant {
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     private ?int $id = null;
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     private ?string $nom = null;
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     private ?string $prenom = null;
 
     public ?Groupe $groupe = null;
@@ -520,14 +520,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     ...
-    normalizationContext: ["groups" => ["groupe:read"]],
+    normalizationContext: ["groups" => ["serialization:groupe:read"]],
 )]
 class Groupe {
 
-    #[Groups(['groupe:read'])]
+    #[Groups(['serialization:groupe:read'])]
     private ?int $id = null;
 
-    #[Groups(['groupe:read'])]
+    #[Groups(['serialization:groupe:read'])]
     private ?string $nomGroupe = null;
 
     public Collection $etudiants;
@@ -539,27 +539,27 @@ Ici, quand on récupère les données d'un étudiant, on affiche seulement son i
 
 Pour les groupes, on affiche tout sauf la liste des étudiants (qui aurait été une liste d'IRI aussi).
 
-Pour qu'on obtienne aussi l'identifiant et le nom du groupe quand on lit les données d'un étudiant, il faut d'abord préciser le groupe `etudiant:read` au niveau de la propriété `groupe` et il faut ensuite ajouter le groupe `etudiant:read` sur chaque propriété de la classe `Groupe` qu'on souhaite afficher quand on rend le groupe d'un utilisateur : 
+Pour qu'on obtienne aussi l'identifiant et le nom du groupe quand on lit les données d'un étudiant, il faut d'abord préciser le groupe `serialization:etudiant:read` au niveau de la propriété `groupe` et il faut ensuite ajouter le groupe `serialization:etudiant:read` sur chaque propriété de la classe `Groupe` qu'on souhaite afficher quand on rend le groupe d'un utilisateur : 
 
 ```php
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     ...
-    normalizationContext: ["groups" => ["etudiant:read"]],
+    normalizationContext: ["groups" => ["serialization:etudiant:read"]],
 )]
 class Etudiant {
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     private ?int $id = null;
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     private ?string $nom = null;
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     private ?string $prenom = null;
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     public ?Groupe $groupe = null;
 }
 
@@ -567,14 +567,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     ...
-    normalizationContext: ["groups" => ["groupe:read"]],
+    normalizationContext: ["groups" => ["serialization:groupe:read"]],
 )]
 class Groupe {
 
-    #[Groups(['groupe:read', 'etudiant:read'])]
+    #[Groups(['serialization:groupe:read', 'serialization:etudiant:read'])]
     private ?int $id = null;
 
-    #[Groups(['groupe:read', 'etudiant:read'])]
+    #[Groups(['serialization:groupe:read', 'serialization:etudiant:read'])]
     private ?string $nomGroupe = null;
 
     public Collection $etudiants;
@@ -582,27 +582,27 @@ class Groupe {
 }
 ```
 
-On aurait aussi pu préciser directement le groupe `groupe:read` dans l'attribut `normalizationContext` de la classe `Etudiant` :
+On aurait aussi pu préciser directement le groupe `serialization:groupe:read` dans l'attribut `normalizationContext` de la classe `Etudiant` :
 
 ```php
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     ...,
-    normalizationContext: ["groups" => ["etudiant:read", "groupe:read"]],
+    normalizationContext: ["groups" => ["serialization:etudiant:read", "serialization:groupe:read"]],
 )]
 class Etudiant {
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     private ?int $id = null;
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     private ?string $nom = null;
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     private ?string $prenom = null;
 
-    #[Groups(['etudiant:read'])]
+    #[Groups(['serialization:etudiant:read'])]
     public ?Groupe $groupe = null;
 }
 
@@ -610,14 +610,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     ...,
-    normalizationContext: ["groups" => ["groupe:read"]],
+    normalizationContext: ["groups" => ["serialization:groupe:read"]],
 )]
 class Groupe {
 
-    #[Groups(['groupe:read'])]
+    #[Groups(['serialization:groupe:read'])]
     private ?int $id = null;
 
-    #[Groups(['groupe:read'])]
+    #[Groups(['serialization:groupe:read'])]
     private ?string $nomGroupe = null;
 
     public Collection $etudiants;
@@ -632,17 +632,17 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     ...,
-    normalizationContext: ["groups" => ["etudiant:read"]],
+    normalizationContext: ["groups" => ["serialization:etudiant:read"]],
 )]
 class Etudiant {
 
-    #[Groups(['etudiant:read', 'groupe:read'])]
+    #[Groups(['serialization:etudiant:read', 'serialization:groupe:read'])]
     private ?int $id = null;
 
-    #[Groups(['etudiant:read', 'groupe:read'])]
+    #[Groups(['serialization:etudiant:read', 'serialization:groupe:read'])]
     private ?string $nom = null;
 
-    #[Groups(['etudiant:read', 'groupe:read'])]
+    #[Groups(['serialization:etudiant:read', 'serialization:groupe:read'])]
     private ?string $prenom = null;
 
     public ?Groupe $groupe = null;
@@ -652,17 +652,17 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     ...,
-    normalizationContext: ["groups" => ["groupe:read"]],
+    normalizationContext: ["groups" => ["serialization:groupe:read"]],
 )]
 class Groupe {
 
-    #[Groups(['groupe:read'])]
+    #[Groups(['serialization:groupe:read'])]
     private ?int $id = null;
 
-    #[Groups(['groupe:read'])]
+    #[Groups(['serialization:groupe:read'])]
     private ?string $nomGroupe = null;
 
-    #[Groups(['groupe:read'])]
+    #[Groups(['serialization:groupe:read'])]
     public Collection $etudiants;
 
 }
@@ -982,13 +982,13 @@ Pour rappel, afin de préciser les **groupes** dans lesquels un attribut s'appli
 ```php
 #[ApiResource(
     operations: [
-        new Post(validationContext: ["groups" => ["Default", "exemple:create"]]),
-        new Patch(validationContext: ["groups" => ["Default", "exemple:update"]]),
+        new Post(validationContext: ["groups" => ["Default", "validation:exemple:create"]]),
+        new Patch(validationContext: ["groups" => ["Default", "validation:exemple:update"]]),
     ],
 )]
 class Exemple {
-    #[Assert\NotBlank(groups: ["exemple:create"])]
-    #[Assert\NotNull(groups: ["exemple:create"])]
+    #[Assert\NotBlank(groups: ["validation:exemple:create"])]
+    #[Assert\NotNull(groups: ["validation:exemple:create"])]
     private ?string $propriete;
 }
 ```
@@ -999,7 +999,7 @@ Attention, ces groupes sont différents de ceux utilisés dans `normalizationCon
 
 <div class="exercise">
 
-1. En vous aidant de deux groupes de validation : `utilisateur:create` et `utilisateur:update`, faites en sorte qu'il soit obligatoire de préciser `plainPassword` seulement lors de la requête `POST`.
+1. En vous aidant de deux groupes de validation : `validation:utilisateur:create` et `validation:utilisateur:update`, faites en sorte qu'il soit obligatoire de préciser `plainPassword` seulement lors de la requête `POST`.
 
 2. Videz le cache puis vérifiez que vous pouvez mettre à jour l'utilisateur sans préciser le mot de passe.
 
@@ -1018,11 +1018,11 @@ Au niveau d'une propriété, il suffit de rajouter le `groupe` (dans l'annotatio
 ```php
 
 //Si 'entite:create' ou 'entite:update' sont des groupes de dénormalisation actifs, la propriété n'est pas ignorée
-#[Groups(['entite:read', 'entite:create', 'entite:update'])]
+#[Groups(['serialization:entite:read', 'serialization:entite:create', 'serialization:entite:update'])]
 private ?string $prop1 = null;
 
 //Si le groupe 'entite:create' est actif, la propriété n'est pas ignorée, mais si le groupe 'entite:update' est actif, elle est ignorée.
-#[Groups(['entite:read', 'entite:create'])]
+#[Groups(['serialization:entite:read', 'serialization:entite:create'])]
 private ?string $prop2 = null;
 ```
 
@@ -1032,16 +1032,16 @@ Par exemple :
 ```php
 #[ApiResource(
     operations: [
-        new Patch(denormalizationContext: ["groups" => ["entite:update"]]) ,
-        new Post(denormalizationContext: ["groups" => ["entite:create"]]) ,
+        new Patch(denormalizationContext: ["groups" => ["serialization:entite:update"]]) ,
+        new Post(denormalizationContext: ["groups" => ["serialization:entite:create"]]) ,
     ],
-    normalizationContext: ["entite:read"]
+    normalizationContext: ["serialization:entite:read"]
 )]
 ```
 
 <div class="exercise">
 
-1. En utilisant deux nouveaux groupes : `utilisateur:create` et `utilisateur:update`, faites en sorte que le **login** soit ignoré dans le cadre d'une requête `PATCH` s'il est envoyé dans le **payload** de la requête. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actives (`plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour, `login` seulement créé). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale.
+1. En utilisant deux nouveaux groupes : `serialization:utilisateur:create` et `serialization:utilisateur:update`, faites en sorte que le **login** soit ignoré dans le cadre d'une requête `PATCH` s'il est envoyé dans le **payload** de la requête. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actives (`plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour, `login` seulement créé). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale.
 
 2. Videz le cache. Tentez de mettre à jour le login d'un utilisateur (avec `PATCH`). Vous devriez constater que le login n'a pas été mis à jour !
 
@@ -1133,7 +1133,9 @@ Attention, ici, on utilise le nom d'attribut `password` et pas `plainPassword`.
 7. Sur le site [https://jwt.io/](https://jwt.io/), tentez de décoder ce jeton et observez l'information qu'il contient.
 </div>
 
-Tout fonctionne correctement ? Parfait ! Cependant, nous allons tout casser ! En effet, de nos jours, renvoyer directement le `JWT` dans le corps de la réponse n'est pas une très bonne pratique, dans de nombreux cas (notamment si votre **API** est utilisée au travers d'une application cliente sur navigateur). Il faut bien comprendre que quelqu'un qui possède votre **token** peut usurper votre identité jusqu'à son expiration. Il faut donc limiter au maximum les risques que cela se produise.
+Dorénavant, afin que l'API puisse autoriser certaines requêtes qui nécessitent certains droits (par exemple, être connecté pour créer une publication), il faut envoyer le `JWT` dans l'en-tête `Authorization` de la requête, avec le format suivant : `Bearer jwt` (où `jwt` est le jwt obtenu suite à la connexion). Sur une application cliente (par exemple en `Vue.js`, `Angular` ou `React`) ce token serait alors stocké par le client et intégré aux requêtes nécessaires au besoin.
+
+Ce système est assez standard et est utilisé dans de nombreuses APIs. Cependant... Nous allons tout casser ! En effet, renvoyer directement le `JWT` dans le corps de la réponse n'est pas toujours une très bonne pratique selon le contexte, notamment si votre **API** est utilisée au travers d'une application cliente sur navigateur comme nous allons le faire bientôt (dans les TDs de Vue.js). Il faut bien comprendre que quelqu'un qui possède votre **token** peut usurper votre identité jusqu'à son expiration. Il faut donc limiter au maximum les risques que cela se produise.
 
 Cette fois, le problème vient du client, et plus précisément des applications qui tournent sur un navigateur web (avec un framework JavaScript par exemple, comme nous le ferons dans les prochains TDs). Le problème est de savoir où et comment stocker le JWT. Il y a plusieurs options :
 
@@ -1155,13 +1157,13 @@ Un attaquant pourrait par exemple envoyer des informations (par exemple, quand i
 
 Le danger vient donc du fait que n'importe quel script `javascript` puisse accéder et lire dans `localStorage`. Si le contenu du `JWT` n'est pas sensible en soi, le `JWT` en lui-même est utilisé pour vous identifier. Il faut donc absolument éviter de le stocker dans un endroit potentiellement vulnérable.
 
-Pour pallier ce problème, une nouvelle approche a été choisie : utiliser des **cookies sécurisés**. Plus précisent des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stocker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
+Pour pallier ce problème, une alternative peut être choisie : utiliser des **cookies sécurisés**. Plus précisent des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stocker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
 
 * **secure** : le cookie n'est envoyé que si la requête est chiffrée (**https**).
 * **httpOnly** : le cookie n'est pas accessible dans le **javascript**. Il sera envoyé automatiquement à chaque requête vers le serveur, mais à aucun moment un script pourra lire ses données. Cela élimine le risque de se le faire voler en cas d'attaque XSS.
 * L'attribut **SameSite** permet de définir si le cookie doit être envoyé ou non selon le site où est émise la requête vers le serveur. Cela permet notamment d'éviter les attaques **CSRF** dont nous allons parler juste après.
 
-Une attaque **CSRF** (Cross-site Request Forgery) consiste à faire envoyer une requête vers un serveur (une API) à l'utilisateur, mais depuis un autre site. L'idée est que le site en question contienne un script JavaScript qui émet la requête. Il faut ensuite faire en sorte que l'utilisateur que l'on souhaite piéger se rende sur ce site. La requête sera alors envoyée depuis le navigateur du client, comme si c'était lui qui était à l'initiative de la requête. Alors, même avec un cookie **secure** et en **httpOnly**, dans ce cas, l'attaquant pourra exécuter des actions sous notre identité. Notez cette fois que l'attaquant ne récupère pas notre `JWT`. Il utilise notre identité à travers notre navigateur.
+Une attaque **CSRF** (Cross-site Request Forgery) consiste à faire envoyer une requête vers un serveur (ici, une API) à l'utilisateur, mais depuis un autre site. L'idée est que le site en question contienne un script JavaScript qui émet la requête. Il faut ensuite faire en sorte que l'utilisateur que l'on souhaite piéger se rende sur ce site. La requête sera alors envoyée depuis le navigateur du client, comme si c'était lui qui était à l'initiative de la requête. Alors, même avec un cookie **secure** et en **httpOnly**, dans ce cas, l'attaquant pourra exécuter des actions sous notre identité. Notez cette fois que l'attaquant ne récupère pas notre `JWT`. Il utilise notre identité à travers notre navigateur.
 
 Pour contrer cela, on paramètre l'attribut `Same-Site` du cookie, avec une des deux valeurs suivantes :
 
@@ -1173,7 +1175,7 @@ Pour contrer cela, on paramètre l'attribut `Same-Site` du cookie, avec une des 
 
 Il reste important de noter que, même avec tout cela, on est toujours exposé "en partie" aux attaques `XSS` : si un script malveillant est présent sur le site et exécuté par l'utilisateur, l'attaquant ne pourra plus récupérer le token de l'utilisateur, mais pourra tout de même exécuter des actions sous son identité. On ne règle donc que la moitié du problème. Pour le reste, c'est au développeur de s'assurer de ne pas introduire ce genre de faille et de mettre en place des mécanismes de sécurité supplémentaires.
 
-Tout cela semble compliqué et fastidieux à configurer! Mais pas de panique, un simple paramétrage d'API Platform permet de générer et placer un cookie **secure**, **httpOnly** avec l'attribut **SameSite: Lax** dans la réponse de la requête d'authentification. Par défaut, le token sera alors supprimé du **corps** (`JSON`) de la réponse.
+Tout cela semble compliqué et fastidieux à configurer ! Mais pas de panique, un simple paramétrage d'API Platform permet de générer et placer un cookie **secure**, **httpOnly** avec l'attribut **SameSite: Lax** dans la réponse de la requête d'authentification. Par défaut, le token sera alors supprimé du **corps** (`JSON`) de la réponse.
 
 Pour cela, il faut modifier le fichier `config/packages/lexik_jwt_authentication.yaml` en ajoutant les sections suivantes :
 
@@ -1202,6 +1204,8 @@ Naturellement, le **cookie** stockant le token a la même date d'expiration que 
 2. Sur `Postman`, identifiez-vous de nouveau. Cette-fois, le corps de la réponse devrait être vide. Cliquez sur le bouton **Cookies** (sous le bouton **Send**). Vous devriez observer le `JWT` stocké sous le nom de `Bearer`.
 
 </div>
+
+### Ajouter des informations à la réponse après une connexion
 
 Lorsqu'on se connecte, l'application cliente aimerait potentiellement connaître certaines informations :
 
@@ -1306,7 +1310,9 @@ Lorsque le token de rafraichissement est utilisé, on peut prolonger sa durée d
 
 Contrairement aux tokens d’authentification (à courte durée de vie), les tokens de rafraîchissement sont stockés dans la base de données, car ils ont une durée de vie potentiellement longue (plusieurs mois). Ainsi, si un utilisateur est compromis, il suffit de supprimer le token de rafraîchissement de la base.
 
-La sécurisation de ce token est aussi primordiale, car il permet d'obtenir de nouveaux JWTs de manière illimitée (pendant toute la durée de vie du token). Ici aussi, il est alors judicieux de s'orienter vers un stockage **dans un cookie sécurisé** (comme nous l'avons fait pour le `JWT` d'authentification), plutôt que de renvoyer directement le token dans le corps de la réponse.
+La sécurisation de ce token est aussi primordiale, car il permet d'obtenir de nouveaux JWTs de manière illimitée (pendant toute la durée de vie du token). Dans un fonctionnement standard et basique, le client doit stocker ce token et l'envoyer dans le `payload` des différentes routes qui nécessitent d'utiliser ce token (rafraîchissement, invalidation...) en plus du `JWT` d'authentification (dans l'en-tête `Authorization` ou dans un cookie...). Mais comme nous l'avons vu, cela peut poser des problèmes de sécurité en cas d'attaque `XSS` (cela est même encore plus dangereux, car quelqu'un qui a accès au token de rafraîchissement peut générer autant de tokens d'authentification qu'il veut !)
+
+Ici aussi, il semble donc être plus judicieux de s'orienter vers un stockage **dans un cookie sécurisé** (comme nous l'avons fait pour le `JWT` d'authentification), plutôt que de renvoyer directement le token dans le corps de la réponse. Avec ce mécanisme, il n'y a pas besoin d'inclure le token dans le payload des requêtes qui le nécessitent, l'API ira l'extraire du cookie. De plus, afin de ne pas envoyer le token de rafraîchissement à chaque requête qui nécessite d'être authentifié, on peut exploiter le paramètre `PATH` du cookie qui permet de spécifier un chemin qui doit exister dans l'URL ciblé afin que le cookie soit envoyé. On fera donc en sorte que ce cookie ne soit envoyé que sur les routes qui permettent de rafraichir ou d'invalider le token.
 
 Pour mettre en place tout cela, nous allons nous servir du bundle `JWTRefreshTokenBundle`. La configuration est assez simple.
 
@@ -1350,6 +1356,8 @@ security:
             entry_point: jwt
             refresh_jwt:
                 check_path: api_refresh_token
+                #Afin que le token ne soit envoyé que sur les sous-routes /api/token/...
+                path: /api/token/
             ...
 ```
 
@@ -1519,6 +1527,42 @@ Avec tout cela, le système de déconnexion est complet !
 
 </div>
 
+### Tokens dans le corps de la requête VS avec des cookies sécurisé
+
+Nous venons de voir que, dans notre cas, utiliser un cookie sécurisé pour transporter les différents `JWTs` permettant à l'utilisateur de s'authentifier ou de rafraîchir son token semble être plus raisonnable. Cependant, cette solution n'est pas toujours adaptée. En fait, cela dépend des **clients** qui vont consommer votre API, en fonction de leur nature (navigateur, application mobile, etc) et de leur nombre.
+
+Même si le fait d'utiliser un cookie présente de nombreux avantages au niveau de la sécurité, il peut poser des problèmes de gestion en fonction des clients qui souhaitent l'utiliser :
+
+* Concernant les navigateurs web, les cookies `HttpOnly` ne peuvent pas être envoyés par des clients dont le nom de domaine de l'adresse web se trouve en dehors du nom de domaine de l'adresse web de l'API. Par exemple, si mon API se trouve sur `www.exemple.com/api` et mon client sur `www.exemple.com/client`, dans les deux cas, le nom de domaine est `exemple.com`. Si on envoie une requête de connexion depuis `www.exemple.com/client`, le cookie écrit par l'API sera lié au nom de domaine `exemple.com` et sera bien envoyé à chaque requête nécessitant une authentification émise par `www.exemple.com/client`. De plus, on peut faire en sorte que le cookie fonctionne aussi dans les sous-domaines de `exemple.com` en configurant l'attribut `DOMAIN` du cookie (pour qu'il fonctionne sur `app.exemple.com`, par exemple...). Cependant, si une requête de connexion est émise depuis le site `coucou.com` le cookie créé sera toujours lié à `exemple.com` (car c'est là que se trouve l'API) et il ne sera jamais envoyé lors des requêtes émises depuis `coucou.com`. Bref, si l'API doit être utilisées par plusieurs sites externes qui ne sont pas sur le même nom domaine qu'elle, ça ne sera pas possible.
+
+* La gestion des cookies est essentiellement un mécanisme des clients de type **navigateur web**, et ne sont pas forcément gérés naturellement par les autres types de clients, comme les applications mobiles par exemple. Cependant, il existe des librairies pour gérer cela dans la plupart des cas. Et sinon, il suffit juste d'extraire les données de la réponse. De plus, ici, le paramétrage `HttpOnly`, `SameSite` et `Secure` n'ont pas vraiment d'importance, car ce sont des mécanismes liés au navigateur web. Une application mobile peut donc extraire les données des cookies envoyées par le serveur, les stocker et les envoyer au besoin à sa guise. De même, sur une application mobile, on ne retrouve pas les problèmes des failles XSS et CSRF (mais il peut y en avoir d'autres !). Bref, en dehors des navigateurs, la gestion des cookies n'est pas vraiment naturelle (mais pas impossible). On peut donc se dire que dans ce contexte, garder les tokens dans le corps de la réponse peut *éventuellement* être une meilleure solution (en tout cas, plus facile).
+
+Bref, le choix de la méthode à privilégier dépend du contexte de votre projet : 
+
+* Si l'API et le client sont **sur le même nom de domaine** (ou sous-domaines) et que l'on souhaite éventuellement l'utiliser avec un client mobile (ou autre) et qu'il n'y a pas d'autres clients web situés sur un autre nom de domaine, il vaut mieux privilégier l'option **cookie** qui présente moins de risques de sécurité (même si un peu plus dur à gérer sur un client qui n'est pas un navigateur, comme une application mobile ou autre). 
+
+* Si l'API n'est **pas sur le même nom domaine que le client** (et que **plusieurs clients web** et éventuellement autres doivent utiliser l'API) : il faut plutôt choisir de renvoyer les tokens dans le corps de la réponse, le stocker, et, pour les sites web qui utilisent l'API, faire particulièrement attention à sécuriser le site contre les attaques `XSS`.
+
+* On pourrait aussi éventuellement envisager d'avoir **les deux options en même temps** : lors de l'authentification, des cookies sont créés et les `JWTs` sont renvoyés dans le corps de la requête. Comme ça, on s'adapte en fonction du client. Les différents composants que nous venons de voir proposent de faire cela en activant une option pour conserver le `JWT` dans le corps de la réponse, même si les cookies sont utilisés :
+
+```yaml
+# config/packages/lexik_jwt_authentication.yaml
+lexik_jwt_authentication:
+    ...
+    remove_token_from_body_when_cookies_used: false
+```
+
+```yaml
+# config/packages/gesdinet_jwt_refresh_token.yaml
+gesdinet_jwt_refresh_token:
+    ...
+    cookie:
+      ...
+      remove_token_from_body: false
+```
+
+Dans notre cas, il n'y aura (bientôt) qu'un client web sur le même nom de domaine que notre API, donc **l'option cookie convient parfaitement**. Cependant, nous avons vu que dans tous les cas, une attaque `XSS` (pour une application sur un navigateur web) reste un danger (même si les conséquences sont potentiellement un peu moins grandes avec les cookies). C'est donc au client qui consomme l'API de s'assurer que ce genre de faille ne puisse pas être exploitée.
+
 ## Sécurité
 
 Maintenant que nous pouvons nous authentifier, nous pouvons sécuriser l'accès à nos routes ! Nous allons donc voir comment :
@@ -1531,7 +1575,7 @@ Maintenant que nous pouvons nous authentifier, nous pouvons sécuriser l'accès 
 
 ### Sécurisation de l'accès aux routes
 
-On peut limiter l'accès à une méthode sur une ressource donnée en utilisant le paramètre `security` au niveau de la méthode en question. On peut alors spécifier du **code** pour vérifier le droit d'accès à la route, en utilisant notamment la fonction `is_granted` pour vérifier que l'utilisateur possède un certain **rôle** (ou une permission, si on utilise les **voters**).
+On peut limiter l'accès à une méthode sur une ressource donnée en utilisant le paramètre `security` au niveau de la méthode en question, qui permet de vérifier les droits **avant** le traitement de la requête. On peut alors spécifier du **code** pour vérifier le droit d'accès à la route, en utilisant notamment la fonction `is_granted` pour vérifier que l'utilisateur possède un certain **rôle** (ou une permission, si on utilise les **voters**).
 
 Par exemple :
 
@@ -1546,11 +1590,17 @@ Par exemple :
 
 Ici, la route utilisant la méthode `POST` sur cette ressource est uniquement accessible aux utilisateurs avec le rôle `ROLE_USER` (donc, tous les utilisateurs authentifiés). La méthode `DELETE` elle par contre n'est accessible qu'aux utilisateurs ayant le rôle `ROLE_ADMIN`.
 
-On a aussi accès à d'autres variables :
+Il est également possible d'utiliser l'attribut `securityPostDenormalize` qui active la vérification **après** le traitement des données envoyées par la requête (après l'étape de dénormalisation) ce qui est notamment utile dans le cas d'opérations d'écritures. Dans le cas d'une mise à jour, on peut alors aussi accéder à "l'ancien" objet (avant modification).
+
+On a aussi accès à certaines variables :
 
 * `user` : représente l'instance de l'utilisateur connecté.
 
-* `object` : représente l'instance de la ressource en cours d'accès ou de modification (on a donc accès à ses méthodes).
+* `object` : représente l'instance de la ressource en cours d'accès ou de modification (on a donc accès à ses méthodes). Attention toutefois, si on utilise la méthode `POST`, l'objet n'existe pas encore ! Pour y avoir accès, il ne faut alors pas passer par `securty` (qui vérifie les droits avant), mais plutôt par `securityPostDenormalize`.
+
+* `previous_object` : uniquement accessible quand on utilise `securityPostDenormalize`. Représente l'instance de la ressource avant d'être modifiée (dans le cas d'opération `PUT` ou `PATCH` par exemple).
+
+* `request` : contient les données de la requête.
 
 Si l'objet ciblé a un lien avec l'utilisateur, il est alors possible de comparer un attribut de l'objet avec l'utilisateur, par exemple.
 
@@ -1560,6 +1610,7 @@ Si l'objet ciblé a un lien avec l'utilisateur, il est alors possible de compare
         new Post(security: "is_granted('ROLE_USER') and user.age > 13"),
         new Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user"),
         new Get(security: "!object.isPrivate() or (is_granted('ROLE_USER') and object.getOwner() == user) or is_granted('ROLE_ADMIN') "),
+        new Patch(security:"is_granted('ROLE_ADMIN')", securityPostDenormalize: "previous_object.getOwner() == user and (object.getOwner() == user or !object.isPrivate())"),
     ]
 )]
 ```
@@ -1572,7 +1623,9 @@ Dans cet exemple :
 
 * L'utilisateur ne peut consulter l'objet que si celui n'est pas privé, ou s'il en est le propriétaire, ou s'il est admin.
 
-Le paramètre `securityMessage` permet de customiser le message d'erreur.
+* L'utilisateur peut mettre à jour l'objet seulement s'il est admin, et il devait être propriétaire de l'objet avant modification (mais il a pu éventuellement pu effectuer un changement de propriétaire). Cependant, le changement de propriétaire n'est possible que si l'objet n'est pas privé.
+
+Le paramètre `securityMessage` permet de customiser le message d'erreur lié au paramètre `security` et `securityPostDenormalizeMessage ` celui relatif au paramètre `securityPostDenormalize`.
 
 ```php
 new Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user", securityMessage: "...")
@@ -1598,6 +1651,51 @@ new Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user", se
 
 </div>
 
+Il est aussi possible d'utiliser les paramètres `security` et `securityPostDenormalize` dans un attribut `#[ApiProperty]` au niveau de chaque propriété de l'entité afin de contrôler les droits de lecture et d'écriture par propriété :
+
+```php
+#[ApiResource(
+    operations: [
+        new Get()
+        new GetCollection()
+        new Post(security: "is_granted('ROLE_JOURNALISTE')"),
+        new Patch(security: "is_granted('ROLE_ADMIN') or (is_granted('ROLE_USER') and object.getOwner() == user)")
+    ]
+)]
+class Article {
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $titre = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    #[ApiProperty(security: "is_granted('ROLE_USER')")]
+    private ?string $contenu = null;
+
+    #[ORM\Column]
+    #[ApiProperty(securityPostDenormalize: "is_granted('ROLE_ADMIN')")]
+    private ?bool $desactive = false;
+}
+```
+
+Dans cet exemple :
+
+* Tout le monde peut récupérer la liste des publications ou les détails d'un article, mais seuls les utilisateurs connectés pourront en voir le contenu.
+* Seul un journaliste peut publier un article, mais seul un administrateur peut écrire la propriété "desactive".
+* Seul un administrateur ou le propriétaire d'un article peut modifier l'article, mais seul un administrateur peut modifier la propriété "desactive".
+
+Attention, dans cet exemple, il faut que `$desactive` ait une valeur par défaut ou puisse être null en base de données, car un journaliste non-administrateur ne pourra pas l'écrire dans le payload d'une requête `POST`.
+
+Ici aussi, bien que pratique, cette fonctionnalité est limité, car elle ne permet pas de différencier l'opération (au niveau de la propriété). Pour gérer des conditions plus complexes, on préférera utiliser diverses techniques comme :
+
+* [Ajouter dynamiquement un groupe de sérialisation](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-dynamically) selon les permissions de l'utilisateur connecté.
+* Utiliser une classe pour [calculer dynamiquement les groupes de sérialisation activés](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony)
+* Utiliser une classe pour [calculer dynamiquement les groupes de validation activés](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony) (comme vous le ferez éventuellement dans la section bonus...).
+
 ### Affectation automatique de l'auteur d'une publication
 
 Enfin, avec ce nouveau système d'authentification, nous pouvons automatiquement affecter l'utilisateur qui créé une publication comme auteur de celle-ci et de ne plus avoir à spécifier l'`IRI` (ce qui posait aussi un problème de sécurité, car on peut ainsi affecter un autre utilisateur à une publication !).
@@ -1612,7 +1710,7 @@ En plus du même `ProcessorInterface` que vous avez utilisé auparavant (pour sa
 
 2. Au niveau de la classe `Publication`, spécifiez votre nouveau processeur au niveau de la méthode `POST`.
 
-3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également les attributs `NotBlank` et `NotNull` (ou bien le paramètre `required` dans l'attribut `#[ApiProperty]`) que vous aviez sans doute placé précédemment sur cette propriété.
+3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également les attributs `NotBlank` et `NotNull` que vous aviez sans doute placé précédemment sur cette propriété.
 
 4. Videz le cache puis connectez-vous (si ce n'est pas déjà fait, c'est-à-dire si vous ne possédez pas le cookie **BEARER** contenant le `JWT`) et tentez de créer une nouvelle publication. Le JWT sera automatiquement envoyé au serveur avec la requête, dans un cookie. Vérifiez alors que la publication est bien créée et que l'auteur a bien été affecté par rapport à l'utilisateur représenté par le `JWT` que vous utilisez.
 
@@ -1686,7 +1784,7 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
 
 <div class="exercise">
 
-1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `publication:write:normal` (en récupérant le code correspondant dans le TD précédent...).
+1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `validation:publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `validation:publication:write:normal` (en récupérant le code correspondant dans le TD précédent...).
 
 2. Créez un dossier `Validator` dans `src` puis à l'intérieur une classe `PublicationWriteGroupGenerator` qui permettra de choisir la bonne liste de groupes à partir du statut de l'utilisateur. Vous aurez encore une fois besoin du service `Security` pour obtenir l'utilisateur courant.
 
@@ -1726,7 +1824,7 @@ Dans le paramètre `security` de chaque opération, il suffit de préciser la pe
 
 5. Videz le cache et vérifiez que les permissions fonctionnent bien (mêmes tests que dans l'exercice que nous avions effectué dans la partie "sécurité" de ce TD).
 
-6. Si vous voulez, vous pouvez également ajouter une permission `PUBLICATION_CREATE` dans votre `PublicationVoter`. La permission est accordée si l'utilisateur est connecté (donc possède `ROLE_USER`). Cela permet de centraliser cette permission et la changer si besoin, dans le futur. Attention toutefois dans la méthode `support`, il faut autoriser que l'objet traité soit **null** en modifiant légèrement la condition (dans une opération de création, la publication n'existe pas encore...).
+6. Si vous voulez, vous pouvez également ajouter une permission `PUBLICATION_CREATE` dans votre `PublicationVoter`. La permission est accordée si l'utilisateur est connecté (donc possède `ROLE_USER`). Cela permet de centraliser cette permission et la changer si besoin, dans le futur. Attention toutefois : dans une opération de création, la publication n'existe pas encore! Donc en l'état, notre méthode `support` ne fonctionnerait pas. Dans ce cas, il faut utiliser le paramètre `securityPostDenormalize` au lieu de `security` au niveau de l'opération.
 
 </div>
 
