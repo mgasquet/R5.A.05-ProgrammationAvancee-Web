@@ -1222,7 +1222,7 @@ Dans un premier temps, nous allons voir comment installer et configurer cet outi
     ./stripe login --interactive
     ```
 
-    Il s'agit de la syntaxe Linux. Sur Windows, il faut bien sur rajouter `.exe`.
+    Il s'agit de la syntaxe Linux. Sur Windows, il faut bien sur rajouter `.exe`. Si vous l'avez installé (via `apt`, par exemple) la commande sera plutôt `stripe login --interactive`.
 
 4. À l'étape d'après, collez votre clé secrète de test (clic-droit pour coller dans le terminal). Par sécurité, la clé n'est pas affichée (comme quand vous tapez un mot de passe dans un terminal, sous Linux), validez simplement après avoir collé la clé. On vous demande ensuite un nom pour votre machine. Un nom est proposé par défaut, vous pouvez valider ou le changer.
 
