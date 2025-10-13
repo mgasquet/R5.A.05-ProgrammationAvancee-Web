@@ -985,8 +985,8 @@ class MaCommande extends Command
     ```php
     public function removeRole($role) : void {
         $index = array_search($role, $this->roles);
-        //array_search renvoie soit l'index (la clé) soit false is rien n'est trouver 
-        //Préciser le !== false est bien nécessaire, car si le role se trouve à l'index 0, utiliser un simple if($index) ne vérifie pas le type! Et donc, si l'index retournait est 0, la condition ne passerait pas...!
+        //array_search renvoie soit l'index (la clé) soit false si rien n'est trouvé 
+        //Préciser le !== false est bien nécessaire, car si le rôle se trouve à l'index 0, utiliser un simple if($index) ne vérifie pas le type! Et donc, si l'index retourné est 0, la condition ne passe pas...!
         if ($index !== false) {
             unset($this->roles[$index]);
         }
