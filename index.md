@@ -21,9 +21,9 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
     3. Séance 3 : Suite et fin du [TD 2](tutorials/tutorial2).
 	4. Fin de semaine : Lancement du [premier projet](tutorials/projet1)	
 2. Semaine du 22 septembre 2025 -- [TD 3](tutorials/tutorial3) -- Amélioration du site
+3. Semaine du 13 octobre 2025 : Suite et fin du [TD 3](tutorials/tutorial3) puis suivi du [premier projet](tutorials/projet1).
 
 {% comment %}
-3. Semaine du 13 octobre 2025 : Suite et fin du [TD 3](tutorials/tutorial3) puis suivi du [premier projet](tutorials/projet1).
 4. Semaine du 20 octobre 2025 :
     1. Séance 1 : [TD 4](tutorials/tutorial4) -- Création d'une API REST avec API Platform
     2. Séance 2 : Suite du [TD 4](tutorials/tutorial4).

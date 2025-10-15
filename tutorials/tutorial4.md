@@ -1229,6 +1229,7 @@ namespace App\EventListener;
 
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
 class AuthenticationSuccessListener
 {
@@ -1238,9 +1239,8 @@ class AuthenticationSuccessListener
         )
     {}
 
-    /**
-     * @param AuthenticationSuccessEvent $event
-     */
+    //On doit indiquer le nom de l'événement qu'on souhaite écouter (car il provient d'un bundle et n'est pas natif à Symfony)
+    #[AsEventListener('lexik_jwt_authentication.on_authentication_success')]
     public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
     {
         $data = $event->getData();
@@ -1267,30 +1267,11 @@ Le but de la méthode `onAuthenticationSuccessResponse` est de capter l'événem
 
 * `setData` permet de réaffecter le contenu du corps de la réponse.
 
-Une fois la classe créée, il faut l'enregistrer en tant que receveuse de l'événement dans le fichier `config/services.yaml` :
-
-```yml
-# Dans config/services.yaml
-services:
-
-    ...
-
-    # Nom personnalisé
-    acme_api.event.authentication_success_listener:
-        # Classe prenant en charge l'événement
-        class: App\EventListener\AuthenticationSuccessListener
-        # Précision de l’événement à capter
-        tags:
-            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccessResponse }
-```
-
 <div class="exercise">
 
 1. Créez un dossier `EventListener` dans `src` et ajoutez la classe `AuthenticationSuccessListener` telle que définie ci-dessus puis complétez-la afin d'enregistrer l'identifiant, le login, l'adresse email et le statut premium de l'utilisateur ainsi que la date d'expiration du `JWT` dans la réponse de la requête.
 
-2. Éditez le fichier `config/services.yaml` pour enregistrer ce gestionnaire d'événement.
-
-3. Videz le cache puis tentez de vous authentifier de nouveau. Vous devriez observer les nouvelles informations dans le corps de la réponse.
+2. Videz le cache puis tentez de vous authentifier de nouveau. Vous devriez observer les nouvelles informations dans le corps de la réponse.
 
 </div>
 
@@ -1316,7 +1297,7 @@ Ici aussi, il semble donc être plus judicieux de s'orienter vers un stockage **
 
 Pour mettre en place tout cela, nous allons nous servir du bundle `JWTRefreshTokenBundle`. La configuration est assez simple.
 
-* Tout d'abord, on crée l'entité suivante, qui correspond à l'entité gérant les tokens de rafraîchissement (car ils sont stockés dans notre BDD) :
+* Tout d'abord, le bundle va automatiquement créer l'entité suivante, qui correspond à l'entité gérant les tokens de rafraîchissement (car ils sont stockés dans notre BDD) :
 
 ```php
 namespace App\Entity;
@@ -1328,7 +1309,8 @@ use Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken as BaseRefreshToken;
 #[ORM\Table(name: 'refresh_tokens')]
 class RefreshToken extends BaseRefreshToken
 {
-    //Pas besoin de propriété(s) particulière(s).
+    //Pas besoin de propriété(s) particulière(s), elles sont héritées.
+    //On pourra éventuellement ajouter des propriétés dans le futur...
 }
 ```
 
@@ -1356,8 +1338,6 @@ security:
             entry_point: jwt
             refresh_jwt:
                 check_path: api_refresh_token
-                #Afin que le token ne soit envoyé que sur les sous-routes /api/token/...
-                path: /api/token/
             ...
 ```
 
@@ -1373,6 +1353,8 @@ gesdinet_jwt_refresh_token:
     # Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de le renvoyer dans le corps de la réponse.
     cookie:
         enabled: true
+        #Afin que le token ne soit envoyé que sur les sous-routes /api/token/...
+        path: /the_feed_api/public/api/token
 ```
 
 Maintenant, quand vous vous authentifierez avec la route `/api/auth`, vous obtiendrez votre `token` (JWT) habituel ainsi qu'un token `refresh_token`. Celui-ci sera notamment utilisé lors de l'accès à la route suivante :
@@ -1398,15 +1380,13 @@ Maintenant, à vous de jouer !
 
     Quand on vous pose la question relative à l'utilisation d'une `recipe` répondez **yes**. Le mécanisme des `recipes` permet de configurer automatiquement certains aspects de l'application quand on ajoute une nouvelle librairie, un bundle... Par exemple, en créant de nouveaux fichiers ou en complétant certains fichiers de configuration. Cela est défini par le développeur du module installé.
 
-2. Créez l'entité `RefreshToken` (vous pouvez directement copier le code présenté plus tôt).
+2. Complétez les différents fichiers de configurations : `config/routes/gesdinet_jwt_refresh_token.yaml`, `config/packages/security.yaml`, `config/packages/gesdinet_jwt_refresh_token.yaml`.
 
-3. Complétez les différents fichiers de configurations : `config/routes/gesdinet_jwt_refresh_token.yaml`, `config/packages/security.yaml`, `config/packages/gesdinet_jwt_refresh_token.yaml`.
+3. Videz le cache.
 
-4. Videz le cache.
+4. Mettez à jour la structure de votre base de données en utilisant les commandes adéquates.
 
-5. Mettez à jour la structure de votre base de données en utilisant les commandes adéquates.
-
-6. Testez votre nouveau système :
+5. Testez votre nouveau système :
 
     * Authentifiez-vous et vérifiez que vous obtenez bien un `refresh_token` dans vos **cookies** en plus de votre token habituel.
 
@@ -1533,7 +1513,7 @@ Nous venons de voir que, dans notre cas, utiliser un cookie sécurisé pour tran
 
 Même si le fait d'utiliser un cookie présente de nombreux avantages au niveau de la sécurité, il peut poser des problèmes de gestion en fonction des clients qui souhaitent l'utiliser :
 
-* Concernant les navigateurs web, les cookies `HttpOnly` ne peuvent pas être envoyés par des clients dont le nom de domaine de l'adresse web se trouve en dehors du nom de domaine de l'adresse web de l'API. Par exemple, si mon API se trouve sur `www.exemple.com/api` et mon client sur `www.exemple.com/client`, dans les deux cas, le nom de domaine est `exemple.com`. Si on envoie une requête de connexion depuis `www.exemple.com/client`, le cookie écrit par l'API sera lié au nom de domaine `exemple.com` et sera bien envoyé à chaque requête nécessitant une authentification émise par `www.exemple.com/client`. De plus, on peut faire en sorte que le cookie fonctionne aussi dans les sous-domaines de `exemple.com` en configurant l'attribut `DOMAIN` du cookie (pour qu'il fonctionne sur `app.exemple.com`, par exemple...). Cependant, si une requête de connexion est émise depuis le site `coucou.com` le cookie créé sera toujours lié à `exemple.com` (car c'est là que se trouve l'API) et il ne sera jamais envoyé lors des requêtes émises depuis `coucou.com`. Bref, si l'API doit être utilisées par plusieurs sites externes qui ne sont pas sur le même nom domaine qu'elle, ça ne sera pas possible.
+* Concernant les navigateurs web, les cookies ne peuvent pas être envoyés par des clients dont le nom de domaine de l'adresse web se trouve en dehors du nom de domaine de l'adresse web de l'API. Par exemple, si mon API se trouve sur `www.exemple.com/api` et mon client sur `www.exemple.com/client`, dans les deux cas, le nom de domaine est `exemple.com`. Si on envoie une requête de connexion depuis `www.exemple.com/client`, le cookie écrit par l'API sera lié au nom de domaine `exemple.com` et sera bien envoyé à chaque requête nécessitant une authentification émise par `www.exemple.com/client`. De plus, on peut faire en sorte que le cookie fonctionne aussi dans les sous-domaines de `exemple.com` en configurant l'attribut `DOMAIN` du cookie (pour qu'il fonctionne sur `app.exemple.com`, par exemple...). Cependant, si une requête de connexion est émise depuis le site `coucou.com` le cookie créé sera toujours lié à `exemple.com` (car c'est là que se trouve l'API) et il ne sera jamais envoyé lors des requêtes émises depuis `coucou.com`. Bref, si l'API doit être utilisées par plusieurs sites externes qui ne sont pas sur le même nom domaine qu'elle, ça ne sera pas possible.
 
 * La gestion des cookies est essentiellement un mécanisme des clients de type **navigateur web**, et ne sont pas forcément gérés naturellement par les autres types de clients, comme les applications mobiles par exemple. Cependant, il existe des librairies pour gérer cela dans la plupart des cas. Et sinon, il suffit juste d'extraire les données de la réponse. De plus, ici, le paramétrage `HttpOnly`, `SameSite` et `Secure` n'ont pas vraiment d'importance, car ce sont des mécanismes liés au navigateur web. Une application mobile peut donc extraire les données des cookies envoyées par le serveur, les stocker et les envoyer au besoin à sa guise. De même, sur une application mobile, on ne retrouve pas les problèmes des failles XSS et CSRF (mais il peut y en avoir d'autres !). Bref, en dehors des navigateurs, la gestion des cookies n'est pas vraiment naturelle (mais pas impossible). On peut donc se dire que dans ce contexte, garder les tokens dans le corps de la réponse peut *éventuellement* être une meilleure solution (en tout cas, plus facile).
 
