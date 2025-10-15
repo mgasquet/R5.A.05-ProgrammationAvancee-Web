@@ -1281,15 +1281,15 @@ Plus tôt, nous avions évoqué le **système de rafraîchissement** pour permet
 
 * Les JWT émis par l'application suite à l'authentification ont une faible durée de vie (3600 secondes par défaut). C'est une bonne chose que ce `JWT` d’authentification qui est transmis dans **beaucoup de requêtes** ne soit valide que sur une courte durée. Ainsi, on limite les risques en cas de vol ou autre. Cependant, en l'état, cela n'est pas très pratique, car cela voudrait dire que l'utilisateur est déconnecté de force dès que le token expire (et doit donc se reconnecter après 3600 secondes).
 
-* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraîchissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, un mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraîchir notre JWT, en transmettant le token de rafraîchissement. Un nouveau JWT est transmis et la durée de vie du token de rafraîchissement est soit réinitialisé (durée de vie remise au maximum), ou alors, un nouveau token de rafraîchissement est émis. 
+* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraîchissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, un mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraîchir notre JWT, en transmettant le token de rafraîchissement. Un nouveau JWT est transmis et la durée de vie du token de rafraîchissement est soit réinitialisé (durée de vie remise au maximum), ou alors, un nouveau token de rafraîchissement est émis (plus sécurisé). 
 
 La route de rafraîchissement peut aussi être utilisée à chaque ouverture de l'application afin d'obtenir un nouveau `JWT`.
 
 Contrairement au JWT d'authentification, le token de rafraîchissement peut être gardé de manière plus sécurisée et n'a pas besoin d'être transmis à chaque requête. Si un client n'est pas actif pendant une longue période (par exemple, une semaine) son JWT d'authentification (avec une courte durée de vie) aura expiré, mais il ne sera pas "déconnecté" pour autant, car si **token de rafraîchissement** n'aura pas expiré. En fait, quand il retournera sur l'application, son JWT d'authentification sera renouvelé grâce au token de rafraîchissement. Cependant, au bout d'une trop longue période d'inactivité (par exemple, plusieurs mois) l'utilisateur sera naturellement "déconnecté" à cause de l'expiration de son token de rafraîchissement.
 
-Lorsque le token de rafraichissement est utilisé, on peut prolonger sa durée de vie ou bien en générer un nouveau.
+Lorsque le token de rafraichissement est utilisé, on peut prolonger sa durée de vie ou bien en générer un nouveau (plus sécurisé).
 
-Contrairement aux tokens d’authentification (à courte durée de vie), les tokens de rafraîchissement sont stockés dans la base de données, car ils ont une durée de vie potentiellement longue (plusieurs mois). Ainsi, si un utilisateur est compromis, il suffit de supprimer le token de rafraîchissement de la base.
+Contrairement aux tokens d’authentification (à courte durée de vie), les tokens de rafraîchissement sont stockés dans la base de données, car ils ont une durée de vie potentiellement longue (plusieurs mois). Ainsi, si un utilisateur est compromis, il suffit de supprimer le token de rafraîchissement de la base. On peut aussi faire en sorte qu'un utilisateur puisse supprimer certains tokens de rafraichissement liés à son compte afin de se "déconnecter" de certains appareils spécifiques.
 
 La sécurisation de ce token est aussi primordiale, car il permet d'obtenir de nouveaux JWTs de manière illimitée (pendant toute la durée de vie du token). Dans un fonctionnement standard et basique, le client doit stocker ce token et l'envoyer dans le `payload` des différentes routes qui nécessitent d'utiliser ce token (rafraîchissement, invalidation...) en plus du `JWT` d'authentification (dans l'en-tête `Authorization` ou dans un cookie...). Mais comme nous l'avons vu, cela peut poser des problèmes de sécurité en cas d'attaque `XSS` (cela est même encore plus dangereux, car quelqu'un qui a accès au token de rafraîchissement peut générer autant de tokens d'authentification qu'il veut !)
 
@@ -1348,18 +1348,18 @@ security:
 gesdinet_jwt_refresh_token:
     # Classe représentant le token de rafraîchissement (option déjà paramétrée, par défaut)
     refresh_token_class: App\Entity\RefreshToken
-    # Pour que la durée de vie du token de rafraîchissement soit réinitialisée (à son maximum) après chaque utilisation
-    ttl_update: true
+    # Pour que le token soit invalidé et supprimé après rafraîchissement, et qu'un nouveau soit fourni
+    single_use: true
     # Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de le renvoyer dans le corps de la réponse.
     cookie:
         enabled: true
-        #Afin que le token ne soit envoyé que sur les sous-routes /api/token/...
+        #Afin que le token ne soit envoyé que sur les sous-routes /the_feed_api/public/api/token...
         path: /the_feed_api/public/api/token
 ```
 
 Maintenant, quand vous vous authentifierez avec la route `/api/auth`, vous obtiendrez votre `token` (JWT) habituel ainsi qu'un token `refresh_token`. Celui-ci sera notamment utilisé lors de l'accès à la route suivante :
 
-* `/api/token/refresh` (en POST) : rafraîchit votre JWT et réinitialise la durée de vie du token de rafraîchissement.
+* `/api/token/refresh` (en POST) : rafraîchit votre JWT et invalide (puis supprime) le token de rafraîchissement avant de vous en fournir un nouveau.
  
 On a aussi accès à cette commande qui permet de supprimer tous les tokens de rafraîchissement ayant expiré :
 
