@@ -71,7 +71,7 @@ Voici les détails du service qui devra être développé :
 
 Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
-* Normalement, dans un contexte réel, la racine du site pointe sur le dossier `public` de l'application, ce qui fait que les autres répertoires (au-dessus) ne sont naturellement pas accessibles par le client/navigateur. Cependant, comme nous utilisons une architecture particulière en TD, vous pouvez renforcer la sécurité des autres répertoires en interdisant leur accès en ajoutant un fichier `.htaccess` qui contient l'instruction `Require all denied` à la racine de votre projet.
+* Normalement, dans un contexte réel, la racine du site pointe sur le dossier `public` de l'application, ce qui fait que les autres répertoires (au-dessus) ne sont naturellement pas accessibles par le client/navigateur. Cependant, comme nous utilisons une architecture particulière en TD, vous pouvez renforcer la sécurité des autres répertoires en interdisant leur accès en ajoutant un fichier `.htaccess` qui contient l'instruction `Require all denied` à la racine de votre projet et en ajoutant `Require all granted` au début du fichier `.htaccess` contenu dans `public`.
 
 * Pour **modifier** un objet (entité) déjà existant (par exemple, un utilisateur), on récupère simplement l'objet correspondant et on applique les modifications (par exemple, via un formulaire). Ensuite, on utilise là-aussi le service `EntityManager` afin de synchroniser les modifications avec la base de données en utilisant la méthode `flush`. Plus d'information à ce propos sur [la documentation officielle](https://symfony.com/doc/current/doctrine.html#updating-an-object).
 
