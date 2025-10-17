@@ -45,7 +45,7 @@ Voici les détails du service qui devra être développé :
 
 * Un utilisateur peut **masquer** son profil. On ne doit pas pouvoir accéder à la photo de profil d'un utilisateur dont le profil est masqué. L'utilisateur peut masquer/démasquer son profil depuis son espace de gestion avec un simple clic sur un bouton, sans rechargement de la page (encore avec du `JavaScript` + `AJAX`).
 
-* Le site doit pouvoir être passé en **mode maintenance** à l'aide d'un nouveau paramètre que vous pourrez définir et modifier dans le fichier `services.yaml`. Quand le site est en mode maintenance, toutes les pages du site doivent rediriger sur une page qui affiche un message expliquant que le site est actuellement en maintenance (même l'accès aux photos de profils des utilisateurs, etc).
+* Le site doit pouvoir être passé en **mode maintenance** à l'aide d'un nouveau paramètre que vous pourrez définir et modifier dans le fichier `.env` (ou `services.yaml`). Quand le site est en mode maintenance, toutes les pages du site doivent rediriger sur une page qui affiche un message expliquant que le site est actuellement en maintenance (même l'accès aux photos de profils des utilisateurs, etc).
 
 * Certains utilisateurs peuvent posséder le rôle d'**administrateur**. Depuis leur page de gestion, ils ont accès à une nouvelle page qui liste tous les utilisateurs. À partir de cette page, un administrateur peut **supprimer les différents comptes utilisateurs** sauf ceux des administrateurs.
 
@@ -71,7 +71,7 @@ Voici les détails du service qui devra être développé :
 
 Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
-* Normalement, dans un contexte réel, la racine du site pointe sur le dossier `public` de l'application, ce qui fait que les autres répertoires (au-dessus) ne sont naturellement pas accessibles par le client/navigateur. Cependant, comme nous utilisons une architecture particulière en TD, vous pouvez renforcer la sécurité des autres répertoires en interdisant leur accès en ajoutant un fichier `.htaccess` qui contient l'instruction `Require all denied` à la racine de votre projet et en ajoutant `Require all granted` au début du fichier `.htaccess` contenu dans `public`.
+* Normalement, dans un contexte réel, la racine du site pointe sur le dossier `public` de l'application, ce qui fait que les autres répertoires (au-dessus) ne sont naturellement pas accessibles par le client/navigateur. Cependant, comme nous utilisons une architecture particulière en TD (et sur le serveur `webinfo`), vous devrez renforcer la sécurité des autres répertoires en interdisant leur accès en ajoutant un fichier `.htaccess` qui contient l'instruction `Require all denied` à la racine de votre projet et en ajoutant `Require all granted` au début du fichier `.htaccess` contenu dans `public`. Cela permettra notamment d'éviter que n'importe qui puisse lire le contenu de votre fichier `.env`.
 
 * Pour **modifier** un objet (entité) déjà existant (par exemple, un utilisateur), on récupère simplement l'objet correspondant et on applique les modifications (par exemple, via un formulaire). Ensuite, on utilise là-aussi le service `EntityManager` afin de synchroniser les modifications avec la base de données en utilisant la méthode `flush`. Plus d'information à ce propos sur [la documentation officielle](https://symfony.com/doc/current/doctrine.html#updating-an-object).
 
