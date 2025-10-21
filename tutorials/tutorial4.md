@@ -47,9 +47,9 @@ Donc, par exemple, on pourrait avoir :
 
 * `GET /publications` : Renvoie toutes les publications.
 
-* `GET /publication/1` : Renvoie les informations de la publication ayant pour identifiant 1.
+* `GET /publications/1` : Renvoie les informations de la publication ayant pour identifiant 1.
 
-* `POST /publication` : Créé une nouvelle publication (et renvoie ses informations).
+* `POST /publications` : Créé une nouvelle publication (et renvoie ses informations).
 
 * `DELETE /utilisateurs/3` : Supprime l'utilisateur numéro 3.
 
@@ -1314,18 +1314,18 @@ class RefreshToken extends BaseRefreshToken
 }
 ```
 
-* Ensuite, on met en place la route liée au rafraîchissement, dans le fichier `config/routes/gesdinet_jwt_refresh_token.yaml` (qui sera générée une fois le bundle installé) :
+* Il va ensuite (automatiquement, encore une fois) mettre en place la route liée au rafraîchissement, dans le fichier `config/routes/gesdinet_jwt_refresh_token.yaml`. Par contre, on doit compléter cette route si on veut la limiter au verbe `POST`, par exemple :
 
 ```yaml
 # Dans config/routes/gesdinet_jwt_refresh_token.yaml
 
 # Route pour rafraîchir notre JWT (on limite en POST)
-api_refresh_token:
+gesdinet_jwt_refresh_token:
     path: /api/token/refresh
     methods: ['POST']
 ```
 
-* Après, on édite le fichier `security.yaml` afin de paramétrer notre système de rafraîchissement et nos deux nouvelles routes :
+* Après, on édite le fichier `security.yaml` afin de paramétrer notre système de rafraîchissement et notre nouvelle route :
 
 ```yaml
 # Dans config/packages/security.yaml
@@ -1337,7 +1337,7 @@ security:
             ...
             entry_point: jwt
             refresh_jwt:
-                check_path: api_refresh_token
+                check_path: gesdinet_jwt_refresh_token
             ...
 ```
 
@@ -1380,7 +1380,7 @@ Maintenant, à vous de jouer !
 
     Quand on vous pose la question relative à l'utilisation d'une `recipe` répondez **yes**. Le mécanisme des `recipes` permet de configurer automatiquement certains aspects de l'application quand on ajoute une nouvelle librairie, un bundle... Par exemple, en créant de nouveaux fichiers ou en complétant certains fichiers de configuration. Cela est défini par le développeur du module installé.
 
-2. Complétez les différents fichiers de configurations : `config/routes/gesdinet_jwt_refresh_token.yaml`, `config/packages/security.yaml`, `config/packages/gesdinet_jwt_refresh_token.yaml`.
+2. Complétez les différents fichiers de configurations : `config/routes/gesdinet_jwt_refresh_token.yaml` (pour limiter la route de rafraîchissement à `POST`), `config/packages/security.yaml` (pour paramétrer l'utilisation du système de rafraîchissement) et enfin `config/packages/gesdinet_jwt_refresh_token.yaml` (pour activer l'option `single_use` et utiliser les cookies).
 
 3. Videz le cache.
 
@@ -1440,7 +1440,7 @@ Voici les étapes pour mettre en place cette route :
 
    ```yaml
    # Dans config/routes/gesdinet_jwt_refresh_token.yaml
-   api_token_invalidate:
+   gesdinet_jwt_invalidate_token:
        path: /api/token/invalidate
        methods: ['POST']
    ```
@@ -1481,7 +1481,7 @@ Voici les étapes pour mettre en place cette route :
            main:
                ...
                logout:
-                   path: api_token_invalidate
+                   path: gesdinet_jwt_invalidate_token
                    delete_cookies: ['BEARER']
    ```
 
@@ -1542,6 +1542,29 @@ gesdinet_jwt_refresh_token:
 ```
 
 Dans notre cas, il n'y aura (bientôt) qu'un client web sur le même nom de domaine que notre API, donc **l'option cookie convient parfaitement**. Cependant, nous avons vu que dans tous les cas, une attaque `XSS` (pour une application sur un navigateur web) reste un danger (même si les conséquences sont potentiellement un peu moins grandes avec les cookies). C'est donc au client qui consomme l'API de s'assurer que ce genre de faille ne puisse pas être exploitée.
+
+### Sécurité du bundle gesdinet/jwt-refresh-token-bundle
+
+Bien que très utile, le bundle `gesdinet/jwt-refresh-token-bundle` que nous utilisons pour gérer nos tokens de rafraîchissement possède (actuellement) un défaut majeur : les tokens sont **stockés en base** (nécessaire pour pouvoir les invalider au besoin) mais ne sont pas **hachés** (chiffrés).
+
+Cela veut donc dire que si la base de données fuite et est récupérée par un utilisateur malicieux, il pourra se connecter et obtenir des JWTs et de nouveaux tokens de rafraichissement de manière illimitée pour n'importe quel utilisateur correspondant à un token dérobé dans la base ! Ce n'est pas aussi grave que de stocker en clair un mot de passe (car on peut facilement invalider tous les tokens de rafraichissement en les supprimant) mais cela reste problématique.
+
+Globalement, on peut suivre les recommandations suivantes :
+* Ne pas stocker le token de rafraîchissement **en clair** dans la base de données mais plutôt un **hash poivré** de ce token (chiffré avec l'algorithme `SHA-256` et poivré avec une **clé secrète** relative à l'application).
+* Lors de l'authentification ou du rafraichissement, on renvoie toujours le token en clair à l'utilisateur.
+* Lors du rafraichissement ou de l'invalidation du token, on récupère la valeur en clair donnée par l'utilisateur, on la hache et on la poivre avec la clé secrète et on peut ainsi récupérer les données du token en base. Ainsi, si un attaquant récupère la base, il ne pourra pas utiliser le token de rafraichissement (car chiffré).
+* On conseille aussi de renouveler les tokens (lors d'un rafraîchissement) au lieu de rallonger leur durée de vie. Avec le bundle, cela peut être fait via le paramètre `single_use` (que nous utilisons actuellement).
+* Éventuellement, on peut aussi stocker les tokens de rafraichissement dans une base de données à part.
+
+Bref, avec le bundle que nous utilisons actuellement, il n'est pas (*directement*) possible de chiffrer nos tokens, et il n'y a 
+pas vraiment de bundle alternatif que nous pourrions utiliser. 
+
+Cependant, nous pouvons mettre en place diverses solutions :
+* Ne pas utiliser le bundle et coder le mécanisme de rafraichissement soi-même, spécifique à l'application. Cela demande un peu d'effort et quelques classes, mais n'est pas trop compliqué.
+* Utiliser la puissance de symfony pour **décorer** et **réécrire** dynamiquement certaines parties du bundle de rafraîchissement.
+* Faire son propre fork du bundle et rajouter la fonctionnalité de chiffrement.
+
+Nous vous présenterons plusieurs solutions techniques pour sécuriser plus amplement ces tokens dans une future **note complémentaire**.
 
 ## Sécurité
 
