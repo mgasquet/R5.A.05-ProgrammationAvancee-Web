@@ -25,8 +25,8 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
 4. Semaine du 20 octobre 2025 :
     1. Séance 1 : [TD 4](tutorials/tutorial4) -- Création d'une API REST avec API Platform
     2. Séance 2 : Suite du [TD 4](tutorials/tutorial4).
-{% comment %}
 5. Semaine du 10 novembre 2025 : -- Suite et fin du [TD 4](tutorials/tutorial4).
+{% comment %}
 6. Semaine du 17 novembre 2025 : -- Début des [TDs de Vue.Js](https://matthieu-rosenfeld.github.io/).
 
 ## TDs de Vue.js
