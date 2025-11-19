@@ -33,7 +33,7 @@ Voici les détails de l'**API REST** qui devra être développée :
 
 * Les gestionnaires et les administrateurs peuvent modifier et supprimer n'importe quel "objet critiquable".
 
-* Les utilisateurs basiques peuvent aussi **créer des objets critiquables** (par exemple, si ajouter la fiche d'un film s'il n'existe pas), **qui devront toutefois être validées** par un gestionnaire ou un administrateur avant d'être accessibles publiquement.
+* Les utilisateurs basiques peuvent aussi **créer des objets critiquables** (par exemple, ajouter la fiche d'un film s'il n'existe pas), **qui devront toutefois être validées** par un gestionnaire ou un administrateur avant d'être accessibles publiquement.
 
 * N'importe quel utilisateur connecté peut **créer une critique** d'un des objets de l'application (mais pas plusieurs sur le même objet). Le contenu de la critique sera composé d'une **note**, d'un **texte** et de plusieurs **critères** spécifiques au type d'objet traité par l'application. L'utilisateur peut aussi modifier et supprimer ses critiques.
 
