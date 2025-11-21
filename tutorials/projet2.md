@@ -1,6 +1,6 @@
 ---
 title: Projet - Site de critiques
-subtitle: API REST, Symfony, Vue.js, Cleint-Serveur
+subtitle: API REST, Symfony, Vue.js, Client-Serveur
 layout: tutorial
 lang: fr
 ---
@@ -27,13 +27,13 @@ Voici les détails de l'**API REST** qui devra être développée :
 
 * L'API permet à des utilisateurs de s'**inscrire**, de s'**authentifier**, de **modifier** les informations de leurs comptes, de supprimer leur compte, etc.
 
-* Il existe différents **rôles** sur l'application : les utilisateurs basiques (permissions par défaut), les gestionnaires et les administrateurs.
+* Il existe différents **rôles** sur l'application : les utilisateurs basiques (permissions par défaut) et les administrateurs.
 
-* Un utilisateur ayant le rôle de gestionnaire ou d'administrateur peut créer un **objet critiquable** (par exemple, la fiche d'un film) en précisant diverses **informations spécifiques au thème** retenu (par exemple, pour un film, son titre, sa durée, les acteurs, etc). Il faudra que les informations soient **suffisamment variées**.
+* Un utilisateur ayant le rôle d'administrateur peut créer un **objet critiquable** (par exemple, la fiche d'un film) en précisant diverses **informations spécifiques au thème** retenu (par exemple, pour un film, son titre, sa durée, les acteurs, etc). Il faudra que les informations soient **suffisamment variées**.
 
-* Les gestionnaires et les administrateurs peuvent modifier et supprimer n'importe quel "objet critiquable".
+* Les administrateurs peuvent modifier et supprimer n'importe quel "objet critiquable".
 
-* Les utilisateurs basiques peuvent aussi **créer des objets critiquables** (par exemple, ajouter la fiche d'un film s'il n'existe pas), **qui devront toutefois être validées** par un gestionnaire ou un administrateur avant d'être accessibles publiquement.
+* Les utilisateurs basiques peuvent aussi **créer des objets critiquables** (par exemple, ajouter la fiche d'un film s'il n'existe pas), **qui devront toutefois être validées** par un administrateur avant d'être accessibles publiquement.
 
 * N'importe quel utilisateur connecté peut **créer une critique** d'un des objets de l'application (mais pas plusieurs sur le même objet). Le contenu de la critique sera composé d'une **note**, d'un **texte** et de plusieurs **critères** spécifiques au type d'objet traité par l'application. L'utilisateur peut aussi modifier et supprimer ses critiques.
 
@@ -45,11 +45,11 @@ Voici les détails de l'**API REST** qui devra être développée :
 
 * Les utilisateurs peuvent s'**abonner** à des objets critiquables et/ou à des utilisateurs (ce qui permettra de retrouver ,sur le client web, les dernières critiques des objets ou des utilisateurs suivis).
 
-* Les gestionnaires et les administrateurs peuvent **supprimer** n'importe quelle **critique**.
+* Les administrateurs peuvent **supprimer** n'importe quelle **critique**.
 
 * Les administrateurs peuvent **supprimer** n'importe quel **compte**, sauf celui d'un autre administrateur.
 
-* Les gestionnaires et les administrateurs peuvent **valider** la publication d'un **objet critiquable** soumis par un utilisateur basique.
+* Les administrateurs peuvent **valider** la publication d'un **objet critiquable** soumis par un utilisateur basique.
 
 Attention, le **thème** que vous allez choisir doit être soumis à la validation de votre enseignant. 
 Il est interdit de prendre un sujet déjà pris par une autre équipe de votre groupe TD. Premiers arrivés, premiers servis !
@@ -62,7 +62,7 @@ Vous serez attentif à ce que votre projet contienne :
 * de la **documentation** (au niveau du code et de l'API),
 * l'exploitation des différents **verbes HTTP** (GET, POST, PATCH, DELETE...). Il faudra notamment limiter les verbes utiliser sur certaines ressources,
 * l'authentification avec des **JWTs** qui renvoient des cookies et diverses informations (comme dans le TD), et un système de **rafraîchissement** par token,
-* des **StateProcessor**,
+* des **StateProcessor** (en plus de celui utilisé pour l'inscription),
 * une gestion convenable des **permissions**, notamment avec le paramètre **security** des attributs liés à API Platformn, des **rôles** et des **voters**.
 
 La seconde partie du projet consistera à la réalisation d'une interface (front-end en Vue.js) qui exploitera/consommera votre API.
@@ -89,13 +89,13 @@ Ce front devra donc permettre d'utiliser les fonctionnalités suivantes :
 
 * Permettre aux **utilisateurs connectés** de créer un **objet critiquable** :
 
-    * Pour un gestionnaire ou un administrateur, il sera publié immédiatement.
+    * Pour un administrateur, il sera publié immédiatement.
 
     * Pour un utilisateur basique, il sera soumis à validation.
 
 * Permettre aux utilisateurs connectés de **critiquer** un objet (et de modifier/supprimer leurs propres critiques).
 
-* Permettre aux gestionnaires et aux administrateurs de **supprimer** des **objets critiquables** et des **critiques**.
+* Permettre aux administrateurs de **supprimer** des **objets critiquables** et des **critiques**.
 
 * Permettre aux administrateurs de **supprimer** des **comptes** (sauf ceux des autres administrateurs).
 
@@ -116,8 +116,6 @@ Ce front devra donc permettre d'utiliser les fonctionnalités suivantes :
     * La liste des dernières critiques des objets suivis.
 
     * La liste des dernières critiques des utilisateurs suivis.
-
-* Les **gestionnaires** et les **administrateurs** peuvent retrouver les objets critiquables en **attente de validation** sur une page et les **valider**.
 
 * Ce projet sera aussi relié au projet **MyAvatar** afin de charger les photos de profils de vos utilisateurs en utilisant leur adresse email (information que vous donne l'API). Il suffit de hacher son adresse email et d'accéder au fichier avec un lien vers le site de **MyAvatar**. Vous devrez installer une librairie adéquate pour chiffrer l'adresse email avec `SHA-256`.
 
@@ -207,7 +205,7 @@ Cette archive devra contenir :
     
     * Une explication sur comment peupler la BD.
 
-    * Des logins/mot de passe d'utilisateurs intéressants, pour tester les diverses fonctionnalités (un utilisateur basique, un gestionnaire, un administrateur...).
+    * Des logins/mot de passe d'utilisateurs intéressants, pour tester les diverses fonctionnalités (un utilisateur basique, un administrateur...).
 
     * Une présentation du thème choisi (quel type d'objet est critiqué, quelles informations sont présentées sur la page d'un objet, quelles sont les critères d'une critique, etc).
 
