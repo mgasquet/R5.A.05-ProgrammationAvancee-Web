@@ -7,7 +7,7 @@ lang: fr
 
 ## Sujet - Site de critiques
 
-Ce projet se fera en **quadrinôme** et s'intéressera au développement de **deux applications** qui vont communiquer entre elles en utilisant les différentes technologies que nous avons abordées pendant ce cours : **Symfony**, **API Platform** et **Vue.js**.
+Ce projet se fera en **quadrinôme** (et exceptionnellement en trinôme) et s'intéressera au développement de **deux applications** qui vont communiquer entre elles en utilisant les différentes technologies que nous avons abordées pendant ce cours : **Symfony**, **API Platform** et **Vue.js**.
 
 L'objectif est de développer :
 
@@ -39,11 +39,11 @@ Voici les détails de l'**API REST** qui devra être développée :
 
 * N'importe qui (sans être connecté) peut :
 
-    * Accéder aux **détails d'un objet critiquable** (s'il est publié) et à ses **critiques**. Les détails de l'objet incluront également le **nombre de critiques** et la **note moyenne** (issue de l'ensemble des notes des critiques de l'objet).
+    * Accéder aux **détails d'un objet critiquable** (s'il est publié) et à ses **critiques**.
 
     * Accéder aux **détails des critiques** créées par un utilisateur.
 
-* Les utilisateurs peuvent s'**abonner** à des objets critiquables et/ou à des utilisateurs (ce qui permettra de retrouver ,sur le client web, les dernières critiques des objets ou des utilisateurs suivis).
+* Les utilisateurs peuvent mettre des objets critiquables en **favori**. Une route permet ensuite de retrouver tous les objets critiquables mis en favori par un utilisateur. De même, une autre route permet de retrouver toutes les critiques de tous les objets critiquables mis en favori par un utilisateur. Ces routes sont privées et ne doivent pouvoir être accédées que par l'utilisateur qui a mis ces objets en favori.
 
 * Les administrateurs peuvent **supprimer** n'importe quelle **critique**.
 
@@ -75,6 +75,48 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 * En TD, nous avons abordé la génération automatique de **groupes de validation**. Il est possible de faire la même chose pour les [groupes de sérialisation](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony).
 
+* Divers compléments de TDs qui pourraient vous être utiles :
+    * [Le Doctrine Query Language (DQL)]({{site.baseurl}}/complements/dql)
+    * [API Platform - Utilisation d'identifiants simples à la place des IRIs]({{site.baseurl}}/complements/iri)
+    * [API Platform - Les State Providers]({{site.baseurl}}/complements/state-provider)
+    * [API Platform - Sécurité des sous-ressources]({{site.baseurl}}/complements/securite-subressources-api-platform)
+    * [API Platform - Gestion des relations entre les entités 1/2]({{site.baseurl}}/complements/relations1)
+    * [API Platform - Gestion des relations entre les entités 2/2]({{site.baseurl}}/complements/relations2)
+    * [API Platform - Sécurisation et extension du token de rafraîchissement 2/2]({{site.baseurl}}/complements/securite-refresh-token)
+
+* Dans certains cas, les relations **ManyToMany** demandent un traitement et des choix particuliers au niveau de l'API. Afin d'apprendre à gérer ces relations adéquatement dans votre API, vous pouvez lire le [ce complément de TD]({{site.baseurl}}/complements/complement3).
+
+**Attention** : suite à une mise à jour de **doctrine**, il semble qu'actuellement **API Platform** a du mal à s'installer sur la version `6.4` de Symfony. 
+
+Il existe deux solutions :
+
+Installer la précédente version de doctrine (qu'on utilisait en TD) avant d'installer le package `api` :
+
+```bash
+composer create-project symfony/skeleton:"6.4.*" nom_api
+cd nom_api
+composer require doctrine/dbal:"^3"
+composer require api
+composer require symfony/apache-pack 
+```
+
+Ou bien passer à la version `7.3` lors de l'installation (cela n'a pas été testé en profondeur, mais il semble que toutes les autres dépendances fonctionnent bien avec cette version) :
+
+```bash
+composer create-project symfony/skeleton:"7.3.*" nom_api
+cd nom_api
+composer require api
+composer require symfony/apache-pack 
+```
+
+Toutefois, avec cette version de symfony et de doctrine, il faut impérativement spécifier la version de la base de données (dans le `.env`). Celle utilisée en locale est la version `9.4.0` de `MySQl` ce qui devrait donc donner :
+
+```
+DATABASE_URL="mysql://root:root@db:3306/nom_base?serverVersion=9.4.0"
+```
+
+Pour la base de données de l'IUT, il s'agit de `mariadb-10.5`.
+
 ### Application cliente (Vue.js)
 
 La seconde partie du projet consiste à développer une application front-end en **Vue.js** permettant **d'exploiter votre API de critique** ! Globalement, c'est toute l'idée du [TD3](https://matthieu-rosenfeld.github.io/tutorials/TD3.html) où on construit le front-end de The Feed.
@@ -105,27 +147,19 @@ Ce front devra donc permettre d'utiliser les fonctionnalités suivantes :
 
     * Les informations de l'objet.
 
-    * Le nombre de critiques et la note moyenne.
+    * Le nombre de critiques et la note moyenne (issue de l'ensemble des notes des critiques de l'objet).
 
     * Le détail des critiques.
 
 * La page d'un utilisateur doit présenter **la liste de ses critiques**.
 
-* Un utilisateur connecté doit pouvoir s'**abonner** à des objets critiquables et à des utilisateurs et retrouver sur des pages dédiées :
-
-    * La liste des dernières critiques des objets suivis.
-
-    * La liste des dernières critiques des utilisateurs suivis.
+* Un utilisateur connecté doit pouvoir **mettre en favori** des objets critiquables et retrouver sur des pages dédiées la liste des dernières critiques des objets critiquables mis en favori, triés de la plus récente critique à la plus ancienne.
 
 * Ce projet sera aussi relié au projet **MyAvatar** afin de charger les photos de profils de vos utilisateurs en utilisant leur adresse email (information que vous donne l'API). Il suffit de hacher son adresse email et d'accéder au fichier avec un lien vers le site de **MyAvatar**. Vous devrez installer une librairie adéquate pour chiffrer l'adresse email avec `SHA-256`.
 
-{% comment %}
-* Vous pouvez si vous le désirez ajouter d'autres fonctionnalités, notamment pour les autres rôles, mais cela ne vous est pas demandé. 
-{% endcomment %}
-
 Vous serez attentif à ce que votre projet contienne :
 * des routes nommées,
-* une gestion correcte de la connexion / déconnexion / rafraichissement du token s'il expire pendant la navigation,
+* une gestion correcte de la connexion / déconnexion / rafraîchissement du token s'il expire pendant la navigation,
 * un découpage pertinent en vues et composants,
 * une gestion des différentes erreurs possibles lors des requêtes à l'API,
 * un code correctement typé avec TypeScript,
@@ -139,7 +173,7 @@ Attention, vous n'avez qu'une seule base MySQL chacun et vous ne pourrez pas dé
 
 Pour pouvoir accéder à votre *home* à distance et y déposer des fichiers, il faudra d'abord trouver vos identifiants de connexion login et mot de passe.
 
-Vous pourrez utiliser FileZilla (il faudra certainement l'installer) pour déposer des fichiers dans votre dossier `~/public_html` sur le serveur de l'IUT. Pour vous connecter, il faudra choisir comme protocole `SFTP`, comme hôte `ftpinfo.iutmontp.univ-montp2.fr` et vous devrez utiliser votre login et mot de passe. Vous pouvez alors facilement déplacer des fichiers de votre machine vers votre `home`.
+Vous pourrez utiliser **FileZilla** (il faudra certainement l'installer) pour déposer des fichiers dans votre dossier `~/public_html` sur le serveur de l'IUT. Pour vous connecter, il faudra choisir comme protocole `SFTP`, comme hôte `ftpinfo.iutmontp.univ-montp2.fr` et vous devrez utiliser votre login et mot de passe. Vous pouvez alors facilement déplacer des fichiers de votre machine vers votre `home`.
 
 Vous aurez surtout besoin de vous connecter en `ssh` pour pouvoir exécuter les commandes nécessaires au bon déploiement. Vous pouvez d'ailleurs utiliser git depuis `ssh` pour récupérer vos projets sans utiliser FTP. Pour les projets Symfony, il faudra notamment faire les `composer install` et probablement créer les bases. Pour le projet Vue, vous pouvez normalement copier directement la version build du projet.
 
@@ -179,19 +213,19 @@ Des sources complémentaires sur comment se connecter en FTP et en SSH à `publi
 
 ## Rendu
 
-La **deadline** du projet est le **dimanche 4 janvier, 23h59**.
+La **deadline** du projet est le **mardi 6 janvier, 23h59**.
 
 Le projet sera à rendre sur **Moodle** (l'adresse sera fournie ultérieurement). Un seul membre du groupe dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
 
 Cette archive devra contenir :
 
-* Les sources de vos deux projets dans deux dossiers séparés (c'est-à-dire, au niveau du conteneur Docker, le projet Symfony du dossier `public_html` et le projet Vue.js du le dossier `workspace`). Attention à ne pas inclure les répertoires **var** et **vendor** pour l'API réalisée avec Symfony et les dossiers **node_modules** et **dist** du client vue.
+* Les sources de vos deux projets dans deux dossiers séparés (c'est-à-dire, au niveau du conteneur Docker, le projet Symfony du dossier `public_html` et le projet Vue.js du dossier `workspace`). Attention à ne pas inclure les répertoires **var** et **vendor** pour l'API réalisée avec Symfony et les dossiers **node_modules** et **dist** du client vue.
 
 * Une manière de faire fonctionner une BD non vide quand le code tourne en local. Plusieurs solutions sont possibles :
     * utiliser SQLite et nous fournir le fichier de la BD,
     * nous fournir un fichier d'import MySQL,
     * fournir une commande PHP qui peuple la base,
-    * connecter la version dev à la BD déployé sur webinfo.
+    * connecter la version dev à une BD déployée sur webinfo.
 
 * Un fichier **README** qui contient :
 

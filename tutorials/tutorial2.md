@@ -956,7 +956,7 @@ private ?Entite $monEntite = null;
 
 Une stratégie plus poussée nommée [EXTRA_LAZY](https://www.doctrine-project.org/projects/doctrine-orm/en/2.16/tutorials/extra-lazy-associations.html) peut aussi être utilisée dans le cadre de collections d'entités, pour ne pas tout charger d'un coup si on la manipule.
 
-Aussi, dans un site concret, on mettrait en place un système de **pagination** pour charger les publications petit à petit, pour ne pas charger tout à chaque fois (imaginez qu'il y ait 1 million de publications !). Par manque de temps, nous ne le ferons pas dans nos TDs, mais pensez-y si vous développez un site similaire dans le futur. N'oubliez pas que vous pouvez ajouter des méthodes à vos classes de repository et utiliser le [DQL](https://www.doctrine-project.org/projects/doctrine-orm/en/3.2/reference/dql-doctrine-query-language.html) pour faire des requêtes plus complexes.
+Aussi, dans un site concret, on mettrait en place un système de **pagination** pour charger les publications petit à petit, pour ne pas charger tout à chaque fois (imaginez qu'il y ait 1 million de publications !). Par manque de temps, nous ne le ferons pas dans nos TDs, mais pensez-y si vous développez un site similaire dans le futur. N'oubliez pas que vous pouvez ajouter des méthodes à vos classes de repository et utiliser le [DQL](https://www.doctrine-project.org/projects/doctrine-orm/en/3.2/reference/dql-doctrine-query-language.html) pour faire des requêtes plus complexes. Le `DQL` est également présenté dans [cette note complémentaire]({{site.baseurl}}/complements/dql) que vous pourrez aller consulter à la fin du TD.
 
 ### Page d'un utilisateur
 

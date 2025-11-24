@@ -86,6 +86,12 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
     * Dans le dossier du projet, exécutez la commande suivante :
 
         ```bash
+        composer require doctrine/dbal:"^3"
+        ```
+
+        Et ensuite :
+
+        ```bash
         composer require api
         ```
 
@@ -845,7 +851,7 @@ Sur API Platform, il existe deux types de classes importantes : Les `StateProces
 
 * Une classe de type `StateProcessor` est un **service** qui est appelé après avoir reçu et vérifié le `payload` lors d'une requête de création ou de mise à jour. Elle a pour but d'effectuer des traitements avant l'enregistrement en base de données.
 
-* Une classe de type `StateProvider` va permettre à l'inverse d'appliquer des modifications aux données récupérées lors d'une opération type `GET` (lecture de données), avant de les transmettre au client.
+* Une classe de type `StateProvider` est un **service** qui va permettre à l'inverse d'appliquer des modifications aux données récupérées lors des diverses opérations (par exemple, dans le cadre d'une requête `GET` avant de les transmettre au client), ou bien même d'aller "chercher" autrement les données.
 
 Il est bien entendu possible d'injecter d'autres services (et paramètres) dans ces classes. Il est notamment possible d'accéder au **processeur** par défaut utilisé par API Platform pour poursuivre le traitement normal après (ou avant) avoir appliqué nos modifications (notre "logique métier"). Par exemple, le "traitement normal" opéré par le processeur d'API Platform lors d'une requête POST est de persister l'entité en base de données avec Doctrine.
 
@@ -928,7 +934,7 @@ class Etudiant {
 }
 ```
 
-Pour les providers, l'interface à implémenter est `StateProvider` (la commande `make:state-provider`) et le paramètre à préciser dans l'opération : `provider`. Nous n'aurons malheureusement pas l'occasion de traiter un cas de **state provider** dans ce TD, mais c'est globalement la même chose (on utilise un service pour récupérer l'information puis on applique nos modifications).
+Pour les providers, l'interface à implémenter est `StateProvider` (la commande `make:state-provider`) et le paramètre à préciser dans l'opération : `provider`. Nous n'aurons malheureusement pas l'occasion de traiter un cas de **state provider** dans ce TD, mais c'est globalement la même chose (on utilise un service pour récupérer l'information puis on applique nos modifications). Les **state providers** sont plus amplement présentés dans [cette note complémentaire]({{site.baseurl}}/complements/state-provider) que vous pourrez aller consulter à la fin du TD.
 
 <div class="exercise">
 
@@ -1564,7 +1570,7 @@ Cependant, nous pouvons mettre en place diverses solutions :
 * Utiliser la puissance de symfony pour **décorer** et **réécrire** dynamiquement certaines parties du bundle de rafraîchissement.
 * Faire son propre fork du bundle et rajouter la fonctionnalité de chiffrement.
 
-Nous vous présenterons plusieurs solutions techniques pour sécuriser plus amplement ces tokens dans une future **note complémentaire**.
+Plusieurs solutions techniques pour sécuriser plus amplement ces tokens sont présentés dans [cette note complémentaire]({{site.baseurl}}/complements/securite-refresh-token) (que vous pourrez aller consulter après le TD).
 
 ## Sécurité
 

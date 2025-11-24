@@ -7,14 +7,14 @@ lang: fr
 
 ## Introduction
 
-Dans la [première partie de ce complément]({{site.baseurl}}/complements/complement2), vous avez appris à gérer les différentes
+Dans la [première partie de ce complément]({{site.baseurl}}/complements/relations1), vous avez appris à gérer les différentes
 relations **un-plusieurs** et **un-un**.
 
 Dans cette seconde partie, nous allons étudier la gestion des relations types **plusieurs-plusieurs** (**binaires**), ou qui impliquent plus de deux entités (**ternaires**, etc), incluant ou non des données (**association porteuse**).
 
 Ce type de relation peut s'avérer compliquée de bien des manières !
 
-**Attention**, avant de continuer, il est fortement recommandé d'avoir bien suivi la [première partie de ce complément]({{site.baseurl}}/complements/complement2). Nous allons reprendre (et étendre) l'application développée dans la première partie.
+**Attention**, avant de continuer, il est fortement recommandé d'avoir bien suivi la [première partie de ce complément]({{site.baseurl}}/complements/relations1). Nous allons reprendre (et étendre) l'application développée dans la première partie.
 
 ## Les relations plusieurs-plusieurs (ManyToMany), associations porteuses et n-aire
 
@@ -218,7 +218,7 @@ Notre **schéma** relationnel, les tables et les relations existantes ne seront 
 Dans ce scénario, on conserve donc la relation `ManyToMany` entre `Joueur` et `Club`.
 
 La solution consiste à créer une classe entité "virtuelle", c'est-à-dire qui ne sera pas stockée en base de données.
-Cette entité servira alors à prendre en charge des **routes** customisées dont nous traiterons la logique avec des **StateProvider** et des **StateProcessor**.
+Cette entité servira alors à prendre en charge des **routes** customisées dont nous traiterons la logique avec des **StateProvider** et des **StateProcessor**. Nous avions abordé les **states processors** dans le [TD4]({{site.baseurl}}/tutorials/tutorial4). Concernant les **state providers**, une [note complémentaire]([DQL]({{site.baseurl}}/complements/state-provider)) est disponible à ce sujet.
 
 La forme des **routes** qui permettront d'agir sur cette ressource virtuelle sera composée des identifiants des deux entités en relation.
 
@@ -313,19 +313,20 @@ Quelques commentaires sur cette classe :
 
 Maintenant, il faut coder diverses classes pour gérer la logique de notre entité virtuelle :
 
-* Un **StateProvider** : classe qui permet de récupérer les données de l'entité (dans la base de données), à 
-partir des données de la route. Elle est utilisée dans les opérations `GET`, `PUT`, `PATCH` et `DELETE`. 
+* Un **StateProvider** : une classe qui permet de récupérer les données de l'entité (dans la base de données), à 
+partir des données de la route. Elle est utilisée dans les opérations `GET`, `POST`, `PUT`, `PATCH` et `DELETE`.
 Par défaut, **API Platform** utilise un **provider** par défaut, mais s'il y a besoin d'effectuer un traitement 
-particulier, on peut coder et fournir son propre **StateProvider**
+particulier, on peut coder et fournir son propre **StateProvider**. Dans le cas d'une opération `POST`, le provider
+par défaut instancie juste la nouvelle entité. Vous pourrez trouver plus d'information à
+ce sujet dans [cette note complémentaire]([DQL]({{site.baseurl}}/complements/state-provider)).
 
-* Un **StateProcessor** pour l'opération `PUT`. Pour rappel, un **StateProcessor** est une classe qui permet
-de traiter et modifier un objet lors d'opérations qui vont changer son état. Elle est donc utilisée dans le cadre 
-des opérations `POST`, `PUT` et `PATCH`. Dans le [TD4]({{site.baseurl}}/tutorials/tutorial4), nous en avions utilisé deux pour affecter automatiquement l'auteur d'un message, mais aussi pour hacher le mot de passe de l'utilisateur.
+* Un **StateProcessor** pour l'opération `PUT`. Pour rappel, un **StateProcessor** une classe qui permet 
+de traiter et modifier un objet lors d'opérations qui vont changer son état. 
+Elle est donc utilisée dans le cadre des opérations `POST`, `PUT` et `PATCH` et `DELETE`. 
+Dans le [TD4]({{site.baseurl}}/tutorials/tutorial4), nous en avions utilisé deux pour affecter 
+automatiquement l'auteur d'un message, mais aussi pour hacher le mot de passe de l'utilisateur.
 
 * Un **StateProcessor** pour l'opération `DELETE`.
-
-En résumé, un `StateProvider` permet de récupérer et traiter l'objet avant de le renvoyer au client, et 
-un `StateProcessor` de traiter l'objet après l'envoi des données par client et avant sa sauvegarde.
 
 Commençons par coder notre `StateProvider`. Le traitement effectué par cette classe est le suivant : 
 
@@ -351,6 +352,9 @@ Il ne reste plus qu'à la compléter :
 
 ```php
 namespace App\State;
+
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProviderInterface;
 
 class InscriptionProvider implements ProviderInterface
 {
@@ -479,6 +483,9 @@ php bin/console make:state-processor InscriptionDeleteProcessor
 
 ```php
 namespace App\State;
+
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProcessorInterface;
 
 class InscriptionDeleteProcessor implements ProcessorInterface
 {

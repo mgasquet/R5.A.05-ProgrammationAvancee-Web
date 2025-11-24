@@ -35,9 +35,7 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
 ## Projets
 
 1. Projet 1 (Symfony) : [My Avatar](tutorials/projet1)
-
-{% comment %}
-2. Projet 2 (API Platform, Symfony) : [API REST de gestion d'événements](tutorials/projet2)
+2. Projet 2 (API Platform, Symfony, Vue.Js) : [Site de critiques](tutorials/projet2)
 
 ## Compléments de TDs
 
@@ -45,7 +43,10 @@ Quelques guides et tutoriels en complément des TDs.
 
 ### API Platform
 
-1. [Complément 1 - Utilisation d'identifiants simples à la place des IRIs](complements/complement1)
-2. [Complément 2 - Gestion des relations entre les entités 1/2](complements/complement2)
-3. [Complément 3 - Gestion des relations entre les entités 2/2](complements/complement3)
-{% endcomment %}
+1. [Le Doctrine Query Language (DQL)](complements/dql)
+2. [API Platform - Utilisation d'identifiants simples à la place des IRIs](complements/iri)
+3. [API Platform - Les State Providers](complements/state-provider)
+4. [API Platform - Sécurité des sous-ressources](complements/securite-subressources-api-platform)
+5. [API Platform - Gestion des relations entre les entités 1/2](complements/relations1)
+6. [API Platform - Gestion des relations entre les entités 2/2](complements/relations2)
+7. [API Platform - Sécurisation et extension du token de rafraîchissement 2/2](complements/securite-refresh-token)

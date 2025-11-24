@@ -582,8 +582,8 @@ Par rapport au nom d'utilisateur et au mot de passe, le service `db` est configu
 
 En résumé, pour utiliser le service de base de données inclut dans le multi-conteneur docker au travers du conteneur du serveur Web, on peut utiliser la configuration suivante :
 
-```yaml
-DATABASE_URL=mysql://root:root@db:3306/nom_base
+```
+DATABASE_URL="mysql://root:root@db:3306/nom_base"
 ```
 
 Bien sûr, dans d'autres contextes, cette configuration devra être adaptée.

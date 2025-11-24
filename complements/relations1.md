@@ -437,6 +437,7 @@ API Platform nous permet de mettre en place ce système en définissant des
 #[ApiResource(
     uriTemplate: '/joueurs/{idJoueur}/resultats',
     operations: [
+        //CreateProvider est une classe spéciale fournie par API Platform
         new Post(provider: CreateProvider::class),
         new GetCollection(),
     ],
@@ -587,9 +588,9 @@ PATCH https://localhost/api/joueurs/3
 }
 ```
 
-Ce qui permettrait de "voler" un résultat d'un autre joueur, dans notre contexte !
+Ce qui permettrait de "voler" un résultat d'un autre joueur, dans notre contexte: le propriétaire du résultat 2 (qui était le joueur 1) devient le joueur 3 !
 Bref, ajouter cette fonctionnalité est intéressante, mais elle est risquée, car il faut en assurer la sécurité.
-On peut par exemple créer une [assertion dédidée](https://stackoverflow.com/questions/69257642/how-not-to-allow-an-iri-when-denormalizing-embedded-relations)
+On peut par exemple créer une [assertion dédiée](https://stackoverflow.com/questions/69257642/how-not-to-allow-an-iri-when-denormalizing-embedded-relations)
 afin d'empêcher de poster des données avec des IRIs pointant sur des ressources existantes.
 
 Sinon, on peut simplement ne pas inclure cette fonctionnalité (ne pas autoriser l'écriture de la collection **résultats**) et s'en tenir à nos routes :
@@ -743,4 +744,4 @@ Bref, l'utilisation des relations **un-un** reste assez rare et nous utiliserons
 Dans cette première partie, vous avez appris à plus amplement gérer les relations **un-plusieurs** et **un-un**, notamment avec l'utilisation
 de sous-ressources.
 
-Dans la [seconde partie]({{site.baseurl}}/complements/complement3), nous allons nous attaquer à un sujet plus complexe : la gestion des relations **plusieurs-plusieurs** (puis, plus globalement, las associations **porteuses** et **n-aire**) en étudiant différentes solutions.
+Dans la [seconde partie]({{site.baseurl}}/complements/relations2), nous allons nous attaquer à un sujet plus complexe : la gestion des relations **plusieurs-plusieurs** (puis, plus globalement, las associations **porteuses** et **n-aire**) en étudiant différentes solutions.
