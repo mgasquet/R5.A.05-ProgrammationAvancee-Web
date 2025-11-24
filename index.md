@@ -49,4 +49,4 @@ Quelques guides et tutoriels en complément des TDs.
 4. [API Platform - Sécurité des sous-ressources](complements/securite-subressources-api-platform)
 5. [API Platform - Gestion des relations entre les entités 1/2](complements/relations1)
 6. [API Platform - Gestion des relations entre les entités 2/2](complements/relations2)
-7. [API Platform - Sécurisation et extension du token de rafraîchissement 2/2](complements/securite-refresh-token)
+7. [API Platform - Sécurisation et extension du token de rafraîchissement](complements/securite-refresh-token)
