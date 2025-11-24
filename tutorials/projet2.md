@@ -84,7 +84,7 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
     * [API Platform - Gestion des relations entre les entités 2/2]({{site.baseurl}}/complements/relations2)
     * [API Platform - Sécurisation et extension du token de rafraîchissement 2/2]({{site.baseurl}}/complements/securite-refresh-token)
 
-* Dans certains cas, les relations **ManyToMany** demandent un traitement et des choix particuliers au niveau de l'API. Afin d'apprendre à gérer ces relations adéquatement dans votre API, vous pouvez lire le [ce complément de TD]({{site.baseurl}}/complements/complement3).
+* Dans certains cas, les relations **ManyToMany** demandent un traitement et des choix particuliers au niveau de l'API. Afin d'apprendre à gérer ces relations adéquatement dans votre API, vous pouvez lire le [ce complément de TD]({{site.baseurl}}/complements/relations2).
 
 **Attention** : suite à une mise à jour de **doctrine**, il semble qu'actuellement **API Platform** a du mal à s'installer sur la version `6.4` de Symfony. 
 
