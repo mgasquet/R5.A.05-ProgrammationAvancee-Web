@@ -1092,7 +1092,7 @@ Cette propriété représentera notre token chiffré dans la base.
 
 Nous allons maintenant proposer une version mise à jour du fichier `RefreshToken.orm.xml` qui permet de définir les propriétés de base du token (de la classe qu'étend notre entité `RefreshToken`). Notre objectif est de ne plus sauvegarder le token en clair (non haché) généré par le bundle. Attention, il sera toujours disponible dans l'entité, mais pas sauvegardé : nous nous en sevrions pour écrire dans le champ du token haché lors de la sauvegarde.
 
-On commence par placer ces deux fichiers dans un dossier `config/doctrine/jwt-refresh-token-bundle` :
+On commence par placer ce fichier dans un dossier `config/doctrine/jwt-refresh-token-bundle` :
 
 Fichier `RefreshToken.orm.xml` :
 

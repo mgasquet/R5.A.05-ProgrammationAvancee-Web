@@ -213,9 +213,9 @@ Des sources complémentaires sur comment se connecter en FTP et en SSH à `publi
 
 ## Rendu
 
-La **deadline** du projet est le **mardi 6 janvier, 23h59**.
+La **deadline** du projet est le **dimanche 18 janvier, 23h59**.
 
-Le projet sera à rendre sur **Moodle** (l'adresse sera fournie ultérieurement). Un seul membre du groupe dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
+Le projet sera à rendre sur **Moodle**, à [cette adresse](https://moodle.umontpellier.fr/course/section.php?id=247697). Un seul membre du groupe dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
 
 Cette archive devra contenir :
 
