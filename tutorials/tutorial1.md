@@ -37,35 +37,17 @@ L'année dernière, le framework que vous avez développé était fonctionnel, m
 
 Dans le cadre de ces quatre premiers TDs, nous allons donc étudier le framework PHP `Symfony`.
 
-Symfony est un framework web PHP **français** créé en 2005. Assez tôt, il a connu une forte popularité dans le pays. Aujourd'hui, nous en sommes à la version 6, et Symfony est devenu le framework web (PHP) le plus utilisé en France, comme nous pouvons le voir avec le graphique ci-dessous :
+Symfony est un framework web PHP **français** créé en 2005. Assez tôt, il a connu une forte popularité dans le pays. Aujourd'hui, nous en sommes à la version 8. Dans le cadre de ce cours, nous n'utiliserons pas la version 8 mais plutôt la version 7.4. En effet, cette version est dite `LTS`, ce qui signifie "Long-Term Support". Cela veut dire que cette version recevra des mises à jour de sécurité et des patchs de bugs pendant une longue période. Par exemple, la version 8.1 de Symfony sera maintenue jusqu'en janvier 2027, alors que la version 7.4 sera maintenue jusqu'en novembre 2029. La version LTS 8.x n'est pas encore publiée.
 
-<script type="text/javascript" src="https://ssl.gstatic.com/trends_nrtr/3349_RC01/embed_loader.js"></script>
+Le principal concurrent de Symfony est le framework `Laravel`. Nous avons donc fait le choix de plutôt vous apprendre à utiliser Symfony par rapport à Laravel car il y a plus de chances que les offres d'emplois relatives au développement web avec PHP (pour vos stages ou votre futur travail après la fin de vos études) concernent du développement sous Symfony, si vous restez en France.
 
-<script type="text/javascript">
-    trends.embed.renderExploreWidget("TIMESERIES", {"comparisonItem":[{"keyword":"/m/09cjcl","geo":"FR","time":"today 5-y"},{"keyword":"/m/0jwy148","geo":"FR","time":"today 5-y"},{"keyword":"/m/02qgdkj","geo":"FR","time":"today 5-y"},{"keyword":"/m/09t3sp","geo":"FR","time":"today 5-y"}],"category":0,"property":""}, {"exploreQuery":"date=today%205-y&geo=FR&q=%2Fm%2F09cjcl,%2Fm%2F0jwy148,%2Fm%2F02qgdkj,%2Fm%2F09t3sp&hl=fr","guestPath":"https://trends.google.fr:443/trends/embed/"});
- </script>
-
-<div style="margin:auto;width:50%">
-{% endraw %}
-![pas mal non]({{site.baseurl}}/assets/TD1/pas-mal-fr.PNG)
-{% raw %}
-</div>
-
-Cependant, si nous élargissons ce graphique au niveau mondial, le framework `Laravel` est beaucoup plus utilisé. En fait, Symfony est majoritairement utilisé en France.
-
-<script type="text/javascript">
-    trends.embed.renderExploreWidget("TIMESERIES", {"comparisonItem":[{"keyword":"/m/09cjcl","geo":"","time":"today 5-y"},{"keyword":"/m/0jwy148","geo":"","time":"today 5-y"},{"keyword":"/m/02qgdkj","geo":"","time":"today 5-y"},{"keyword":"/m/09t3sp","geo":"","time":"today 5-y"}],"category":0,"property":""}, {"exploreQuery":"date=today%205-y&q=%2Fm%2F09cjcl,%2Fm%2F0jwy148,%2Fm%2F02qgdkj,%2Fm%2F09t3sp&hl=fr","guestPath":"https://trends.google.fr:443/trends/embed/"});
-</script>
-
-Nous avons donc fait le choix de plutôt vous apprendre à utiliser Symfony par rapport à Laravel car il y a plus de chances que les offres d'emplois pour vos stages ou votre futur travail après la fin de vos études concernent du développement sous Symfony (si vous souhaitez devenir développeur web, bien sûr).
-
-Cependant, pas de panique, il y a beaucoup de similitudes entre Symfony et Laravel (même certaines choses identiques !). Une fois un framework maîtrisé, il vous sera facile de passer à l'autre.
+Cependant, pas de panique, il y a beaucoup de similitudes entre Symfony et Laravel (même certaines choses identiques !). Une fois un framework maîtrisé, il vous sera facile de passer à l'autre. Par ailleurs, Laravel utilise certains composants développés pour Symfony.
 
 Symfony permet de créer des sites web classiques en mode "server-side rendering" (génération de la page web du côté du serveur, comme ce que vous faisiez jusqu'ici), des API REST et même des briques logicielles (appelées `bundles`) à intégrer à Symfony, pour lui ajouter de nouvelles fonctionnalités.
 
-Ce framework utilise (par défaut) l'ORM `Doctrine` (syntaxe assez similaire à Hibernate, en JAVA). Concernant les templates (génération de pages HTML), il utilise `Twig` que vous avez déjà utilisé l'année dernière dans le cadre du cours de complément web.
+Ce framework utilise (par défaut) l'ORM `Doctrine` (syntaxe assez similaire à Hibernate, en JAVA). Concernant les templates (génération de pages HTML), il utilise `Twig` que vous avez déjà utilisé l'année dernière dans le cadre du cours de compléments Web.
 
-Concernant le thème de l'application que nous allons construire au fil des cours, nous allons reprendre le concept du réseau social **The Feed** en l'améliorant. Concernant la partie sur twig, vous allez donc *un peu* refaire certaines choses que vous aviez faites en complément web, mais pas avec le même framework et nous allons aussi aller plus loin.
+Concernant le thème de l'application que nous allons construire au fil des cours, nous allons reprendre le concept du réseau social **The Feed** en l'améliorant. Concernant la partie sur twig, vous allez donc *un peu* refaire certaines choses que vous aviez faites en compléments Web, mais pas avec le même framework et nous allons aussi aller plus loin.
 
 Nous allons suivre la progression suivante :
 
@@ -88,7 +70,7 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 2. Exécutez les commandes suivantes :
 
     ```bash
-    composer create-project symfony/skeleton:"6.4.*" the_feed
+    composer create-project symfony/skeleton:"7.4.*" the_feed
     cd the_feed
     composer require webapp
     ```
@@ -97,7 +79,7 @@ Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons fair
 
    Cet ensemble de commandes crée les fichiers de base de votre projet et télécharge les briques logicielles essentielles pour le développement d'un site web.
 
-3. Afin de gérer correctement la redirection d'URL avec Apache, il nous faut un fichier `.htaccess` pour l'application (comme vous l'avez vu en cours de complément web l'an dernier si vous étiez dans le parcours RACDV). Au lieu de créer manuellement ce fichier, il est possible de le générer facilement en installant le paquetage `symfony/apache-pack` grâce à `composer`. Pour cela, exécutez donc la commande suivante (toujours dans le conteneur docker) :
+3. Afin de gérer correctement la redirection d'URL avec Apache, il nous faut un fichier `.htaccess` pour l'application (comme vous l'avez vu en cours de compléments Web l'an dernier si vous étiez dans le parcours RACDV). Au lieu de créer manuellement ce fichier, il est possible de le générer facilement en installant le paquetage `symfony/apache-pack` grâce à `composer`. Pour cela, exécutez donc la commande suivante (toujours dans le conteneur docker) :
 
     ```bash
     composer require symfony/apache-pack
@@ -300,13 +282,13 @@ public function methodeExempleGet(): Response
 
 <div class="exercise">
 
-1. En utilisant la commande `make:controller` (à la racine du projet), créez un contrôleur nommé `DemoController`. On rappelle (une dernière fois) que les commandes doivent être exécutées dans le terminal s’exécutant dans votre conteneur docker !
+1. En utilisant la commande `make:controller` (à la racine du projet), créez un contrôleur nommé `DemoController` (répondez non (`n`) quand on vous demande si vous voulez créer des tests unitaires). On rappelle (une dernière fois) que les commandes doivent être exécutées dans le terminal s’exécutant dans votre conteneur docker !
 
 2. Supprimez la méthode d'exemple générée par défaut dans votre nouveau contrôleur.
 
-3. Créez une méthode ayant une route visant le chemin `/hello`, nommée `hello_get` et autorisant seulement la méthode `GET`. Cette méthode doit renvoyer "Hello world" à l'utilisateur. Testez votre route sur votre site.
+3. Créez une méthode ayant une route visant le chemin `/hello`, nommée `hello_get` et autorisant seulement la méthode `GET`. Cette méthode doit renvoyer une réponse contenant "Hello world" à l'utilisateur. Testez votre route sur votre site.
 
-4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site [https://localhost/the_feed/public/hello/Paul](https://localhost/the_feed/public/hello/Paul).
+4. Créez une deuxième méthode/route nommée `hello_get2` similaire à la première, mais permettant d'ajouter un paramètre "nom" dans le chemin et qui doit renvoyer une réponse contenant "Hello (nom)" où le nom est celui passé dans l'URL. Testez votre nouvelle route sur votre site [https://localhost/the_feed/public/hello/Paul](https://localhost/the_feed/public/hello/Paul).
 
 </div>
 
@@ -494,7 +476,7 @@ Côté `twig`, il n'y a pas besoin de passer explicitement les messages en param
 {% endfor %}
 ```
 
-L'instruction `app.flashes(type)` permet d'obtenir un tableau de tous les messages flash d'un type donné. On peut donc parcourir ce tableau avec `twig` et afficher les messages de la manière qu'on souhaite. Si on a plusieurs catégories de messages à afficher, il faut répéter l'opération en changeant de `type`.
+L'instruction `app.flashes(type)` permet d'obtenir un tableau de tous les messages flash d'un type donné. On peut donc parcourir ce tableau avec `twig` et afficher les messages de la manière que l'on souhaite. Si on a plusieurs catégories de messages à afficher, il faut répéter l'opération en changeant de `type`.
 
 <div class="exercise">
 
@@ -548,7 +530,7 @@ De manière globale :
 
 Concernant la classe `PublicationRepository`, vous remarquerez que celle-ci est plutôt vide pour le moment, hormis quelques exemples commentés. En fait, toutes les opérations génériques du `CRUD` sont déjà prises en charge par la classe mère `ServiceEntityRepository` et un autre service appelé `EntityManagerInterface`. On peut néanmoins ajouter des méthodes plus spécifiques si besoin. Dans ce cas, nous ne codons pas les requêtes avec du `SQL`, mais avec un langage dérivé appelé le `DQL` (doctrine query langage). Cependant, les outils de base doctrine permettent déjà de faire des requêtes assez précises avec très peu de lignes de code.
 
-Doctrine impose son propre langage pour assurer la compatibilité entre tous les SGBD et les autres sources de données possibles, ainsi nous ne dépendons jamais d'un SGBD ou d'une manière de stockage précise et il devient alors très facile d'en changer.
+Doctrine impose son propre langage pour assurer la compatibilité entre tous les SGBD et les autres sources de données possibles, ainsi, nous ne dépendons jamais d'un SGBD ou d'une manière de stockage précise et il devient alors très facile d'en changer.
 
 En l'état, tout est bon, il n'y a rien de plus à ajouter dans ces classes, l'entité est prête à être synchronisée !
 
@@ -565,7 +547,7 @@ Il est aussi possible de créer un fichier `.env.local` où vous pouvez définir
 Nous nous intéressons au paramètre `DATABASE_URL`. Globalement, il se configure comme suit :
 
 ```yaml
-DATABASE_URL=sgbd://username:password@ip:port/nom_base
+DATABASE_URL=sgbd://username:password@ip:port/nom_base?serverVersion=version
 ```
 
 La partie `sgbd` correspond au SGBD utilisé : `mysql`, `postgres`, `sqlite`, `oracle`, etc...
@@ -578,12 +560,12 @@ Vous aurez remarqué que votre **conteneur Docker** est divisé en deux sous-con
 
 Si vous jetez un œil au fichier `compose.yaml` vous observerez que le service `mysql` est nommé `db`. Une autre ligne dans le service `server` indique une dépendance avec le service `db` (section `depends_on`). Concrètement, cela veut dire que, dans le conteneur du serveur web, le service de base de données est accessible via le nom d'hôte `db` (qui se traduit par un certaine IP). Au lieu d'utiliser une `IP`, on utilisera donc le nom d'hôte `db` dans la configuration de `DATABASE_URL`.
 
-Par rapport au nom d'utilisateur et au mot de passe, le service `db` est configuré pour avoir un utilisateur `root` dont le mot de passe est `root`. Le port utilisé est `3306`.
+Par rapport au nom d'utilisateur et au mot de passe, le service `db` est configuré pour avoir un utilisateur `root` dont le mot de passe est `root`. Le port utilisé est `3306`. La version du serveur MySQL utilisé est `26.7.0`.
 
 En résumé, pour utiliser le service de base de données inclut dans le multi-conteneur docker au travers du conteneur du serveur Web, on peut utiliser la configuration suivante :
 
 ```
-DATABASE_URL="mysql://root:root@db:3306/nom_base"
+DATABASE_URL="mysql://root:root@db:3306/nom_base?serverVersion=26.7.0"
 ```
 
 Bien sûr, dans d'autres contextes, cette configuration devra être adaptée.
@@ -693,9 +675,9 @@ Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https:
 
 <div class="exercise">
 
-1. Créez un nouveau contrôleur `PublicationController` (vous pouvez encore une fois utiliser la commande `make:controller`, mais attention, des fichiers de templates sont générés par défaut). Ajoutez une nouvelle route nommée `feed`, pointant sur le chemin `/` (racine du site) et accessible en `GET` seulement (pour le moment). Pour le moment, n'ajoutez rien dans le corps de la méthode, nous le ferons juste après.
+1. Créez un nouveau contrôleur `PublicationController` (vous pouvez encore une fois utiliser la commande `make:controller`, mais attention, un fichier de template `demo/index.html.twig` est généré par défaut, il faudra le supprimer). Ajoutez une nouvelle route nommée `feed`, pointant sur le chemin `/` (racine du site) et accessible en `GET` seulement (pour le moment). Pour le moment, n'ajoutez rien dans le corps de la méthode, nous le ferons juste après.
 
-2. Dans le dossier `templates`, créez un dossier `publication` (s'il n'existe pas déjà), puis, à l'intérieur de ce nouveau dossier, créez un template `feed.html.twig` contenant le squelette suivant :
+2. Dans le dossier `templates/publication`, créez un template `feed.html.twig` contenant le squelette suivant :
 
     ```html
     <!DOCTYPE html>
@@ -770,11 +752,11 @@ Tout cela manque un peu de style ! Et d'image de profil pour les publications ! 
 
 En Symfony, la gestion des **assets** (images, fichiers css, js, etc...) peut être effectuée de différentes manières :
 
-* En plaçant simplement les assets dans le dossier `public`.
+* En plaçant simplement les assets dans le dossier `public` (déconseillé en phase de développement, il s'agit généralement du dossier où se trouveront les assets quand le site sera en production).
 
 * En utilisant une librairie symfony (`bundle`) dédiée (par exemple, **Webpack Encore**).
 
-* En utilisant le récent système `AssetMapper` installé par défaut dans une application web symfony (cela se passe au niveau du dossier `assets`).
+* En utilisant le récent système `AssetMapper` installé par défaut dans une application web symfony (cela se passe au niveau du dossier `assets`). C'est l'option recommandée.
 
 Le système `AssetMapper` propose divers avantages **lors du développement** :
 
@@ -784,40 +766,77 @@ Le système `AssetMapper` propose divers avantages **lors du développement** :
 
 * On peut créer différentes configurations et charger celle qu'on souhaite sur une page donnée, ou même plusieurs.
 
-Cependant, pour que tout cela soit automatique, il faut obligatoirement utiliser le serveur web de Symfony pendant le développement. Sinon il faudra exécuter une commande chaque fois qu'on voudra mettre à jour un fichier.
+Lors de la mise en **production**, l'objectif final est d'avoir nos **assets** dans le dossier `public`. Il suffira alors d'exécuter une commande pour tout "compiler" et copier dans le dossier en question (nous verrons cette commande un peu plus tard).
 
-De plus, si on souhaite faire des choses plutôt simples et basiques (comme cela va être le cas dans ce TP), la mise en place et la configuration de ce système peut être un peu lourde.
+Concernant l'utilisations des assets dans une page, on distinguera :
 
-Bref, nous allons plutôt opter pour la solution la plus "simple" dans le cadre de ce TP : utiliser le dossier `public` à la racine du projet. Nous allons placer toutes nos ressources (css, js, images) dans ce dossier.
+* Les ressources "globales" à importer (css et javascript utilisé sur toutes les pages, par exemple, ou sur un ensemble de pages)
+* Les ressources relatives à une page (par exemple, l'image de profil de l'auteur d'un post, un fichier javascript seulement utilisé dans cette page...).
 
-Lors de la mise en **production**, même si on utilise le `AssetMapper` l'objectif final est d'avoir nos **assets** dans le dossier `public`. Si on utilise donc ce système, il suffit d'exécuter une commande pour tout "compiler" et copier dans le dossier en question.
+Concernant les ressources globales, tout se passe dans les fichiers `xxx.js` à la racine du dossier `assets`. Le nom du fichier conrrespond au nom de la configuration. Par exemple, le fichier `app.js` déjà créé permet d'importer les ressources globales de la configuration nommée `app`. Mais on peut mettre le nom de fichier que l'on veut.
 
-Dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `public`, on indique donc un sous-chemin à partir de ce dossier. Cela marche avec tous les systèmes (qu'on utilise `AssetMapper` ou directement le dossier `public`).
+Regardons de plus près un exemple de fichier `app.js` :
 
-Par exemple, si je possède le fichier suivant : `public/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : `{{ asset("exemple/coucou.jpg") }}` dans mon template (typiquement, dans la partie `src`).
+```js
+//Obligatoire
+import './stimulus_bootstrap.js';
+
+//Import des ressources globales souhaitées
+import './css/styles.css';
+import './js/main.js';
+//Etc...
+
+//Du code js a exécuté lors du chargement de la page (optionnel)
+console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
+```
+
+Lorsque l'on souhaite charger les ressources d'une configuration dans une page donnée, il suffit de faire un appel de fonction `twig` dans la section `head` du template de la page. Par exemple, avec `app.js` :
+
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>...</title>
+    <meta charset="utf-8">
+    {{ importmap('app') }}
+</head>
+<body>
+...
+</body>
+```
+
+Concernant les ressources relatives à une page, dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `assets`, on indique donc un sous-chemin à partir de ce dossier.
+
+Par exemple, si je possède le fichier suivant : `assets/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : `{{ asset("exemple/coucou.jpg") }}` dans mon template (typiquement, dans la partie `src`).
 
 <div class="exercise">
 
-1. Créez un dossier `css` dans `public` et importez la feuille de style {% endraw %}[styles.css]({{site.baseurl}}/assets/TD1/styles.css){% raw %} (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur de ce nouveau répertoire.
+1. Faites un peu de ménage dans `assets` en supprimant les dossiers suivants dont nous ne nous servirons pas : `controllers/hello_controller.js` et le dossier `styles`.
 
-2. Créez un dossier `img` dans `public`, puis `utilisateurs` dans `img` et importez l'image {% endraw %}[anonyme.jpg]({{site.baseurl}}/assets/TD1/anonyme.jpg){% raw %} (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur du répertoire `utilisateurs`.
+2. Créez un dossier `css` dans `assets` et importez la feuille de style {% endraw %}[styles.css]({{site.baseurl}}/assets/TD1/styles.css){% raw %} (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur de ce nouveau répertoire.
 
-3. Dans votre template `feed.html.twig` :
+3. Modifiez `app.js` afin de ne garder que les imports essentiels et rien d'autre :
 
-    * Dans la section `head`, ajoutez et complétez la ligne suivante afin d'importer notre nouvelle feuille de style :
-
-    ```html
-    <link rel="stylesheet" type="text/css" href="A compléter!">
+    ```js
+    import './stimulus_bootstrap.js';
+    import './css/styles.css';
     ```
-    * Faites en sorte d'afficher l'image anonyme sur chaque publication (il faut ajouter un attribut `src` sur la balise `img` de chaque publication).
 
-4. Testez. C'est un peu mieux, non ?
+4. Créez un dossier `img` dans `assets`, puis `utilisateurs` dans `img` et importez l'image {% endraw %}[anonyme.jpg]({{site.baseurl}}/assets/TD1/anonyme.jpg){% raw %} (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur du répertoire `utilisateurs`.
+
+5. Dans votre template `feed.html.twig` :
+
+    * Dans la section `head`, importez la configuration globale `app` à l'aide de la fonciton `importmap`.
+
+    * Faites en sorte d'afficher l'image anonyme sur chaque publication (il faut ajouter un attribut `src` sur la balise `img` de chaque publication) en utilisant la fonction `assets`.
+
+6. Testez. C'est un peu mieux, non ?
 
 </div>
 
 Enfin, il reste un problème auquel nous allons faire face : construire les liens vers nos autres pages (notamment pour le menu de navigation).
 
-Pour gérer cela, symfony propose d'utiliser la fonction `path('nomRoute')` dans twig. Cette fonction permet de générer le chemin de la route passée en paramètre.
+Pour gérer cela, Symfony propose d'utiliser la fonction `path('nomRoute')` dans twig. Cette fonction permet de générer le chemin de la route passée en paramètre.
 
 Par exemple, si j'ai une route nommée `exemple` ayant pour chemin `/exemple/test/bonjour`, alors le template twig suivant
 
@@ -853,11 +872,11 @@ Il est temps de faire un point sur les méthodes essentielles disponibles (par d
 
 * `find($id)` : renvoie l'entrée de l'entité dont l'id passé en paramètre correspond à la valeur de sa clé primaire. L'objet renvoyé correspond au type de l'entité.
 
-* `findBy($criteres, $tri)` : renvoie toutes les entrées de l'entité sous la forme d'un tableau d'objets (du type de l'entité) respectant tous les critères passés en paramètres et ordonnés selon les attributs précisés.
+* `findBy($criteria, $orderBy)` : renvoie toutes les entrées de l'entité sous la forme d'un tableau d'objets (du type de l'entité) respectant tous les critères passés en paramètres et ordonnés selon les attributs précisés.
 
-    * `$criteres` correspond à un tableau associatif qui associe des attributs de l'entité à une valeur souhaitée. En fait, cela correspond à un `WHERE column1 = ... AND column2 = ...`. S'il n'y a aucun critère de sélection, on donne un tableau vide `[]`. Dans ce cas, toutes les entités seront alors sélectionnées.
+    * `$criteria` correspond à un tableau associatif qui associe des attributs de l'entité à une valeur souhaitée. En fait, cela correspond à un `WHERE column1 = ... AND column2 = ...`. S'il n'y a aucun critère de sélection, on donne un tableau vide `[]`. Dans ce cas, toutes les entités seront alors sélectionnées.
 
-    * `$tri` (optionnel) correspond aussi à un tableau associatif qui liste les attributs selon lesquels on veut que les résultats soient triés, associés au sens (`DESC` ou `ASC`). Si on ne veut pas faire de tri, on ne précise pas ce paramètre.
+    * `$orderBy` (optionnel) correspond aussi à un tableau associatif qui liste les attributs selon lesquels on veut que les résultats soient triés, associés au sens (`DESC` ou `ASC`). Si on ne veut pas faire de tri, on ne précise pas ce paramètre.
 
     Par exemple, si j'ai une entité "Livre" possédant notamment une année de publication, un auteur et un genre, et que je souhaite trouver tous les livres de fantasy écrits par J.R.R Tolkien, ordonnés par année de publication de manière croissante, je peux utiliser :
 
@@ -867,7 +886,7 @@ Il est temps de faire un point sur les méthodes essentielles disponibles (par d
 
     Note importante : on utilise le nom des attributs de la classe de l'entité, pas ceux de la base de données (qui peuvent être nommés sous un autre format).
 
-* `findOneBy($criteres)` : même chose que `findBy` sauf qu'elle renvoie le premier objet correspond aux critères (et non pas un tableau de plusieurs entités). Utile si on est sûr d'obtenir une entité précise selon les critères recherchés.
+* `findOneBy($criteria)` : même chose que `findBy` sauf qu'elle renvoie le premier objet correspond aux critères (et non pas un tableau de plusieurs entités). Utile si on est sûr d'obtenir une entité précise selon les critères recherchés.
 
 Ces repositories fournissent seulement des opérations de **lecture**. Les opérations de création, de modification et de suppression sont confiées à un **service** appelé `EntityManagerInterface` (dont nous reparlerons plus tard).
 
@@ -1114,7 +1133,7 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 
 1. Modifiez le code de votre route `feed` afin d'initialiser le formulaire de création d'une publication et de le passer au template. Il utilisera la **méthode** `POST` et l'adresse de son **action** visera la route `feed`.
 
-2. Dans votre template `feed.html.twig`, au tout début du `div` d'identifiant `feed` insérez et complétez le template suivant :
+2. Dans votre template `feed.html.twig`, au tout début du `div` d'identifiant `feed` insérez (à l'intérieur du div) et complétez le template suivant (attention à bien respecter les instructions données dans les commentaires HTML) :
 
     ```twig
     <!-- Génération de la balise <form>, possédant un id (HTML) "feedy-new" -->
@@ -1282,9 +1301,11 @@ Quelques exemples :
 
 * `#[Assert\Regex(pattern: ...)]` : vérifie que la propriété vérifie l'expression régulière spécifiée.
 
-* `#[Assert\NotBlank]` : vérifie que la propriété a bien été transmise par le formulaire et possède une valeur.
+* `#[Assert\NotBlank]` : vérifie que la propriété a bien été transmise par le formulaire et possède une valeur non `null`. On peut configurer l'assertion pour autoriser la valeur `null`, si besoin.
 
-* `#[Assert\NotNull]` : vérifie que la propriété n'est pas nulle (du côté de l'application). Cela signifie que la propriété est présente (transmise par le formulaire), et n'a pas la valeur `null`. Cela peut paraître redondant avec le fait que la propriété ne peut pas être nulle dans la base, mais avec cette assertion la vérification est faite au niveau de l'application et non pas du côté de la base.
+* `#[Assert\NotNull]` : vérifie que la propriété n'est pas nulle (du côté de l'application). Cela signifie que la propriété transmisse n'a pas la valeur `null` (mais elle peut être vide). Cela peut paraître redondant avec le fait que la propriété ne peut pas être nulle dans la base, mais avec cette assertion la vérification est faite au niveau de l'application et non pas du côté de la base. Si on veut s'assurer que la propriété n'est pas nulle et bien transmisse, on utilisera plutôt `#[Assert\NotBlank]` qui est plus strict.
+
+L'assertion [When](https://symfony.com/doc/current/reference/constraints/When.html) est également intéressante.
 
 Bref, il en existe des tas. Sur la plupart des assertions, on peut aussi ajouter un paramètre `message` pour préciser un message d'erreur personnalisé en cas d'échec de validation. Il est bien sûr possible d'apposer plusieurs attributs d'assertions au-dessus d'une propriété. Vous pouvez retrouver la liste des types d'assertions disponibles [ici](https://symfony.com/doc/current/reference/constraints.html).
 
@@ -1301,9 +1322,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class Exemple {
 
-    #[Assert\NotNull]
     #[Assert\NotBlank]
-    #[Assert\Length(min: 2, minMessage: 'Il faut au moins 2 caractères!')]
+    #[Assert\Length(min: 2, minMessage: 'Il faut au moins {{ limit }} caractères!')] //{{ limit }} est automatiquement traduit
     private ?string $champ1 = null;
 
 }
@@ -1326,7 +1346,6 @@ class ExempleType extends AbstractType {
                 "mapped" => false,
                 "constraints" => [
                     new NotBlank(),
-                    new NotNull(),
                     new Regex(pattern : '...', message : 'Format non respecté')
                 ]
             ])
@@ -1346,7 +1365,7 @@ class ExempleType extends AbstractType {
 
 1. Dans votre classe `Publication` rajoutez :
 
-    * Une assertion pour vérifier que le message n'est pas blanc (non transmis) et une autre pour vérifier qu'il n'est pas `null`.
+    * Une assertion pour vérifier que le message n'est pas blanc (donc, qu'il est bien transmis et non `null`).
 
     * Une assertion vérifiant que la taille du message est comprise entre 4 et 200 caractères. Spécifiez également les paramètres `minMessage` et `maxMessage` pour configurer les messages d'erreurs si le contenu est trop court ou trop long.
 
@@ -1394,7 +1413,7 @@ On peut notamment utiliser ce bout de code après avoir vérifié qu'un formulai
 
 <div class="exercise">
 
-1. Dans votre template `feed.html.twig`, prenez en charge l'affichage des messages flash en ajoutant (et en adaptant) la div `flashes-container` présenté précédemment. Placez cette div dans le `body`, juste après le `header`. Il faut que les messages des types `error` et `success` puissent être affichés.
+1. Dans votre template `feed.html.twig`, prenez en charge l'affichage des messages flash en ajoutant (et en complétant/adaptant) la div `flashes-container` présentée précédemment. Placez cette div dans le `body`, juste après le `header`. Il faut que les messages des types `error` et `success` puissent être affichés.
 
 2. Dans votre route `feed`, faites en sorte d'enregistrer les messages d'erreurs du formulaire comme messages flash du type `error` si le formulaire n'est pas valide.
 
@@ -1552,13 +1571,13 @@ Il peut être intéressant de créer une **interface** pour son service, même s
 
 <div class="exercise">
 
-1. Créez une interface `FlashMessageHelperInterface` (toujours dans le dossier `Service`) contentant la signature de la méthode `addFormErrorsAsFlash` puis faites-la implémenter à `FlashMessageHelper`. Pour rappel, dans **PHPStorm**, vous pouvez faire cela automatiquement : clic droit sur le nom de classe `FlashMessageHelper` > `Refactor` >` Extract Interface`.
+1. Créez une interface `FlashMessageHelperInterface` (toujours dans le dossier `Service`) contentant la signature de la méthode `addFormErrorsAsFlash` puis faites-la implémenter à `FlashMessageHelper`. Pour rappel, dans **PHPStorm**, vous pouvez faire cela automatiquement : clic droit sur le nom de classe (à l'intérieur de la classe) `FlashMessageHelper` > `Refactor` > `Extract Interface`.
 
 2. Dans votre route `feed`, utilisez votre nouvelle interface à la place du service concret.
 
 3. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
 
-4. Pour bien vérifier que vous avez compris les explications précédentes, ajoutez une classe `TestService.php` dans le dossier `Service` qui implémente aussi `FlashMessageHelperInterface`. Laissez le corps de la méthode `addFormErrorsAsFlash` vide. Essayez d'envoyer un message. Symfony renvoie alors une erreur qui explique qu'il n'a pas pu trouver le service en question. Comme dans l'exemple, éditez le fichier `services.yaml` afin de faire pointer le service `FlashMessageHelperInterface` vers `FlashMessageHelper`. Testez que tout fonctionne à nouveau, puis, supprimez les modifications apportées dans `services.yaml` et supprimez également `TestService.php`.
+4. Pour bien vérifier que vous avez compris les explications précédentes, ajoutez une classe `TestService.php` dans le dossier `Service` qui implémente aussi `FlashMessageHelperInterface`. Laissez le corps de la méthode `addFormErrorsAsFlash` vide. Essayez de recharger la page d'accueil. Symfony renvoie alors une erreur qui explique qu'il n'a pas pu trouver le service en question. Comme dans l'exemple, éditez le fichier `services.yaml` afin de faire pointer le service `FlashMessageHelperInterface` vers `FlashMessageHelper`. Testez que tout fonctionne à nouveau, puis, supprimez les modifications apportées dans `services.yaml` et supprimez également `TestService.php`.
 
 </div>
 
