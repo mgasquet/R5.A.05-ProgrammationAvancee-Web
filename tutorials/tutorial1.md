@@ -771,7 +771,9 @@ Lors de la mise en **production**, l'objectif final est d'avoir nos **assets** d
 Concernant l'utilisations des assets dans une page, on distinguera :
 
 * Les ressources "globales" à importer (css et javascript utilisé sur toutes les pages, par exemple, ou sur un ensemble de pages)
-* Les ressources relatives à une page (par exemple, l'image de profil de l'auteur d'un post, un fichier javascript seulement utilisé dans cette page...).
+* Les ressources relatives à une page (un fichier javascript seulement utilisé dans cette page...).
+
+En fait, lors de la **compilation** des assets (dont nous reparlerons ulétieurement), tout est déplacé dans le dossier public.
 
 Concernant les ressources globales, tout se passe dans les fichiers `xxx.js` à la racine du dossier `assets`. Le nom du fichier conrrespond au nom de la configuration. Par exemple, le fichier `app.js` déjà créé permet d'importer les ressources globales de la configuration nommée `app`. Mais on peut mettre le nom de fichier que l'on veut.
 
@@ -805,9 +807,13 @@ Lorsque l'on souhaite charger les ressources d'une configuration dans une page d
 </body>
 ```
 
-Concernant les ressources relatives à une page, dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la racine se trouve directement dans le dossier `assets`, on indique donc un sous-chemin à partir de ce dossier.
+Les fichiers dynamiques (par exemple, une image uploadée par un utilisateur) ne sera pas gérée par le asset mapper, mais sera directement placée dans `public` lors de l'upload.
+
+Concernant les ressources non-globales, dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la fonction va d'abord chercher dans le dossier `assets`, et s'il ne trouve rien, il va chercher dans le dossier `public`. La racine se trouve donc directement dans le dossier `assets` ou `public` selon là où on cherche la ressource, on indique donc un sous-chemin à partir d'un de ces dossiers.
 
 Par exemple, si je possède le fichier suivant : `assets/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : `{{ asset("exemple/coucou.jpg") }}` dans mon template (typiquement, dans la partie `src`).
+
+Si j'ai une image uploadée par un utilisateur dans `public/user/img.jpg`, je pourrais aussi y accéder via `{{ asset("user/img.jpg") }}` : la fonction cherche d'abord dans `assets/user/img.jpg` et comme il ne trouve rien, il cherche dans `public/user/img.jpg` et trouve l'image.
 
 <div class="exercise">
 
@@ -822,11 +828,11 @@ Par exemple, si je possède le fichier suivant : `assets/exemple/coucou.jpg`, je
     import './css/styles.css';
     ```
 
-4. Créez un dossier `img` dans `assets`, puis `utilisateurs` dans `img` et importez l'image {% endraw %}[anonyme.jpg]({{site.baseurl}}/assets/TD1/anonyme.jpg){% raw %} (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur du répertoire `utilisateurs`.
+4. Créez un dossier `img` dans `assets`, puis importez l'image {% endraw %}[anonyme.jpg]({{site.baseurl}}/assets/TD1/anonyme.jpg){% raw %} (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur du répertoire `utilisateurs`.
 
 5. Dans votre template `feed.html.twig` :
 
-    * Dans la section `head`, importez la configuration globale `app` à l'aide de la fonciton `importmap`.
+    * Dans la section `head`, importez la configuration globale `app` à l'aide de la fonction `importmap`.
 
     * Faites en sorte d'afficher l'image anonyme sur chaque publication (il faut ajouter un attribut `src` sur la balise `img` de chaque publication) en utilisant la fonction `assets`.
 
@@ -838,7 +844,7 @@ Enfin, il reste un problème auquel nous allons faire face : construire les lien
 
 Pour gérer cela, Symfony propose d'utiliser la fonction `path('nomRoute')` dans twig. Cette fonction permet de générer le chemin de la route passée en paramètre.
 
-Par exemple, si j'ai une route nommée `exemple` ayant pour chemin `/exemple/test/bonjour`, alors le template twig suivant
+Par exemple, si j'ai une route nommée `exemple` ayant pour chemin `/exemple/test/bonjour`, alors le template twig suivant :
 
 ```twig
 <a href="{{ path('exemple') }}">Mon lien</a>
@@ -909,7 +915,7 @@ public function methodeExempleGet(PublicationRepository $repository, EntityManag
 
 **Il faut donc bien préciser le type de la classe/service souhaité dans la fonction et penser à l'importer en début de fichier.**
 
-Tout cela fonctionne sur la base d'un **conteneur IoC** que vous aviez déjà utilisé l'année dernière, configuré et géré par Symfony. **L'autowiring** est un système permettant de détecter et d'injecter automatiquement les dépendances. Et cela ne se limite pas qu'aux contrôleurs ! Il est possible d'injecter des services dans d'autres classes (généralement via le constructeur) et il est aussi très facile de construire ses propres services et de les utiliser de la même façon, comme vous le ferez un peu plus tard.
+Tout cela fonctionne sur la base d'un **conteneur IoC** que vous aviez déjà utilisé l'année dernière, configuré et géré par Symfony. **L'autowiring** est un système permettant de détecter et d'injecter automatiquement les dépendances. Et cela ne se limite pas qu'aux contrôleurs ! Il est possible d'injecter des services dans d'autres classes (généralement via le constructeur) et il est aussi très facile de construire ses propres services et de les utiliser de la même façon, comme vous le ferez dans le prochain TP.
 
 À noter que, si vous avez besoin d'un service qui est utilisé dans chaque route de votre contrôleur (ou quasiment partout), vous pouvez l'importer une seule fois de manière globale, en utilisant le **constructeur** du contrôleur :
 
@@ -1023,31 +1029,33 @@ La fonction `add` du builder permet de configurer :
 
 2. Le type du champ (au sens d'un formulaire HTML), par exemple, `TextType`, `PasswordType`, etc... cela permettra de générer le code HTML de certaines parties du formulaire très facilement !
 
-3. Des options éventuelles, dont nous reparlerons plus tard.
+3. Des options éventuelles, qui permettent principalement de paramétrer certains attributs HTML du champ. Ce paramètre est un tableau associatif.
 
-Par exemple, si je souhaite créer un champ de type "mot de passe", je vais utiliser `PasswordType` ainsi :
-
-```php
-$builder
-    ->add('motDePasse', PasswordType::class);
-```
-
-Il faut aussi penser à ajouter un **bouton d'envoi du formulaire** de type `SubmitType` :
+Par exemple, si je souhaite créer un champ de type "mot de passe" avec une regex pour valider la force du mot de passe, et un placeholder, je vais utiliser `PasswordType` ainsi :
 
 ```php
 $builder
-    ->add('valider', SubmitType::class);
+    ->add('motDePasse', PasswordType::class, ["attr" => ["pattern" => "regex de validation", "placeholder" => "Trouvez un mot de passe sécurisé!"]]);
 ```
+
+Il faut aussi penser à ajouter un **bouton d'envoi du formulaire** de type `SubmitType`, qui a pour texte "Valider!" :
+
+```php
+$builder
+    ->add('valider', SubmitType::class, ["label" => "Valider!"]);
+```
+
+Le tableau associatif des options contient des options générales (comme "label" pour configurer le texte du bouton d'envoi) puis un second tableau associatif imbriqué de clé `attr` qui contient des attributs HTML. Dans `attr` il est possible de configurer des attributs comme `class`. Cependant, comme cet attribut est généralement utilisé du côté du css pour customiser l'affichage du formulaire selon la page où il est chargé, il est préférable de déléguer cela au template twig et ne pas en faire une règle générale, comme nous le verrons après. Même logique pour l'`id`, mais qui se place en dehors de `attr`.
 
 <div class="exercise">
 
-1. Utilisez la commande `make:form` pour créer une classe de formulaire appelée `PublicationType` reliée à l'entité `Publication`.
+1. Utilisez la commande `make:form` pour créer une classe de formulaire appelée `PublierType` reliée à l'entité `Publication`.
 
 2. Observez le code généré.
 
 3. Supprimez le champ lié à la date de publication : celle-ci sera générée automatiquement côté serveur, et pas fournie par l'utilisateur.
 
-4. Configurez le type du champ `message` pour lui assigner `TextareaType::class` (zone textuelle, avec plusieurs lignes, correspondant donc à `<textarea></textarea>` en HTML). 
+4. Configurez le type du champ `message` pour lui assigner `TextareaType::class` (zone textuelle, avec plusieurs lignes, correspondant donc à `<textarea></textarea>` en HTML), puis ajoutez les options `['attr' => ['placeholder' => "Qu'avez-vous en tête?"]])` en troisième paramètre (afin d'afficher un placeholder au niveau du champ). 
 
     Il faudra importer la classe suivante :
 
@@ -1055,7 +1063,7 @@ $builder
     use Symfony\Component\Form\Extension\Core\Type\TextareaType;
     ```
 
-5. Ajoutez aussi un champ `publier` de type `SubmitType::class` (bouton d'envoi du formulaire).
+5. Ajoutez aussi un champ `publier` de type `SubmitType::class` (bouton d'envoi du formulaire) puis ajoutez les options `['label' => 'Feeder!']` en troisième paramètre (permet d'afficher le texte "Feeder!" sur le bouton).
 
     Il faudra importer la classe suivante :
 
@@ -1107,12 +1115,14 @@ Du côté de `twig`, on peut alors générer le formulaire en utilisant plusieur
 
 La variable `formulaireExemple` correspondant au nom de la variable associée au formulaire dans le tableau associatif passé au template par le contrôleur.
 
-Vous noterez que dans le cas de `form_widget`, l'identifiant ne se place pas dans `attr`, contrairement à `form_start`. De manière assez générale, tous les attributs "normaux" d'un **input** de formulaire (par exemple `placeholder`) se placeront à l'intérieur de `attr`.
+Vous noterez que dans le cas de `form_widget`, l'identifiant ne se place pas dans `attr`, contrairement à `form_start`. De manière assez générale, tous les attributs "normaux" d'un **input** de formulaire (par exemple `placeholder`) se placeront à l'intérieur de `attr`. 
 
-Attention, dans le cas du bouton d'envoi du formulaire, on l'affiche aussi avec `form_widget`, et on configure le message contenu dans le bouton avec le paramètre `label` : 
+Nous avons vu précédemment que les attributs autre que `id` et `class` seront générés directement dans le tableau d'options des champs du formulaire, dans la classe dérivée de `AbstractType`. Donc, dans le template twig, nous configurerons uniquement `id` et `class` afin d'appliquer des règles d'affichage via le css.
+
+Attention, dans le cas du bouton d'envoi du formulaire, on l'affiche aussi avec `form_widget` : 
 
 ```twig
-{{ form_widget(formulaireExemple.nomChampSubmit, {'label' : "Envoyer"}) }}
+{{ form_widget(formulaireExemple.nomChampSubmit) }}
 ```
 
 Voici une petite démonstration, avec l'exemple de formulaire précédent (contenant un champ `motDePasse` et un champ `valider`, correspondant au bouton d'envoi) :
@@ -1120,12 +1130,14 @@ Voici une petite démonstration, avec l'exemple de formulaire précédent (conte
 ```twig
 {{ form_start(formulaireExemple, {'attr': {'id' : 'monForm'}}) }}
     <div class="form-elt">
-        {{ form_widget(formulaireExemple.motDePasse, {'id': "mdp", 'attr' : {"placeholder": "Trouvez un mot de passe sécurisé!"}}) }}
+        {{ form_widget(formulaireExemple.motDePasse, {'id': "mdp", 'attr' : {'class' : 'field'}}) }}
     </div>
-        {{ form_widget(formulaireExemple.valider, {'id': "exemple-submit", 'label' : "Valider le formulaire"}) }}
+        {{ form_widget(formulaireExemple.valider, {'id': "exemple-submit"}) }}
     {{ form_rest(formulaireExemple) }}
 {{ form_end(formulaireExemple) }}
 ```
+
+Bien sûr, on ne précise l'id ou la class que s'ils sont utiles au css ou à un script javascript.
 
 Concernant l'attribut **method** et **action** du formulaire, ils sont définis dans le contrôleur, lors de l'appel de la méthode `createForm`, comme montré dans un précédent exemple.
 
@@ -1133,20 +1145,20 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 
 1. Modifiez le code de votre route `feed` afin d'initialiser le formulaire de création d'une publication et de le passer au template. Il utilisera la **méthode** `POST` et l'adresse de son **action** visera la route `feed`.
 
-2. Dans votre template `feed.html.twig`, au tout début du `div` d'identifiant `feed` insérez (à l'intérieur du div) et complétez le template suivant (attention à bien respecter les instructions données dans les commentaires HTML) :
+2. Dans votre template `feed.html.twig`, au tout début du `div` d'identifiant `feed` insérez (à l'intérieur du div) et complétez le template suivant :
 
     ```twig
-    <!-- Génération de la balise <form>, possédant un id (HTML) "feedy-new" -->
-    {{ form_start(...) }}
+    <!-- Génération de la balise <form>
+    {{ form_start(..., {'attr' : {'id' : "feedy-new"}}) }}
         <fieldset>
             <legend>Nouveau feedy</legend>
             <div>
-                <!-- Le textarea généré, avec le placeholder "Qu'avez-vous en tête?" -->
+                <!-- Le textarea généré -->
                 {{ form_widget(...) }}
             </div>
             <div>
-                <!-- Le bouton de validation, possédant l'id "feedy-new-submit" et le label "Feeder!" -->
-                {{ form_widget(...) }}
+                <!-- Le bouton de validation -->
+                {{ form_widget(...,  {'id' : "feedy-new-submit"}) }}
             </div>
         </fieldset>
     <!-- Génération des balises restantes (token CSRF) -->
@@ -1161,11 +1173,11 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 
 </div>
 
+Si vous inspectez le champ correspondant au `CSRF`, vous verrez que la valeur `csrf_token` est stockée dans le champ. Cela peut sembler étrange, car ce token est censé être une chaîne générée aléatoirement. En fait, depuis les dernières versions de Symfony, une nouvelle couche de sécurité a été ajoutée à ce système qui permet de gérer des tokens via les headers HTTP et des cookies. Le jeton CSRF est injecté dans la requête quand le formulaire est envoyé et n'est jamais directement stocké dans le code HTML de la page.
+
 Il y a [d'autres méthodes utiles](https://symfony.com/doc/current/form/form_customization.html#form-field-helpers) que vous pourriez utiliser. En fait, l'intégralité du formulaire peut être générée sans écrire de HTML (on peut même utiliser une boucle), même pour les attributs liés aux balises html (id, class...). Néanmoins, Symfony nous permet de garder la main sur certains aspects, et ainsi, choisir ce qui est généré automatiquement ou non, si on souhaite customiser certaines parties. 
 
 Afin de garder une séparation entre les données du formulaire, sa validation et son affichage, nous allons choisir de ne pas coder les aspects liés au "style" (classes, id) dans les classes définissant les formulaires, et de plutôt les définir (si besoin) nous-même dans le template twig, à l'aide du paramètre `attr`.
-
-Si on utilise des frameworks `css` (comme bootstrap), il est facile de demander à Symfony de générer tous les formulaires en utilisant les classes de bootstrap, pour le style des inputs. Ainsi, dans certains cas, on peut générer tout le formulaire (avec `form(nomFormulaire)`) sans avoir besoin de le customiser. On peut également définir nos propres styles.
 
 ### Création d'une publication
 
@@ -1301,7 +1313,7 @@ Quelques exemples :
 
 * `#[Assert\Regex(pattern: ...)]` : vérifie que la propriété vérifie l'expression régulière spécifiée.
 
-* `#[Assert\NotBlank]` : vérifie que la propriété a bien été transmise par le formulaire et possède une valeur non `null`. On peut configurer l'assertion pour autoriser la valeur `null`, si besoin.
+* `#[Assert\NotBlank]` : vérifie que la propriété possède une valeur non `null` et non vide (pas de chaîne vide). On peut configurer l'assertion pour autoriser la valeur `null`, si besoin.
 
 * `#[Assert\NotNull]` : vérifie que la propriété n'est pas nulle (du côté de l'application). Cela signifie que la propriété transmisse n'a pas la valeur `null` (mais elle peut être vide). Cela peut paraître redondant avec le fait que la propriété ne peut pas être nulle dans la base, mais avec cette assertion la vérification est faite au niveau de l'application et non pas du côté de la base. Si on veut s'assurer que la propriété n'est pas nulle et bien transmisse, on utilisera plutôt `#[Assert\NotBlank]` qui est plus strict.
 
@@ -1329,7 +1341,7 @@ class Exemple {
 }
 ```
 
-Au niveau des classes de type formulaire, on peut aussi ajouter des propriétés au niveau des champs (qui ne sont pas liés à l'entité) en utilisant la **classe de l'assertion** ainsi :
+Au niveau des classes de type formulaire, on peut aussi ajouter des propriétés au niveau des champs (qui ne sont pas liés à l'entité) en utilisant la **classe de l'assertion** via le tableau d'options (le troisième paramètre) en listant les contraintes dans un tableau associé à la clé `constraints` :
 
 ```php
 class ExempleType extends AbstractType {
@@ -1365,7 +1377,7 @@ class ExempleType extends AbstractType {
 
 1. Dans votre classe `Publication` rajoutez :
 
-    * Une assertion pour vérifier que le message n'est pas blanc (donc, qu'il est bien transmis et non `null`).
+    * Une assertion pour vérifier que le message n'est pas blanc (donc, qu'il est non `null` et non vide).
 
     * Une assertion vérifiant que la taille du message est comprise entre 4 et 200 caractères. Spécifiez également les paramètres `minMessage` et `maxMessage` pour configurer les messages d'erreurs si le contenu est trop court ou trop long.
 
@@ -1379,7 +1391,7 @@ Les messages d'erreurs ne s'affichent pas encore, c'est normal, nous allons rég
 
 Les erreurs du formulaire sont générées et stockées dans l'objet lié au formulaire lors de l'appel à la méthode `handleRequest`. Il est donc possible de s'en servir pour les afficher dans le template via ce même objet.
 
-Néanmoins, dans notre cas, nous allons plutôt utiliser ces messages comme des messages flash.
+Cependant, dans un premier temps, nous allons plutôt afficher ces messages comme des messages flashs (ce qui nous permettra de mettre en place l'affichage des messages flashs).
 
 De manière générale, nous allons définir deux types de messages flash :
 
@@ -1409,7 +1421,7 @@ foreach ($errors as $error) {
 }
 ```
 
-On peut notamment utiliser ce bout de code après avoir vérifié qu'un formulaire n'est pas valide, pour ajouter les erreurs sous la forme de messages flash.
+On utilisera ce bout de code après avoir vérifié qu'un formulaire n'est pas valide, pour ajouter les erreurs sous la forme de messages flash.
 
 <div class="exercise">
 
@@ -1421,163 +1433,62 @@ On peut notamment utiliser ce bout de code après avoir vérifié qu'un formulai
 
 </div>
 
-#### Gestion des erreurs - Création d'un service
+#### Gestion des erreurs - Affichage sur le formulaire
 
-Le bout de code que vous avez ajouté à votre route `feed` va potentiellement être réutilisé à chaque fois que nous aurons à formulaire. Il serait donc judicieux de centraliser cela dans un `service` dédié !
+Plutôt que d'afficher les erreurs comme des messages flashs, il semble plus intéressant de directement afficher les messages d'erreurs au-dessus des champs concernés (ici, nous n'en avons qu'un seul). Cela améliore l'expérience utilisateur, car il sait directement quel champ il doit corriger.
 
-Pour créer un service, il suffit de créer une classe dans `src/Service` (par convention). Nous pourrons ensuite l'injecter dans une des méthodes du contrôleur comme nous le faisons pour les autres services. Il est d'ailleurs tout à fait possible d'injecter et d'utiliser d'autres services dans notre service (par exemple, nous allons avoir besoin d'accéder à la structure de données contenant les messages flash).
+Pour inclure ces erreurs, il suffit d'ajouter le code suivant dans le template, au niveau du champ concerné (avant le `widget`) :
 
-Par exemple, imaginons un service qui utilisera le service `EntityManagerInterface` et `ExempleRepository`. Je peux le créer simplement ainsi :
-
-```php
-#src/Service/ExempleService.php
-
-class ExempleService {
-
-    public function __construct(
-        private EntityManagerInterface $entityManager,
-        private ExempleRepository $exempleRepository
-    ) {}
-
-    public function maFonction() : void {
-        // ...
-        $ex = $this->exempleRepository->findAll();
-        // ...
-        $this->entityManager->persist(...)
-        // ...
-    }
-}
-```
-
-La syntaxe utilisée pour définir ce constructeur ne doit pas vous être inconnue. Pour rappel, avec cette syntaxe, on signifie qu'on souhaite enregistrer directement les paramètres comme attributs de la classe (en précisant, au passage, leur visibilité). Ainsi, il n'y a pas de code basique à écrire pour déclarer manuellement ces attributs et les affecter dans le constructeur. Le corps du constructeur peut rester vide. En fait, on peut voir cela comme une version compacte entre la déclaration et l'affectation d'un attribut de la classe.
-
-Ainsi, si j'ai une classe avec le constructeur suivant :
-
-```php
-class Exemple {
-
-    public function __construct(
-        private string $attr
-    ) {}
-}
-```
-
-J'ai accès à un attribut `$this->attr` dans ma classe (qui sera affecté lors de la construction de l'objet). On peut bien entendu mettre d'autres niveaux de visibilité, comme `public` ou bien `protected`.
-
-Concernant le service, une fois votre classe construite, vous pouvez l'injecter où vous le souhaiter (dans un contrôleur, ou bien dans un autre service) et vous en servir :
-
-```php
-#[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
-public function methodeExemple(ExempleService $exempleService): Response
-{
-    $exempleService->maFonction();
-}
-```
-
-Dans le service que vous allez créer, vous aurez besoin du service `RequestStack` qui permet d'ajouter des messages flash dans la session de l'utilisateur :
-
-```php
-$flashBag = $this->requestStack->getSession()->getFlashBag();
-$flashBag->add(categorie, message);
+```twig
+{{ form_errors(formulaire.champ) }}
 ```
 
 <div class="exercise">
 
-1. Créez un dossier `Service` dans `src`.
+1. Dans votre template `feed.html.twig`, ajoutez le code nécessaire juste avant le widget qui gère la zone de texte pour la saisie de la publication afin de lister les erreurs relatives à ce champ.
 
-2. Ajoutez et complétez le service suivant (dans `Service`) :
+2. Dans `ControllerPublication` au niveau de votre route `feed`, revenez en arrière et annulez l'ajout des erreurs comme des messages flashs (mais ne supprimez pas la gestion des messages flashs niveau du template twig, nous nous en reservirons dans le prochain TP!).
 
-    ```php
-    namespace App\Service;
+3. Tentez de publier un message invalide (par exemple, avec moins de 4 caractères) et constatez l'horrible affichage que cela produit.
 
-    use Symfony\Component\Form\FormInterface;
-    use Symfony\Component\HttpFoundation\RequestStack;
-
-    class FlashMessageHelper
-    {
-
-        public function __construct(/* Injection de RequestStack */){}
-
-        public function addFormErrorsAsFlash(FormInterface $form) : void
-        {
-            $errors = $form->getErrors(true);
-            //Ajouts des erreurs du formulaire comme messages flash de la catégorie "error".
-        }
-    }
-    ```
-
-3. Dans votre route `feed`, injectez votre nouveau service puis utilisez-le à la place du code que vous utilisiez précédemment pour gérer les erreurs du formulaire.
-
-4. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
 </div>
 
-#### Gestion des erreurs - Interfaçage du service
+Comme vous avez pu le constater, l'affichage des erreurs est assez laid. Pour rendre cela plus propre, deux solutions s'offrent à nous :
+* Entourer le code d'erreur d'une balise `div` et customiser le css.
+* Ou bien Utiliser un **thème de formulaire**. C'est cette option que nous allons choisir.
 
-Comme vous l'aurez peut-être constaté, certains services comme `EntityManagerInterface` s'utilisent au travers d'une interface, et non pas d'une classe concrète. Pour permettre une meilleure modularité et substitutions des services de votre application (si vous décidez de changer la classe qui assure tel ou tel service), il est plus judicieux de définir vos services en les accompagnant d'une interface puis d'injecter et utiliser l'interface (dans les contrôleurs et autres) plutôt que la classe concrète.
+Sur Symfony, il est possible de créer et utiliser des **thèmes de formulaires** qui permettent de customiser la manière dont sont structurées et affichées les différentes sections du formulaire via des templates twig dédiés. Un thème peut être alors utilisé sur un ou plusieurs formulaires.
 
-Dans ce cas, il faut éditer le fichier `config/services.yaml` afin de préciser quelle est la classe concrète actuellement liée à cette interface. Ce fichier permet de configurer différents aspects des services de notre application (par exemple, quand on a besoin d'injecter des paramètres de notre application dans certains services...).
+Symfony dispose d'un thème par défaut, mais il est notamment possible d'en créer soi-même ou bien d'en importer si on utilise un **framework css** compatible : par exemple, **Bootstrap** ou **TailwindCSS** proposent leur propre thème de formulaire pour Symfony, ce qui permet d'uniformiser les formulaires de tout le site avec la librairie utilisée et un minimum de code HTML.
 
-Imaginons que je crée une interface `ExempleServiceInterface` pour mon service défini dans un exemple précédent :
-
-```php
-#src/Service/ExempleServiceInterface.php
-interface ExempleServiceInterface {
-    public function maFonction() : void;
-} 
-
-#src/Service/ExempleServiceA.php
-class ExempleServiceA implements ExempleServiceInterface {
-    ...
-}
-```
-
-S'il n'y a qu'une seule classe qui implémente l'interface en question, Symfony va la trouver automatiquement et faire le lien.
-
-Ainsi, quand je veux injecter ce service, je peux maintenant utiliser son interface (`ExempleA` sera alors utilisé):
-
-```php
- #[Route('/exemple', name: 'route_exemple', methods: ["GET"])]
-public function methodeExemple(ExempleServiceInterface $exempleService): Response
-{
-    $exempleService->maFonction();
-}
-```
-
-Cependant, si **deux classes** (ou plus) implémentent la même interface (ce qui peut arriver : par exemple, une classe gérant la connexion à une base de données MySQL contre une classe gérant la connexion à une base de données Oracle), Symfony ne saura donc pas laquelle choisir.
-
-Par exemple, si j'ai aussi : 
-
-```php
-#src/Service/ExempleServiceB.php
-class ExempleServiceB implements ExempleServiceInterface {
-    ...
-}
-```
-Dans ce cas, il faut éditer le fichier `config/services.yaml` ainsi, en précisant le service qu'on souhaite associer à l'interface :
-
-```yaml
-#Dans config/services.yaml
-parameters:
-    ...
-services:
-    #Je créé le service abstrait ExempleServiceInterface qui se réfère au service concret ExempleServiceB
-    App\Service\ExempleServiceInterface: '@App\Service\ExempleServiceB'
-    
-```
-
-Si jamais je souhaite changer de classe concrète, j'ai juste à changer le fichier `services.yaml`. Il n'y aura pas de changements à faire dans les classes qui utilisaient mon service jusqu'à présent.
-
-Il peut être intéressant de créer une **interface** pour son service, même si on ne prévoit pas immédiatement d'avoir plusieurs classes concrètes différentes pour ce service. C'est une bonne pratique car, on injectera alors systématiquement le service via l'interface, dans les contrôleurs, dans les autres services. Si jamais on vient finalement à ajouter une autre classe concrète implémentant la même interface (variante de ce service), il suffira alors d'éditer `services.yaml` sans toucher au reste du code si on souhaite en changer.
+Pour notre problème, nous allons créer notre propre thème dérivé de celui par défaut en réécrivant seulement la partie concernant l'affichage des erreurs, pour avoir quelque-chose de plus sympathique.
 
 <div class="exercise">
 
-1. Créez une interface `FlashMessageHelperInterface` (toujours dans le dossier `Service`) contentant la signature de la méthode `addFormErrorsAsFlash` puis faites-la implémenter à `FlashMessageHelper`. Pour rappel, dans **PHPStorm**, vous pouvez faire cela automatiquement : clic droit sur le nom de classe (à l'intérieur de la classe) `FlashMessageHelper` > `Refactor` > `Extract Interface`.
+1. Dans `templates` créez un sous-dossier `form`, puis, dans ce nouveau dossier, créez un fichier `theme.html.twig`, avec le contenu suivant :
 
-2. Dans votre route `feed`, utilisez votre nouvelle interface à la place du service concret.
+    ```twig
+    {% block form_errors %}
+        <div class="form-errors">
+        {%for error in errors %}
+            <span>{{ error.message }}</span>
+        {% endfor %}
+        </div>
+    {% endblock %}
+    ```
 
-3. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
+    Explications : Dans ce template un peu spécial, on spécifie les blocs que l'on veut changer. Ici, un seul, `form_errors`. On donne ensuite le code d'affichage (la variable `errors` sera passée par Symfony). La classe css `form-errors` est déjà définie dans notre fichier `styles.css`.
 
-4. Pour bien vérifier que vous avez compris les explications précédentes, ajoutez une classe `TestService.php` dans le dossier `Service` qui implémente aussi `FlashMessageHelperInterface`. Laissez le corps de la méthode `addFormErrorsAsFlash` vide. Essayez de recharger la page d'accueil. Symfony renvoie alors une erreur qui explique qu'il n'a pas pu trouver le service en question. Comme dans l'exemple, éditez le fichier `services.yaml` afin de faire pointer le service `FlashMessageHelperInterface` vers `FlashMessageHelper`. Testez que tout fonctionne à nouveau, puis, supprimez les modifications apportées dans `services.yaml` et supprimez également `TestService.php`.
+2. Dans le fichier `config/packages/twig.yaml` ajoutez la ligne suivante pour prendre en compte notre thème :
+
+    ```yaml
+    twig:
+    ...
+        form_themes:
+            - 'form/theme.html.twig'
+    ```
+
+3. Rentez de publier un message invalide et constatez l'affichage qui devrait être un peu meilleur.
 
 </div>
 
@@ -1585,13 +1496,9 @@ Il peut être intéressant de créer une **interface** pour son service, même s
 
 Il serait bien de détecter les erreurs de saisies avec des contraintes côté "client" (au niveau du HTML) pour ne pas envoyer la requête inutilement. Par exemple, avec les attributs `minlength` et `maxlength`, pour la longueur du champ.
 
-Il serait possible de paramétrer ces contraintes sur le template, en utilisant le paramètre `attr` de `form_widget` :
+Il est possible de paramétrer ces contraintes en utilisant le tableau d'option `attr` du champ dans la méthode `buildForm`.
 
-```
-{{ form_widget(form.champ1, {attr : {'minlength' : 4, 'maxlength' : 10}}) }}
-```
-
-Mais on peut faire encore mieux et les ajouter dans la classe du formulaire, au niveau du champ associé :
+Par exemple, si je veux que le navigateur vérifie (avant envoi) la longueur de mon champ, je pourrais faire ceci :
 
 ```php
 class ExempleType extends AbstractType {
@@ -1610,7 +1517,7 @@ class ExempleType extends AbstractType {
 }
 ```
 
-Ainsi, quand j'utiliserai `form_widget`, ces contraintes seront automatiquement générées :
+Ainsi, quand j'utiliserai `form_widget`, ces contraintes seront automatiquement générées dans les attributs du champ HTML :
 
 ```
 {{ form_widget(form.champ1) }}
@@ -1618,7 +1525,7 @@ Ainsi, quand j'utiliserai `form_widget`, ces contraintes seront automatiquement 
 
 <div class="exercise">
 
-1. Modifiez la classe `PublicationType` afin d'ajouter les contraintes `minlength` et `maxlength` sur votre champ `message` (min 4, max 200).
+1. Modifiez la classe `PublierType` afin d'ajouter les contraintes `minlength` et `maxlength` sur votre champ `message` (min 4, max 200).
 
 2. Rechargez la page principale et vérifiez que les contraintes sont bien appliquées (vous pouvez notamment vérifier cela en inspectant le code HTML, pour voir si les attributs sont bien présents, ou bien même en vérifiant que le formulaire n'est pas envoyé si ces contraintes ne sont pas respectées).
 
@@ -1715,10 +1622,6 @@ Une petite dernière section supplémentaire à l'attention du parcours **RACDV*
 
  * Nous avions ajouté deux fonctions à `twig` : `asset` pour récupérer les assets (images, fichiers...) de notre application et `route` pour générer le lien d'une route à partir de son nom (et éventuellement ses paramètres). Ici, Symfony inclut directement ces fonctions avec `asset` et `path` (à la place de `route`).
 
- * Le fichier de configuration `config/services.yaml` est très proche du fichier de configuration du conteneur de services que certains d'entre vous aviez codé (lors du TD4 de complément web, au semestre 4). Nous avions aussi codé un équivalent de ce fichier sous la forme d'une classe de configuration PHP.
-
- * La notion d'injection de dépendances et le concept de dépendre d'interfaces plutôt que de classes concrètes a aussi été abordé lors du TD4 de complément web. Cela permet à votre application d'être plus modulable et plus facilement testable ! Nous avions utilisé un **conteneur IoC** afin d'enregistrer et configurer toutes nos dépendances et les injecter de manière adéquate dans chaque classe (nous avions d'ailleurs utilisé celui de Symfony, donc c'est le même qui gère tout cela en arrière-plan ici aussi).
-
- * Nous avions déjà vu la syntaxe des constructeurs avec visibilité devant les arguments, afin de déclarer un attribut (comme nous le faisons dans `FlashMessageHelper`, par exemple).
+* La notion d'injection de dépendances a été abordée lors du TD4 de complément web. Nous avions utilisé un **conteneur IoC** afin d'enregistrer et configurer toutes nos dépendances et les injecter de manière adéquate dans chaque classe (nous avions d'ailleurs utilisé celui de Symfony, donc c'est le même qui gère tout cela en arrière-plan ici aussi).
 
 {% endraw %}

@@ -298,3 +298,10 @@ nav a {
     font-size: 30px;
     width: 100%;
 }
+
+.form-errors {
+    color: red;
+    text-align: left;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
