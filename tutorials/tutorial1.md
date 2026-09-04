@@ -45,23 +45,23 @@ Cependant, pas de panique, il y a beaucoup de similitudes entre Symfony et Larav
 
 Symfony permet de créer des sites web classiques en mode "server-side rendering" (génération de la page web du côté du serveur, comme ce que vous faisiez jusqu'ici), des API REST et même des briques logicielles (appelées `bundles`) à intégrer à Symfony, pour lui ajouter de nouvelles fonctionnalités.
 
-Ce framework utilise (par défaut) l'ORM `Doctrine` (syntaxe assez similaire à Hibernate, en JAVA). Concernant les templates (génération de pages HTML), il utilise `Twig` que vous avez déjà utilisé l'année dernière dans le cadre du cours de compléments Web.
+Ce framework utilise (par défaut) l'ORM `Doctrine` (syntaxe assez similaire à Hibernate, en Java). Concernant les templates (génération de pages HTML), il utilise `Twig` que vous avez déjà utilisé l'année dernière dans le cadre du cours de compléments Web.
 
 Concernant le thème de l'application que nous allons construire au fil des cours, nous allons reprendre le concept du réseau social **The Feed** en l'améliorant. Concernant la partie sur twig, vous allez donc *un peu* refaire certaines choses que vous aviez faites en compléments Web, mais pas avec le même framework et nous allons aussi aller plus loin.
 
 Nous allons suivre la progression suivante :
 
-1. Création du site "The Feed" en utilisant Symfony. L'objectif est d'arriver au même résultat que vous aviez obtenu (niveau fonctionnalités) à la fin des cours de complément web.
+1. Création du site "The Feed" en utilisant Symfony. L'objectif est d'arriver au même résultat que vous aviez obtenu (niveau fonctionnalités) à la fin des cours de compléments web.
 
 2. Amélioration du site. Nous allons ajouter de nouvelles fonctionnalités, des rôles pour les utilisateurs, la suppression de compte, de publications, une boutique pour acheter le mode "premium" du site...
 
-3. Création d'une API REST pour The Feed. Nous allons créer une API complète pour le site, ce qui permettra de complétement découpler l'application de la partie "front-end" et ainsi la relier et l'utiliser avec n'importe quelle technologie côté client (ce qui sera le thème de la suite des cours de cette ressource !).
+3. Création d'une API REST pour The Feed. Nous allons créer une API complète pour le site, ce qui permettra de complètement découpler l'application de la partie "front-end" et ainsi la relier et l'utiliser avec n'importe quelle technologie côté client (ce qui sera le thème de la suite des cours de cette ressource !).
 
 Pour cette première séance, recréons donc The Feed en utilisant ce nouvel outil ! Vous allez constater que certaines parties vont aller beaucoup plus rapidement (et facilement) que l'année dernière !
 
 ## Installation et mise en route
 
-Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons faire cela simplement en utilisant l'outil **composer** (installateur de librairies PHP que vous avez déjà utilisé l'an dernier).
+Tout d'abord, il va falloir créer un projet avec **Symfony**. Nous pouvons faire cela simplement en utilisant l'outil **composer** (installateur de bibliothèques PHP que vous avez déjà utilisé l'an dernier).
 
 <div class="exercise">
 
@@ -108,7 +108,7 @@ Vous devriez maintenant voir la page par défaut de Symfony, signe que tout est 
 
 Comme vous pouvez le constater, il y a **beaucoup** de fichiers qui ont été générés. Au lieu de tous vous les présenter dans une section dédiée, nous parlerons plutôt de chaque fichier/dossier utile individuellement quand nous aurons besoin de l'utiliser.
 
-Quand vous uploaderez votre projet sur git, certains dossiers comme `vendor` (contenant les librairies importées) ou bien le cache du site seront ignorés. Pour installer un projet déjà existant (chez vous, sur une autre machine, dans un autre conteneur docker...) il suffit d'exécuter la commande suivante à la racine du projet :
+Quand vous uploaderez votre projet sur git, certains dossiers comme `vendor` (contenant les bibliothèques importées) ou bien le cache du site seront ignorés. Pour installer un projet déjà existant (chez vous, sur une autre machine, dans un autre conteneur docker...) il suffit d'exécuter la commande suivante à la racine du projet :
 
 ```bash
 composer install
@@ -157,7 +157,7 @@ class ExempleController extends AbstractController
 }
 ```
 
-Une route et une fonction d'exemple sont créées par défaut, mais nous la supprimerons pour placer nos propres fonctions.
+Une route et une fonction d'exemple sont créées par défaut, mais nous les supprimerons pour placer nos propres fonctions.
 
 Bien entendu, vous pouvez aussi créer un contrôleur à la main, mais la commande a aussi l'avantage d'inclure les premiers imports nécessaires.
 
@@ -562,7 +562,7 @@ Si vous jetez un œil au fichier `compose.yaml` vous observerez que le service `
 
 Par rapport au nom d'utilisateur et au mot de passe, le service `db` est configuré pour avoir un utilisateur `root` dont le mot de passe est `root`. Le port utilisé est `3306`. La version du serveur MySQL utilisé est `26.7.0`.
 
-En résumé, pour utiliser le service de base de données inclut dans le multi-conteneur docker au travers du conteneur du serveur Web, on peut utiliser la configuration suivante :
+En résumé, pour utiliser le service de base de données inclus dans le multi-conteneur docker au travers du conteneur du serveur Web, on peut utiliser la configuration suivante :
 
 ```
 DATABASE_URL="mysql://root:root@db:3306/nom_base?serverVersion=26.7.0"
@@ -727,7 +727,7 @@ Vous pouvez retrouver l'ensemble des filtres disponibles sur [cette page](https:
     Pour construire vos publications, vous pouvez notamment utiliser les **setters** :
 
     ```php
-    // A importer au début da la classe
+    // A importer au début de la classe
     use App\Entity\Publication;
 
     // Dans une méthode, création d'une publication...
@@ -754,7 +754,7 @@ En Symfony, la gestion des **assets** (images, fichiers css, js, etc...) peut ê
 
 * En plaçant simplement les assets dans le dossier `public` (déconseillé en phase de développement, il s'agit généralement du dossier où se trouveront les assets quand le site sera en production).
 
-* En utilisant une librairie symfony (`bundle`) dédiée (par exemple, **Webpack Encore**).
+* En utilisant une bibliothèque symfony (`bundle`) dédiée (par exemple, **Webpack Encore**).
 
 * En utilisant le récent système `AssetMapper` installé par défaut dans une application web symfony (cela se passe au niveau du dossier `assets`). C'est l'option recommandée.
 
@@ -762,7 +762,7 @@ Le système `AssetMapper` propose divers avantages **lors du développement** :
 
 * Le versionning des fichiers : les noms de fichiers sont associés à un suffixe lors du chargement de la page, liés à leurs versions. Si un changement intervient dans un des fichiers (par exemple, modification du js ou du css), le suffixe changera et le navigateur détectera donc qu'il doit recharger ce fichier (utile si le navigateur met en cache certains fichiers).
 
-* L'utilisation de librairies "clientes" externes disponibles sur `npm` (node package manager) sans avoir besoin d'installer `npm` sur votre machine. L'import est aussi très facile. Il en va de même pour les différents frameworks css.
+* L'utilisation de bibliothèques "clientes" externes disponibles sur `npm` (node package manager) sans avoir besoin d'installer `npm` sur votre machine. L'import est aussi très facile. Il en va de même pour les différents frameworks css.
 
 * On peut créer différentes configurations et charger celle qu'on souhaite sur une page donnée, ou même plusieurs.
 
@@ -1317,7 +1317,7 @@ Quelques exemples :
 
 * `#[Assert\NotBlank]` : vérifie que la propriété possède une valeur non `null` et non vide (pas de chaîne vide). On peut configurer l'assertion pour autoriser la valeur `null`, si besoin.
 
-* `#[Assert\NotNull]` : vérifie que la propriété n'est pas nulle (du côté de l'application). Cela signifie que la propriété transmisse n'a pas la valeur `null` (mais elle peut être vide). Cela peut paraître redondant avec le fait que la propriété ne peut pas être nulle dans la base, mais avec cette assertion la vérification est faite au niveau de l'application et non pas du côté de la base. Si on veut s'assurer que la propriété n'est pas nulle et bien transmisse, on utilisera plutôt `#[Assert\NotBlank]` qui est plus strict.
+* `#[Assert\NotNull]` : vérifie que la propriété n'est pas nulle (du côté de l'application). Cela signifie que la propriété transmise n'a pas la valeur `null` (mais elle peut être vide). Cela peut paraître redondant avec le fait que la propriété ne peut pas être nulle dans la base, mais avec cette assertion la vérification est faite au niveau de l'application et non pas du côté de la base. Si on veut s'assurer que la propriété n'est pas nulle et bien transmisse, on utilisera plutôt `#[Assert\NotBlank]` qui est plus strict.
 
 L'assertion [When](https://symfony.com/doc/current/reference/constraints/When.html) est également intéressante.
 
@@ -1461,7 +1461,7 @@ Comme vous avez pu le constater, l'affichage des erreurs est assez laid. Pour re
 
 Sur Symfony, il est possible de créer et utiliser des **thèmes de formulaires** qui permettent de customiser la manière dont sont structurées et affichées les différentes sections du formulaire via des templates twig dédiés. Un thème peut être alors utilisé sur un ou plusieurs formulaires.
 
-Symfony dispose d'un thème par défaut, mais il est notamment possible d'en créer soi-même ou bien d'en importer si on utilise un **framework css** compatible : par exemple, **Bootstrap** ou **TailwindCSS** proposent leur propre thème de formulaire pour Symfony, ce qui permet d'uniformiser les formulaires de tout le site avec la librairie utilisée et un minimum de code HTML.
+Symfony dispose d'un thème par défaut, mais il est notamment possible d'en créer soi-même ou bien d'en importer si on utilise un **framework css** compatible : par exemple, **Bootstrap** ou **TailwindCSS** proposent leur propre thème de formulaire pour Symfony, ce qui permet d'uniformiser les formulaires de tout le site avec la bibliothèque utilisée et un minimum de code HTML.
 
 Pour notre problème, nous allons créer notre propre thème dérivé de celui par défaut en réécrivant seulement la partie concernant l'affichage des erreurs, pour avoir quelque-chose de plus sympathique.
 
@@ -1490,7 +1490,7 @@ Pour notre problème, nous allons créer notre propre thème dérivé de celui p
             - 'form/theme.html.twig'
     ```
 
-3. Rentez de publier un message invalide et constatez l'affichage qui devrait être un peu meilleur.
+3. Tentez de publier un message invalide et constatez l'affichage qui devrait être un peu meilleur.
 
 </div>
 
@@ -1535,7 +1535,7 @@ Ainsi, quand j'utiliserai `form_widget`, ces contraintes seront automatiquement 
 
 ### Architecture des templates
 
-Bientôt, nous allons ajouter de nouvelles pages à notre site. Mais il serait assez peu concevable que nous devions répéter le code HTML de certaines parties de nos pages, comme le bandeau, le head, le menu de navigation, le footer... Heureusement, pour palier à ce problème, `twig` possède une fonctionnalité appelée **blocks**.
+Bientôt, nous allons ajouter de nouvelles pages à notre site. Mais il serait assez peu concevable que nous devions répéter le code HTML de certaines parties de nos pages, comme le bandeau, le head, le menu de navigation, le footer... Heureusement, pour pallier à ce problème, `twig` possède une fonctionnalité appelée **blocks**.
 
 Un `block` est une zone d'un template qui pourra être **redéfini** dans un sous-template. On délimite la zone du block simplement en utilisant `{% block nom_block %}` et `{% endblock %}` :
 
@@ -1594,7 +1594,7 @@ Pour notre site, nous allons donc adopter la stratégie suivante :
 
 2. Dans le `body` de ce template, juste après la zone affichant les messages flash, créez un block `page_content`.
 
-3. Dans `feed.html.twig`, faites en sorte d'étendre `base.html.twig` puis de récrire le block `page_content` de manière adéquate, en ne gardant que le contenu propre à cette page (le `main`). Si ce n'est pas déjà fait, supprimez tout le reste (qui est redondant avec ce qui est déjà contenu `base.html.twig`).
+3. Dans `feed.html.twig`, faites en sorte d'étendre `base.html.twig` puis de réécrire le block `page_content` de manière adéquate, en ne gardant que le contenu propre à cette page (le `main`). Si ce n'est pas déjà fait, supprimez tout le reste (qui est redondant avec ce qui est déjà contenu `base.html.twig`).
 
 4. Rechargez votre page principale et vérifiez qu'elle s'affiche toujours correctement. Vérifiez le code HTML généré pour être sûr qu'il n'y a pas d'erreur.
 
@@ -1606,15 +1606,15 @@ Pour notre site, nous allons donc adopter la stratégie suivante :
 
 Vous maîtrisez maintenant les fondamentaux du framework Symfony : son système de routing, ses commandes, le moteur de template **twig**, les services et l'utilisation de l'ORM **Doctrine**. Vous pouvez déjà construire un petit site assez facilement. Il reste cependant un aspect majeur à aborder : la gestion des utilisateurs. L'objectif du second TD sera donc de mettre en place tout ce qu'il faut pour inscrire, connecter, déconnecter et gérer les permissions (basiques) d'un utilisateur.
 
-### Lien avec le cours de complément web (RACDV)
+### Lien avec le cours de compléments web (RACDV)
 
-Une petite dernière section supplémentaire à l'attention du parcours **RACDV**. Dans ce TD, vous avez réutilisé des concepts que vous aviez abordés en cours de **complément web**. Le but de cette section est de faire lien avec tout cela pour comparer la façon de faire de **Symfony** :
+Une petite dernière section supplémentaire à l'attention du parcours **RACDV**. Dans ce TD, vous avez réutilisé des concepts que vous aviez abordés en cours de **compléments web**. Le but de cette section est de faire lien avec tout cela pour comparer la façon de faire de **Symfony** :
 
- * En cours de complément web, nous avions configuré un **autoloader** afin de charger nos classes. Symfony gère aussi ce chargement automatique à partir du nom de classe complet. Le **namespace** de base est `App` et pointe sur le dossier `src` de l'application. Vous pouvez notamment retrouver cette configuration dans le fichier `composer.json` à la source du projet!
+ * En cours de compléments web, nous avions configuré un **autoloader** afin de charger nos classes. Symfony gère aussi ce chargement automatique à partir du nom de classe complet. Le **namespace** de base est `App` et pointe sur le dossier `src` de l'application. Vous pouvez notamment retrouver cette configuration dans le fichier `composer.json` à la source du projet!
 
  * Symfony réécrit l'URL pour appeler toujours le script de base public/index.php en transmettant l'information de l'URL relative. En utilisant le serveur de **Symfony**, cela se fait tout seul, sinon, le fichier `.htaccess` du dossier `public` est utilisé. Vous aviez vous-même inclut un fichier similaire pour obtenir le même comportement, dans votre framework "maison".
 
- * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]` comme nous le faisions (à terme) l'année dernière. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration). Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manières de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Laravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques librairies). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
+ * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]` comme nous le faisions (à terme) l'année dernière. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration). Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manières de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Laravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques bibliothèques). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
  
  Fait amusant : si vous êtes amené à utiliser **Laravel**, vous pourrez constater que le framework importe le routeur de Symfony et l'étend ! Et c'est une bonne chose : on évite de réinventer la roue.
 
@@ -1624,6 +1624,6 @@ Une petite dernière section supplémentaire à l'attention du parcours **RACDV*
 
  * Nous avions ajouté deux fonctions à `twig` : `asset` pour récupérer les assets (images, fichiers...) de notre application et `route` pour générer le lien d'une route à partir de son nom (et éventuellement ses paramètres). Ici, Symfony inclut directement ces fonctions avec `asset` et `path` (à la place de `route`).
 
-* La notion d'injection de dépendances a été abordée lors du TD4 de complément web. Nous avions utilisé un **conteneur IoC** afin d'enregistrer et configurer toutes nos dépendances et les injecter de manière adéquate dans chaque classe (nous avions d'ailleurs utilisé celui de Symfony, donc c'est le même qui gère tout cela en arrière-plan ici aussi).
+* La notion d'injection de dépendances a été abordée lors du TD4 de compléments web. Nous avions utilisé un **conteneur IoC** afin d'enregistrer et configurer toutes nos dépendances et les injecter de manière adéquate dans chaque classe (nous avions d'ailleurs utilisé celui de Symfony, donc c'est le même qui gère tout cela en arrière-plan ici aussi).
 
 {% endraw %}
