@@ -20,8 +20,8 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
     2. Séance 2 : Suite et fin du [TD 1](tutorials/tutorial1) puis début du [TD 2](tutorials/tutorial2) -- Découverte du framework Symfony 2/2
     3. Séance 3 : Suite et fin du [TD 2](tutorials/tutorial2).
 	4. Fin de semaine : Lancement du premier projet.
-2. Semaine du 21 septembre 2026 -- [TD 3](tutorials/tutorial3) -- Amélioration du site
-3. Semaine du 12 octobre 2026 : Suite et fin du [TD 3](tutorials/tutorial3) puis suivi du premier projet.
+2. Semaine du 21 septembre 2026 -- TD 3(à venir) -- Amélioration du site
+3. Semaine du 12 octobre 2026 : Suite et fin du TD 3(à venir) puis suivi du premier projet.
 4. Semaine du 19 octobre 2026 :
     1. Séance 1 : TD 4 (à venir) -- Création d'une API REST.
     2. Séance 2 : Suite du TD 4  (à venir).

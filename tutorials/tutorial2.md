@@ -1453,7 +1453,7 @@ Ces templates seront chargés automatiquement (en mode `prod`) si une erreur sur
 
     N'oubliez pas que si vous faites des modifications pour améliorer ou corriger votre résultat, il faudra vider le cache (car nous sommes dans le mode `prod`).
 
-8. Repassez l'environnement de l'application à `dev`.
+8. Repassez l'environnement de l'application à `dev` et **supprimez le dossier** `puclic/assets` généré lors de la compilation des assets. Pensez aussi à vider le cache.
 
 </div>
 

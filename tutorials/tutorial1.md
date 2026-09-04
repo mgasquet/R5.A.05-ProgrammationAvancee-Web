@@ -768,14 +768,14 @@ Le système `AssetMapper` propose divers avantages **lors du développement** :
 
 Lors de la mise en **production**, l'objectif final est d'avoir nos **assets** dans le dossier `public`. Il suffira alors d'exécuter une commande pour tout "compiler" et copier dans le dossier en question (nous verrons cette commande un peu plus tard).
 
-Concernant l'utilisations des assets dans une page, on distinguera :
+Concernant l'utilisation des assets dans une page, on distinguera :
 
 * Les ressources "globales" à importer (css et javascript utilisé sur toutes les pages, par exemple, ou sur un ensemble de pages)
-* Les ressources relatives à une page (un fichier javascript seulement utilisé dans cette page...).
+* Les ressources relatives à une page (une image, un fichier javascript ou css seulement utilisé dans une page...).
 
-En fait, lors de la **compilation** des assets (dont nous reparlerons ulétieurement), tout est déplacé dans le dossier public.
+En fait, lors de la **compilation** des assets (dont nous reparlerons ultérieurement), tout est déplacé dans le dossier public.
 
-Concernant les ressources globales, tout se passe dans les fichiers `xxx.js` à la racine du dossier `assets`. Le nom du fichier conrrespond au nom de la configuration. Par exemple, le fichier `app.js` déjà créé permet d'importer les ressources globales de la configuration nommée `app`. Mais on peut mettre le nom de fichier que l'on veut.
+Concernant les ressources globales, tout se passe dans les fichiers `xxx.js` à la racine du dossier `assets`. Le nom du fichier correspond au nom de la configuration (on nomme généralement ce fichier "entry point"). Par exemple, le fichier `app.js` déjà créé permet d'importer les ressources globales de l'entry point `app`. Mais on peut mettre le nom de fichier que l'on veut.
 
 Regardons de plus près un exemple de fichier `app.js` :
 
@@ -807,13 +807,15 @@ Lorsque l'on souhaite charger les ressources d'une configuration dans une page d
 </body>
 ```
 
-Les fichiers dynamiques (par exemple, une image uploadée par un utilisateur) ne sera pas gérée par le asset mapper, mais sera directement placée dans `public` lors de l'upload.
+Les fichiers dynamiques (par exemple, une image uploadée par un utilisateur) ne sera pas gérée par l' asset mapper, mais sera directement placée dans `public` lors de l'upload.
 
-Concernant les ressources non-globales, dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la fonction va d'abord chercher dans le dossier `assets`, et s'il ne trouve rien, il va chercher dans le dossier `public`. La racine se trouve donc directement dans le dossier `assets` ou `public` selon là où on cherche la ressource, on indique donc un sous-chemin à partir d'un de ces dossiers.
+Concernant les ressources non globales, dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la fonction va d'abord chercher dans le dossier `assets`, et s'il ne trouve rien, il va chercher dans le dossier `public`. La racine se trouve donc directement dans le dossier `assets` ou `public` selon là où on le programme cherche la ressource, on indique donc un sous-chemin à partir d'un de ces dossiers.
 
 Par exemple, si je possède le fichier suivant : `assets/exemple/coucou.jpg`, je peux construire le chemin vers cette image en utilisant l'instruction : `{{ asset("exemple/coucou.jpg") }}` dans mon template (typiquement, dans la partie `src`).
 
-Si j'ai une image uploadée par un utilisateur dans `public/user/img.jpg`, je pourrais aussi y accéder via `{{ asset("user/img.jpg") }}` : la fonction cherche d'abord dans `assets/user/img.jpg` et comme il ne trouve rien, il cherche dans `public/user/img.jpg` et trouve l'image.
+Si j'ai une image uploadée par un utilisateur dans `public/user/img.jpg`, je pourrais aussi y accéder via `{{ asset("user/img.jpg") }}` : la fonction cherche d'abord dans `assets/user/img.jpg` et comme il ne trouve rien, il cherche dans `public/user/img.jpg` et trouve l'image. Comme nous le verrons prochainement, il existe différents **environnements** (développement, production). en mode **développement** `asset` va chercher dans les deux répertoires (`assets` puis `public`). En mode **production**, il va chercher uniquement dans `public` (les assets seront compilés et transférées dans ce dossier au préalable).
+
+Dans un template, vous ne pouvez faire appel qu'une seule fois à `importmap`, mais il est possible de charger plusieurs points d'entrées (fichier `xxx.js` dans assets). Pour l'instant, nous nous contenterons de la configuration globale `app.js`.
 
 <div class="exercise">
 

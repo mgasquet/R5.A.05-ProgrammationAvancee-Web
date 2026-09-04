@@ -1,6 +1,6 @@
 ---
 title: TD3 &ndash; Amélioration du site
-subtitle: Javascript, Premium, Permissions, Administration, Commandes, Système de paiement
+subtitle: Javascript, Symfony UX, Stimulus, Turbo, Premium, Permissions, Administration, Commandes, Système de paiement
 layout: tutorial
 lang: fr
 ---
@@ -11,7 +11,7 @@ Dans ce nouveau TD, nous allons améliorer le site en rajoutant diverses fonctio
 
 Voici les nouveaux objectifs pour "The Feed" :
 
-* Ajout de fonctionnalités **asynchrones** avec **JavaScript** (pour supprimer des publications).
+* Ajout de fonctionnalités **dynamiques** avec **JavaScript** via **Symfony UX** (pour supprimer et ajouter des publications).
 
 * Ajout d'un système de **membres premium**.
 
@@ -23,38 +23,131 @@ Voici les nouveaux objectifs pour "The Feed" :
 
 * Ajout d'un **système de paiement** (pour obtenir le statut premium) avec **Stripe**.
 
-
 **On rappelle que les commandes doivent être exécutées à l'intérieur de votre conteneur Docker** à l'exception des commandes liées au logiciel client **Stripe** (dont nous allons parler dans ce TP, mais cela sera précisé en temps voulu).
 
-## JavaScript et fonctionnalités asynchrones
+## Fonctionnalités dynamiques
 
-L'année dernière, vous avez découvert la possibilité d'avoir certaines fonctionnalités dîtes asynchrones afin d'effectuer des actions et recevoir des réponses sans avoir besoin de quitter la page courante, afin de rendre votre site plus dynamique. C'est d'ailleurs la logique au cœur des frameworks réactifs (Vue.js, Angular, React) qui seront abordés dans de prochains TPs.
+L'année dernière, vous avez découvert la possibilité d'avoir certaines fonctionnalités dynamiques afin d'effectuer des actions et recevoir des réponses sans avoir besoin de recharger la page courante, afin de rendre votre site plus dynamique. C'est d'ailleurs la logique au cœur des frameworks réactifs (Vue.js, Angular, React) qui seront abordés dans de prochains TDs.
 
-Comme vous le savez, tout cela passe par JavaScript. Comme on souhaite ajouter la possibilité aux utilisateurs de supprimer leurs publications, il faudrait donc ajouter du JavaScript à notre site et une route prévue pour être utilisée de manière asynchrone (qui n'utilise pas twig et qui ne renvoie pas de page, mais éventuellement des données JSON). En effet, cette fonctionnalité est bien plus adaptée à un système asynchrone plutôt qu'à un formulaire qui ferait recharger la page entière.
+Avec Symfony, il existe plusieurs moyens d'ajouter des fonctionnalités dynamiques. La première, que vous connaissez, consiste à coder ces fonctionnalités via JavaScript. La seconde utilise une librairie `Turbo` qui est déjà chargée et active sur votre site.
 
-Aussi, actuellement, notre route `deconnexion` est accessible en `GET`. Nous avions évoqué le fait qu'il serait plus judicieux et sécurisé d'avoir cette route en mode `POST` (ce qui n'est pas possible avec un lien simplement généré). Nous pourrons également gérer cela avec JavaScript.
+Par exemple, comme on souhaite ajouter la possibilité aux utilisateurs de supprimer leurs publications, on pourrait donc ajouter du JavaScript à notre site et une route prévue pour être utilisée de manière asynchrone (qui n'utilise pas twig et qui ne renvoie pas de page, mais éventuellement des données JSON).
 
-### Prise en charge du JavaScript
+Aussi, actuellement, notre route `deconnexion` est accessible en `GET`. Nous avions évoqué le fait qu'il serait plus judicieux et sécurisé d'avoir cette route en mode `POST` (ce qui n'est pas possible avec un lien simplement généré). Nous pourrions également gérer cela avec JavaScript.
 
-Pour rappel, l'ajout de JavaScript à une page se passe de la même manière que l'ajout d'un fichier `css`, c'est-à-dire dans la partie `head` de la page, avec la balise suivante :
+### Prise en charge du JavaScript avec Symfony UX
+
+Traditionnellement, l'ajout de **JavaScript** à une page s'effectue dans la partie `head` de la page, avec la balise suivante :
 
 ```html
 <script defer type="text/javascript" src="chemin/fichier.js"></script>
 ```
 
-On rappelle que, dans le cadre du framework, on ne doit toujours pas utiliser directement le **chemin** du fichier, mais plutôt la fonction `asset` pour générer le bon chemin depuis un template twig.
+On pourrait donc tout à fait charger un fichier placé dans `assets` (comme pour les images) grâce à la fonction `asset` de twig. Une autre solution serait de créer [un entry point dédié](https://symfony.com/doc/current/frontend/asset_mapper.html#page-specific-css-javascript) pour charger tous les fichiers `js` (et éventuellement `css`) relatifs à cette page (préférable à la première solution).
 
-L'attribut `defer` permet de charger le fichier après que la page ait été chargée (par exemple, si le JavaScript doit aller récupérer des éléments HTML particuliers...)
+Cependant, Symfony inclut un ensemble de librairies et d'outils nommé **Symfony UX** qui permet de gérer le JavaScript d'une manière particulière, en s'apuuyant sur **framework** JavaScript nommé **Stimulus**. Cet outil facilite l'intégration de JavaScript sans avoir besoin d'importer manuellement de fichiers ou de définir de configuration particulière. C'est la méthode à privilégier dans la mesure du possible, notamment quand on utilise la librairie `Turbo` (incluse dans Symfony UX) dont nous allons parler un peu plus tard.
 
-Nous allons commencer par importer un fichier JavaScript simple sur la page principale et la page personnelle des utilisateurs. Pour l'instant, ce fichier permettra simplement de supprimer "visuellement" une publication de la page (mais pas encore réellement, elle sera toujours là au rechargement).
+Pour utiliser du JavaScript avec **Stimulus** dans une page, il faut définir un (ou plusieurs) **controller** JavaScript. Ce controller doit être nommé `xxx_controller.js` (`xxx` étant un nom custom que l'on donne) et placé dans le dossier `assets/controllers`. Ce fichier à cette allure :
+
+```js
+import { Controller } from '@hotwired/stimulus';
+
+export default class extends Controller {
+    maFonction1() {
+        //...
+    }
+
+    maFonction2(event) {
+        //...
+    }
+
+    connect() {
+        //...
+    }
+
+    disconnect() {
+        //...
+    }
+}
+```
+
+Comme vous pouvez le constater, à l'intérieur du **controller**, on peut définir diverses fonctions optionnelles, dont certaines peuvent recevoir des événements (un clic, par exemple). Les fonctions `connect` et `disconnect` sont des fonctions optionnelles spéciales qui sont appelées quand le controller est chargé ou décharger (au chargement d'une page, par exemple). On peut s'en servir pour initialiser certains éléments au chargement/déchargement de la page, au besoin.
+
+Ensuite, nous pouvons attacher le **controller** à une **zone** d'une page. Cela peut être par exemple sur le `body` dans `base.html.twig` si l'on veut un controller général, actif sur toutes les pages. Ou bien sur le `main` d'un des templates, pour un cotnroller actif seulement sur une page donnée. Ou bien sur une `div` pour activer le controller seulement sur une sous-zone de la page, etc. Ou bien même juste sur un input simple, etc. Une page peut accueillir autant de controllers que l'on souhaite.
+
+Le controller est définit comme attribut `data-controller` d'une balise html (simple, ou qui contient d'autres balises, comme `<div>`) du template twig (avec le nom `xxx` donné au fichier `js` contenant le controller). Par exemple :
+
+```html
+<div data-controller="xxx">
+    ...
+</div>
+```
+
+Ou bien
+
+```html
+<input data-controller="xxx"/>
+```
+
+Enfin, on peut attacher des **gestionnaires d'événements** sur la balise sur laquelle est attribué un **controller** ou sur les éléments qu'elle contient (dans le cas d'une balise "conteneur", comme `<div>`, `<form>`, etc) à l'aide de l'attribut `data-action`. Par exemple, imaginons le controller suivant nommé `exemple_controller.js` :
+
+```js
+//assets/controllers/exemple_controller.js
+import { Controller } from '@hotwired/stimulus';
+
+export default class extends Controller {
+    monActionA() {
+        console.log("Clic!");
+    }
+
+    monActionB(event) {
+        console.log("Changement de valeur : " + event.target.value);
+    }
+}
+```
+
+Et, dans un template twig :
+
+```html
+<div data-controller="exemple">
+    <button data-action="click->exemple#monActionA">
+    <input type="text" data-action="input->exemple#monActionB"/>
+</div>
+```
+
+À chaque clic sur le bouton, la console affichera "Clic!" et à chaque saisie dans le champ textuel affichera la nouvelle valeur dans la console. Il n'y a rien d'autres à faire : simplement marquer les zones et les événements, et définir le fichier controller.
+
+Comme on le remarque, la valeur de `data-action` se décompose ainsi : `nomAction->nomController#nomFonction`. Il peut sembler étrange d'avoir à préciser le nom du controller, mais n'oubliez pas que ce fragment de code est potentiellement contenu dans un autre fragment de code pour lequel on a spécifié un controller, donc, on pourrait aussi préciser un autre controller dans nos balises.
+
+Tous les événements que vous connaissez (click, change, focus, etc) sont disponibles.
+
+Il est important **de ne pas passer par le système classique d'événements js** (par exemple, onclick, oninput, etc) quand on utilise ce système, notamment si on utilise la librairie `Turbo`, comme nous le verrons après. Cependant, comme nous l'avons vu, il reste toujours possible de charger un fichier JavaScript "classique" si on ne souhaite pas utiliser ce système pour certaines raisons.
+
+Si on souhaite utiliser du JavaScript globalement, on peut définir un controller global et l'atatcher sur `body`, par exemple.
+
+Bref, nous allons commencer par mettre en place une fonctionnalité JavaScript simple sur la page principale et la page personnelle des utilisateurs. Pour l'instant, cela permettra simplement de supprimer "visuellement" une publication de la page (mais pas encore réellement, elle sera toujours là au rechargement de la page).
 
 <div class="exercise">
 
-1. Dans le dossier `public` (où sont rangés vos assets) créez un dossier `js` et importez [le fichier suivant]({{site.baseurl}}/assets/TD3/publications.js) (clic-droit puis "Enregistrer la cible du lien...").
+1. Dans le dossier `assets/controllers`, créez un fichier `publications_controller.js`, avec le contenu suivant :
 
-2. Faites en sorte de charger ce fichier JavaScript, **uniquement dans les templates** `feed.html.twig` **et** `page_perso.html.twig`. Nous allons ajouter de nouvelles pages dans le futur, et il ne faut pas que ce fichier soit chargé dans ces autres pages. Indice : il vous faudra sans doute modifier `base.html.twig` en ajoutant un nouveau `block` redéfinissable !
+    ```js
+    import { Controller } from '@hotwired/stimulus';
 
-3. Modifiez le template `publication.html.twig` afin de rajouter le bout de code HTML suivant, juste après l'élément `<p>...</p>` contenant le message de la publication : 
+    export default class extends Controller {
+        supprimerPublication(event) {
+            const button = event.target;
+            const publication = button.closest(".feedy");
+            publication.remove();
+        }
+    }
+    ```
+
+2. Créez un template `publication/liste_publications.html.twig` qui contient une `div` contenant toutes les publications passées en paramètre du template. Ce template utilisera le template `publication/publication.html.twig` (créé lors du précédent TP). Mettez à jour `publication/feed/html.twig` et `utilisateur/page_perso.html.twig` afin d'utiliser votre nouveau template. Vérifiez que vos deux pages fonctionnent toujours.
+
+3. Faites en sorte d'attacher le controller `publications` au `div` contenant les publications dans `liste_publications.html.twig`.
+
+4. Modifiez le template `publication.html.twig` afin de rajouter le bout de code HTML suivant, juste après l'élément `<p>...</p>` contenant le message de la publication : 
 
     ```html
     <button class="delete-feedy">Supprimer</button>
@@ -62,15 +155,17 @@ Nous allons commencer par importer un fichier JavaScript simple sur la page prin
 
     Ce bouton ne doit apparaître que si l'utilisateur connecté est l'auteur de la publication ! Pour rappel, vous avez accès à la variable `app.user` dans vos templates `twig`... Attention, avant d'y accéder il faut d'abord bien vérifier que l'utilisateur est bien connecté !
 
-4. Allez sur la page principale de votre site et vérifiez que :
+5. Faites en sorte que la fonction `supprimerPublication` du controller se déclenche lors du **clic** sur le bouton.
 
-    * Le bouton "Supprimer" apparait seulement sur les publications dont vous êtes l'auteur.
+6. Allez sur la page principale de votre site et vérifiez que :
 
-    * Le bouton fonctionne, c'est-à-dire que la publication est retirée de la page visuellement.
+    * Le bouton "Supprimer" apparaît seulement sur les publications dont vous êtes l'auteur.
+
+    * Le bouton fonctionne, c'est-à-dire que la publication est retirée de la page (seulement visuellement pour le moment).
 
     Vérifiez également que tout fonctionne de même sur votre page personnelle.
 
-    Si l'import du JavaScript ne fonctionne pas, vérifiez la console (`F12`) et également le code source de la page (`CTRL+U`)
+    Si cela ne fonctionne pas, vérifiez la console (`F12`) pour chercher d'éventuels messages d'erreur.
 
 </div>
 
@@ -100,7 +195,7 @@ public function methodeExemple(Request $request): Response
 
 * Si des données `JSON` (ou autre) sont envoyées et doivent être lues, on peut les récupérer avec l'objet `Request`. En fait, cela marche de la même façon que pour récupérer des données depuis query string, ou bien même d'un formulaire...
 
-* On renvoie un objet `JsonResponse` contenant éventuellement des données au format `JSON` (peut être `null`) et un code de réponse HTTP (200, 400, etc...)
+* On renvoie un objet `JsonResponse` contenant éventuellement des données au format `JSON` (qui peuvent être `null`) et un code de réponse HTTP (200, 400, etc...)
 
 Dans les premiers TDs, nous n'avons que lu ou créé des entités ! Pour en supprimer une, il faut là-aussi utiliser `EntityManagerInterface` (en l'injectant dans la méthode de la route) et utiliser la méthode `remove` (au lieu de `persist` qui créée / met à jour une entité).
 
@@ -109,17 +204,18 @@ $entityManager->remove($entity);
 $entityManager->flush();
 ```
 
-Du côté de notre fichier JavaScript, nous n'avons pas accès à la fonction `path` comme dans nos templates twig! Pour remédier à cela, il suffit d'installer un `bundle` qui est un composant PHP prévu pour s'intégrer spécifiquement à Symfony.
+Du côté de notre **controller**, nous n'avons pas accès à la fonction `path` comme dans nos templates twig! Pour remédier à cela, il suffit d'installer un `bundle` qui est un composant PHP prévu pour s'intégrer spécifiquement à Symfony.
 
 Le bundle que nous allons utiliser s'appelle [FOSJsRoutingBundle](https://github.com/FriendsOfSymfony/FOSJsRoutingBundle/tree/master) et permet d'accéder à une fonction similaire à `path`, mais directement en JavaScript.
 
-Comme pour tous les composants, il faut commencer par l'installer avec `composer` :
+Comme pour tous les composants, il faut commencer par l'installer :
 
 ```bash
 composer require friendsofsymfony/jsrouting-bundle
+php bin/console importmap:require fos-router
 ```
 
-Lors de l'installation, il vous est demandé si vous souhaitez exécuter une "recette". Répondez oui.
+Lors de l'installation, il vous est demandé si vous souhaitez exécuter une "recette". Répondez **oui**.
 
 **Si jamais vous avez oublié de dire oui, exécutez les deux commandes suivantes :**
 
@@ -145,8 +241,7 @@ Ensuite, comme le bundle défini certaines `routes` qui lui sont spécifiques, i
 ```yaml
 fos_js_routing:
     resource: "@FOSJsRoutingBundle/Resources/config/routing/routing-sf4.xml"
-``` -->
-
+``` 
 Enfin, certains **bundles** contiennent des assets (fichiers css, js, images, etc...) qu'il faut importer dans notre propre dossier d'assets, afin de pouvoir les utiliser. Pour cela, Symfony a prévu une commande :
 
 ```bash
@@ -160,13 +255,45 @@ Vous remarquerez alors de nouvelles ressources dans votre dossier `public`. Il n
 <script defer src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
 <script defer src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
 {% endraw %}
+```-->
+
+Ensuite, nous devons **configurer l'URL de base du site**. Ce paramètre est utile, car nous allons devoir **exporter nos routes** exposées (pour pouvoir y accéder depuis JavaScript).
+
+Pour cela, il faut simplement éditer le paramètre `DEFAULT_URI` du fichier `.env`. Par exemple, dans notre cas (avec le site dans le conteneur Docker), cet URL est `http://localhost/the_feed/public` :
+
+```yaml
+DEFAULT_URI=http://localhost/the_feed/public
 ```
 
-Une fois ces étapes complétées, nous avons alors accès (niveau JavaScript) à la fonction `Routing.generate`, sensiblement équivalente à `path` dans son utilisation :
+Après cela, il faut **générer** le fichier qui contiendra toutes nos routes exposées. Pour cela, on utilise la commande suivante :
+
+```bash
+php bin/console fos:js-routing:dump --format=js --target=assets/routes/fos_routes.js --callback="export default  "
+```
+
+Ce qui génère un fichier dans le dossier `assets/routes`. Lors de l'ajout ou la modification d'une route exposée, **il faudra appeler cette commande de nouveau** pour maintenir ce fichier à jour.
+
+Enfin, il faut importer et enregistrer les routes du côté de notre point d'entrée `assets/app.js` pour les rendre accessibles dans nos controllers Stimulus.
+
+```js
+//assets/app.js
+import './stimulus_bootstrap.js';
+import './css/styles.css';
+
+//Nouveau
+import Routing from 'fos-router';
+import routes from './routes/fos_js_routes.js';
+Routing.setRoutingData(routes);
+```
+
+Une fois ces étapes complétées, nous avons alors accès (au niveau du controller JavaScript) à la fonction `Routing.generate`, sensiblement équivalente à `path` dans son utilisation :
 
 ```javascript
-let URL = Routing.generate('maRoute');
+//Au début du fichier
+import Routing from 'fos-router';
 
+//Dans une fonction
+let URL = Routing.generate('maRoute');
 //Et si on a une route paramétrable :
 let URL = Routing.generate('maRoute', {"param": val, ...});
 ```
@@ -207,7 +334,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 <div class="exercise">
 
-1. Dans `PublicationController`, créez une route `deletePublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Concrètement, il n'y a aucune donnée à lire (pas de payload, c-à-d de corps de requête) mais vous devez :
+1. Dans `PublicationController`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Concrètement, il n'y a aucune donnée à lire (pas de payload, c-à-d de corps de requête) mais vous devez :
 
     * Récupérer la publication visée par l'identifiant donné dans la route.
 
@@ -223,59 +350,291 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
     Souvenez-vous : lors du TD2, nous avions vu une méthode très simple pour récupérer une entité préciser à partir d'une route paramétrée, sans utiliser explicitement son repository !
 
-2. En utilisant l'attribut `IsGranted`, faites en sorte que cette route soit accessible seulement aux utilisateurs connectés (possédant le rôle `ROLE_USER`). Allez consulter le TD2 si vous ne savez plus comment faire.
+2. En utilisant l'attribut `IsGranted`, faites en sorte que cette route soit seulement accessible aux utilisateurs connectés (possédant le rôle `ROLE_USER`). Allez consulter le TD2 si vous ne savez plus comment faire.
 
-3. Installez `FOSJsRoutingBundle` et configurer tout ce qu'il faut pour pouvoir utiliser la fonction `Routing.generate`. Les deux fichiers JavaScript à importer sont globaux et devront donc être chargés sur toutes les pages (quel template faut-il modifier ?).
+3. Installez `FOSJsRoutingBundle` et configurer tout ce qu'il faut pour pouvoir utiliser la fonction `Routing.generate` dans votre controller. Vous pouvez supprimer le dossier `public/bundles` qui ne nous servira pas.
 
 4. Modifiez le template `publication.html.twig` afin d'inclure un attribut `data-publication-id` contenant l'identifiant de la publication dans les attributs du bouton de suppression.
 
-5. Dans le fichier `publications.js`, modifiez la fonction `supprimerPublication` afin d'ajouter une requête asynchrone vers la route `deletePublication`. Vous pouvez notamment utiliser la fonction `fetch` et l'instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels (et nouvelles précisions) :
+5. Dans le fichier `assets/controllers/publications_controller.js`, modifiez la fonction `supprimerPublication` afin d'ajouter une requête asynchrone vers la route `supprimerPublication`. Vous pouvez notamment utiliser la fonction `fetch` et l'instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels (et nouvelles précisions) :
 
     ```javascript
-    //Comme on utilise le mot clé "await" dans le corps de la fonction, on doit rendre la fonction asynchrone.
-    //Pour cela, on utilise le mot clé "async"
-    async function maFonction() {
+    import { Controller } from '@hotwired/stimulus';
+    import Routing from 'fos-router';
 
-        //Les "headers" de la requête : on indique le type de données qu'on envoie
-        const headers = new Headers();
-        headers.append("Content-Type", "application/json");
+    export default class extends Controller {
+        //Comme on utilise le mot clé "await" dans le corps de la fonction, on doit rendre la fonction asynchrone.
+        //Pour cela, on utilise le mot clé "async"
+        async maFonction(event) {
 
-        //Le payload contient les données (sous la forme d'un objet clé-valeur) qu'on souhaite envoyer avec la requête
-        const payload = {donnee1 : ..., donnee2: ..., ...};
+            //Les "headers" de la requête : on indique le type de données qu'on envoie
+            const headers = new Headers();
+            headers.append("Content-Type", "application/json");
 
-        //On utilise le mot clé "await" pour "attendre" que la requête soit complètement exécutée avant d'exécuter les prochaines instructions.
-        //Par conséquent, la fonction "maFonction" doit être asynchrone pour ne pas bloquer la page.
-        //On précise l'URL de la requête.
-        const response = await fetch(URL, {
-            //La méthode utilisée (GET, POST, PUT, PATCH ou DELETE)
-            method: "...",
-            //On transforme le "payload" en chaîne de caractères.
-            body: JSON.stringify(payload),
-            headers: headers,
-        });
+            //Le payload contient les données (sous la forme d'un objet clé-valeur) qu'on souhaite envoyer avec la requête
+            const payload = {donnee1 : ..., donnee2: ..., ...};
 
-        //Ici, on a la garantie que la requête a fini de s'exécuter (on a un code de réponse, et éventuellement un résultat)
-        if(response.status === ...) {
-            //response.status permet d'accèder au code de réponse HTTP (200, 204, 403, 404, etc...)
+            //On utilise le mot clé "await" pour "attendre" que la requête soit complètement exécutée avant d'exécuter les prochaines instructions.
+            //Par conséquent, la fonction "maFonction" doit être asynchrone pour ne pas bloquer la page.
+            //On précise l'URL de la requête.
+            const URL = Routing.generate('...');
+            const response = await fetch(URL, {
+                //La méthode utilisée (GET, POST, PUT, PATCH ou DELETE)
+                method: "...",
+                //On transforme le "payload" en chaîne de caractères.
+                body: JSON.stringify(payload),
+                headers: headers,
+            });
+
+            //Ici, on a la garantie que la requête a fini de s'exécuter (on a un code de réponse, et éventuellement un résultat)
+            if(response.status === ...) {
+                //response.status permet d'accèder au code de réponse HTTP (200, 204, 403, 404, etc...)
+            }
+
+
         }
-
-
     }
     ```
     Comme la requête que nous souhaitons exécuter (suppression simple) n'a pas besoin de `payload`, on peut se passer de `headers` et de `body` :
 
     ```javascript
-    async function maFonction() {
-        const response = await fetch(URL, {method: "..."});
-        if(response.status === ...) {/*...*/}
-    }
+    const response = await fetch(URL, {method: "..."});
+    if(response.status === ...) {/*...*/}
     ```
 
     Au chargement de la réponse, il faudra déclencher la suppression (visuelle) de la publication sur la page (vous avez déjà le code pour cela dans le fichier) **si et seulement si le serveur a bien supprimé la publication**.
 
 
-6. Testez que la suppression des publications fonctionne bien (ils ne réapparaissent pas après avoir rechargé la page). Si rien ne se passe, jetez un œil à la console (`F12`) pour lire les éventuels messages d'erreurs.
+6. Testez que la suppression des publications fonctionne bien (elles ne réapparaissent pas après avoir rechargé la page). Si rien ne se passe, jetez un œil à la console (`F12`) pour lire les éventuels messages d'erreurs.
 </div>
+
+### Ajout d'une publication avec Turbo
+
+N'avez-vous pas remarqué quelque-chose d'étrange depuis le milieu du TD1 ? Naviguez entre les différentes pages de votre site depuis le menu de navigation, postez une publication...Vous ne verrez jamais le logo de chargement sur votre onglet ! Tout cela, grâce à **Turbo**.
+
+**Turbo** est une des librairies incluse dans **Symfony UX**, qui permet d'offrir une expérience `SPA` (Single-page application) à l'utilisateur. Par défaut, lors de l'envoi d'une requête "classique" qui ne passe pas par notre JavaScript (donc des liens, envoi de formulaire...), **Turbo** intercepte la demande et effectue la requête. Il récupère ensuite le résultat (code HTML) et met à jour le contenu de la page sans rechargement complet du `DOM`, tout cela via du JavaScript intégré à la librairie.
+
+Ce système, activé par défaut, permet de fluidifier l'expérience utilisateur, car le navigateur "reste" sur la même page : le document html n'est chargé qu'une seule fois lors du premier accès au site et ensuite seul le contenu nécessaire est mis à jour, sans rechargement complet de la page. Ce système est utilisé dans beaucoup de frameworks Web modernes.
+
+Par défaut, comme nous renvoyons du code complet de page à chaque requête, Turbo met à jour une grande partie de la page à chaque requête. Mais il est possible d'optimiser cela en ciblant les zones et les éléments de la page à mettre à jour selon la requête effectuée (comme nous l'avons fait juste avant avec la suppression d'une publication, par exemple, mais avec notre propre code JavaScript). À terme, cela permet même de se passer d'écrire du JavaScript pour certaines opérations `CRUD`.
+
+Nous allons explorer les deux mécanismes principaux de **Turbo** : **turbo frame** et **turbo stream**.
+
+#### Turbo Frame
+
+Un **turbo frame** est une simple balise html que nous pouvons placer n'importe où dans un template. Il faut donner un **identifiant** à cette balise. Lors de l'execution d'une requête classique, Turbo permet de cibler et de remplacer le contenu de cette balise par le code html (ou une partie du code) résultat de la requête.
+
+Par exemple, prenons l'exemple d'une page `HTML` renvoyée par le serveur.
+
+```html
+<html>
+    <head>...</head>
+<body>
+    <header>...</header>
+    <main>
+        <h1>Films</h1>
+        <ul>
+            <li>Interstellar</li>
+            <li>Kill Bill</li>
+            <li>Le vent se lève</li>
+        </ul>
+        <form action="/films" method="post">
+            <label for="nomFilm">Nom Film</label>
+            <input id="nomFilm" type="text"/>
+            <input type="submit" value="Ajouter film">
+        </form>
+    </main>
+</body>
+```
+
+On imagine qu'après soumission du formulaire, on est redirigé sur la même page.
+
+Par défaut, si je soumets le formulaire, **Turbo** va recevoir en réponse à la requête une page HTML avec le `html`, le contenu du `head`, le `h1`, les films, le formulaire, etc... Et va mettre à jour la page grâce à JavaScript. Cependant, à priori, seul la liste des films change ! On pourrait donc faire en sorte que seulement cette partie soit mise à jour (et même que le serveur ne renvoie que ça).
+
+Dans ce cas, on pourrait mettre en place la logique suivante :
+
+```twig
+{% raw %}
+<!-- Template film/liste_films.html.twig, n'étend pas de template de base -->
+<turbo-frame id="films">
+    <ul id="films">
+        {% for film in films %}
+            <li>{{ film.nom }}</li>
+        {% endfor %}
+    </ul>
+</turbo-frame>
+{% endraw %}
+```
+
+```twig
+{% raw %}
+<!-- Template film/accueil.html.twig -->
+extends 'base.html.twig'
+<main>
+    {{ include('film/liste_films.html.twig', {'films' : films}) }}
+    <form action="/films" method="post" data-turbo-frame="films">
+        <label for="nomFilm">Nom Film</label>
+        <input id="nomFilm" type="text"/>
+        <input type="submit" value="Ajouter film">
+    </form>
+</main>
+{% endraw %}
+```
+
+Et du côté back-end, dans l'action qui gère le traitement de la requête **POST**, on renvoie une page générée avec `film/liste_films.html.twig` et pas la page entière (`film/accueil.html.twig`) !
+
+```php
+...
+if($form->isSubmitted() && $form->isValid()) {
+    $entityManager->persist($film);
+    $entityManager->flush();
+    return $this->render("film/liste_films.html.twig", ["films" => $repositoryFilm->findAll()]);
+}
+```
+
+Et le tour est joué ! Dorénavant, seul la partie qui correspond à la liste de films sera mise à jour. Ce qui relie tout cela est l'id `films` utilisé :
+* Sur la balise **turbo-frame** (afin que Turbo sache "où" aller chercher et insérer les données de la réponse du serveur).
+* Sur le formulaire dans `data-turbo-frame` (pour informer Turbo que ce formulaire déclenche la mise à  jour du frame). À noter que si le formulaire/lien est inclus dans le contenu du frame, on n'a pas besoin de préciser cet attribut.
+
+La puissance des frames va plus loin : si la page renvoyée vers le serveur contient plusieurs données (voir une page complète), il ira chercher juste le bout dont l'id correspond à l'id du `turbo-frame` pour ne mettre à jour que cette partie.
+
+Bien que puissant, ce système n'est pas vraiment adapté au problème que nous venons de présenter : nous n'avons pas besoin de recharger toute la liste des films lors de l'ajout ! Seulement d'ajouter le nouveau film à la liste. C'est le même problème pour nos publications. Ici, ce système serait adapté s'il y avait de la pagination par exemple, et que nous cliquions sur un bouton pour aller à la page suivante. Il y a aussi d'autres problématiques que ce système permet de gérer (par exemple, remplacé une zone de la page par le formulaire présent sur une autre page...)
+
+Pour gérer notre problème d'ajout "simple", nous allons plutôt utiliser le second mécanisme : Turbo Stream.
+
+#### Turbo Stream
+
+Un **turbo stream** peut être vu comme une **instruction** qui permet d'informer Turbo de la manière d'insérer certains éléments générés dans le code HTML généré par le serveur par le biais d'un template spécial (contenant une ou plusieurs balises turbo stream) dans la page courante.
+
+Ici aussi, le back-end va seulement générer le bout de code HTML désiré et turbo se chargera du reste.
+
+Par exemple, reprenons notre exemple d'avant. On souhaite toujours insérer un film dans la page.
+
+```twig
+{% raw %}
+<!-- Template film/accueil.html.twig -->
+extends 'base.html.twig'
+<main>
+    <ul id="films">
+        {% for film in films %}
+            <li>{{ film.nom }}</li>
+        {% endfor %}
+    </ul>
+    <form action="/films" method="post">
+        <label for="nomFilm">Nom Film</label>
+        <input id="nomFilm" type="text"/>
+        <input type="submit" value="Ajouter film">
+    </form>
+</main>
+{% endraw %}
+```
+
+On peut créer un template "d'instructions" contenant des balises `<turbo-stream>` :
+
+```twig
+{% raw %}
+<!-- Template film/stream/film_create_stream.html.twig -->
+<turbo-stream action="append" target="films">
+    <template>
+        <li>{{ film.nom }}</li>
+    </template>
+</turbo-stream>
+{% endraw %}
+```
+
+Ce template twig contient une instruction qui dit "ajoute à la fin de l'élément qui a pour id **films** le html suivant (code avec le `<li>`, utilisant les données d'un nouveau film soumis par le formulaire).
+
+Tout cela se configure via les deux paramètres :
+* `target` : dans quel conteneur effectuer l'opération (son id).
+* `action` : l'action à réaliser : `append` signifie un ajout à la fin du conteneur. `prepend`, au début. D'autres instructions spéciales (remove, update, etc) existent.
+
+L'id de `target` et du conteneur (ici `ul`) doivent correspondre.
+
+Il est tout à fait possible de combiner plusieurs instructions !
+
+```twig
+{% raw %}
+<!-- Ajoute le film et un message flash... -->
+<turbo-stream action="append" target="films">
+    ...
+</turbo-stream>
+<turbo-stream action="prepend" target="flashes">
+    <p>Film ajouté!</p>
+</turbo-stream>
+{% endraw %}
+```
+
+Côté back-end, il suffit de configurer la requête puis de renvoyer le template lors du traitement de l'opération :
+
+```php
+use Symfony\UX\Turbo\TurboBundle;
+
+...
+if($form->isSubmitted() && $form->isValid()) {
+    $entityManager->persist($film);
+    $entityManager->flush();
+    $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
+    return $this->render('film/stream/film_create_stream.html.twig', ["film" => $film]);
+}
+```
+
+<div class="exercise">
+
+1. Mettez en place un système d'ajout de publications en utilisant le système **turbo stream**. Comme nous souhaitons ajouter la publication au début de la liste, il faut utiliser l'action `prepend`. Contrairement à l'exemple, l'affichage d'une publication est complexe. Heureusement, nous avons déjà isolé ce code dans un template dédié : il suffira de l'importer (avec `include`) dans votre `<turbo-stream>`...
+
+2. Vérifiez que tout fonctionne. Vous pouvez notamment visualiser le contenu de la réponse du serveur (`F12` -> `Réseau`) pour vérifier le contenu de la réponse renvoyée par le serveur.
+
+</div>
+
+Bien que ce système fonctionne, un détail gênant apparaît : le formulaire n'est plus vidé après l'envoi. Il y a plusieurs moyens de gérer cela. Par exemple, en écoutant l'événement `turbo:submit-end` sur le formulaire d'envoi d'un message (dans la balise `form`, avec `data-action`) en reliant cela à un nouveau controller stimulus attaché au formulaire qui appelle la fonction `reset` sur la cible de l'événement. Si le temps le permet, vous pouvez explorer cette piste.
+
+Bref, comme vous venez de le voir, **Turbo** nous permet de réaliser des modifications chirurgicales sur notre page, tout en interagissant avec le back-end, sans avoir besoin d'écrire de JavaScript. Le mécanisme de suppression aurait aussi pu être réalisé d'une manière similaire :
+
+```twig
+{% raw %}
+<!-- Template publication/stream/publication_remove_stream.html.twig -->
+<turbo-stream action="remove" target="publication_{{ idPublication }}"></turbo-stream>
+{% endraw %}
+```
+
+```twig
+{% raw %}
+<!-- Template publication/publication.html.twig -->
+<div class="feedy" id="publication_{{ publication.id }}">
+    <div class="feedy-header">
+        ...
+        <div class="feedy-info">
+            ...
+            {% if app.user and publication.auteur.id == app.user.id %}
+                <form method="post" action="{{ path('supprimerPublication', {'id' : publication.id}) }}">
+                    <input type="submit" class="delete-feedy" value="Supprimer">
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endraw %}
+```
+
+```php
+#[IsGranted('ROLE_USER')]
+#[Route('/publications/supprimer/{id:publication}', name: 'supprimerPublication', methods: ['POST'])]
+public function supprimerPublication(?Publication $publication, EntityManagerInterface $entityManager): Response {
+    ...
+    $idPublication = $publication->getId();
+    $entityManager->remove($publication);
+    $entityManager->flush();
+    return  new TurboStreamResponse(
+        $this->renderView('publication/stream/publication_remove_stream.html.twig', ["idPublication" => $idPublication])
+    );
+}
+```
+
+Bien que Turbo soit pratique, il ne permet pas un contrôle aussi libre que d'utiliser du JavaScript. Mais il peut être très utile si on ne veut pas s'encombrer de JavaScript et que l'on reste dans des opérations `CRUD` simples (pas besoin de route qui renvoi du JSON, pas besoin de code précis pour traiter la réponse, pas besoin du bundle spécial pour le routage, pas besoin d'exposer nos routes...).
+
+Cependant, vous pouvez faire tout ce qu'il est possible de faire avec **turbo** (comme nous l'avons vu avec la suppression d'une publication) avec du JavaScript, il faudra juste potentiellement plus de code. Au premier abord, Turbo peut aussi sembler un peu dur à appréhender, contrairement à du JavaScript qui est plus "familier". L'utilisation de Turbo est aussi moins évolutif si l'on souhaite développer une application hybride qui sert aussi d'API pour des systèmes externes.
+
+Bref, dans vos futures applications, vous pouvez choisir d'utiliser l'un ou l'autre, ou les deux en même temps, selon vos préférences et la complexité de l'opération à réaliser.
 
 ## The Feed Premium
 
@@ -452,7 +811,7 @@ $form = $this->createForm(MonType::class, $entity, [
 
 Nous allons ajouter une simple page de présentation des fonctionnalités premium contenant un lien permettant de réaliser l'achat de ce statut.
 
-Sur cette page, nous afficherons également le **prix** de vente. Comme ce prix est susceptible de changer (et pourra potentiellement être utilisé autre part), il serait judicieux de l'enregistrer comme paramètre (comme vous l'avez fait dans `services.yaml` pour le dossier d'upload des photos de profil) mais également de l'utiliser dans vos templates.
+Sur cette page, nous afficherons également le **prix** de vente. Comme ce prix est susceptible de changer (et pourra potentiellement être utilisé autre part), il serait judicieux de l'enregistrer comme paramètre (comme vous l'avez fait dans `services.yaml` pour le dossier d'upload des photos de profil) mais aussi de l'utiliser dans vos templates.
 
 Vous savez déjà comment définir un paramètre :
 ```yaml
@@ -562,12 +921,12 @@ Dans cette section, nous allons voir comment affiner la gestion des permissions 
 
 ### Utilisation d'expressions dans l'attribut IsGranted
 
-Actuellement, votre route `deletePublication` doit à peu près ressembler à ça :
+Actuellement, votre route `supprimerPublication` doit à peu près ressembler à ça :
 
 ```php
 #[IsGranted('ROLE_USER')]
-#[Route('/publications/{id}', name: 'deletePublication', options: ["expose" => true], methods: ["DELETE"])]
-public function deletePublication(?Publication $publication, EntityManagerInterface $entityManager) : Response {
+#[Route('/publications/{id}', name: 'supprimerPublication', options: ["expose" => true], methods: ["DELETE"])]
+public function supprimerPublication(?Publication $publication, EntityManagerInterface $entityManager) : Response {
     if($publication === null) {
         return new JsonResponse(null, Response::HTTP_NOT_FOUND);
     }
@@ -587,7 +946,7 @@ Par exemple :
 ```php
 #[IsGranted(attribute: new Expression("is_granted('ROLE_USER') and subject.method() == user.method()"), subject: "monObjet")]
 #[Route('/exemple/{id}', name: 'route_exemple'], methods: ["POST"])]
-public function deletePublication(Exemple $monObjet) : Response {
+public function supprimerPublication(Exemple $monObjet) : Response {
     ...
 }
 ```
@@ -602,7 +961,7 @@ Normalement, vous devriez maintenant être en mesure de retravailler la logique 
 
 <div class="exercise">
 
-1. Au niveau de la route `deletePublication`, utilisez vos nouvelles connaissances pour déplacer la logique vérifiant que l'utilisateur courant est bien le propriétaire de la publication vers votre attribut `IsGranted`.
+1. Au niveau de la route `supprimerPublication`, utilisez vos nouvelles connaissances pour déplacer la logique vérifiant que l'utilisateur courant est bien le propriétaire de la publication vers votre attribut `IsGranted`.
 
 2. Vérifiez que tout fonctionne comme attendu (supprimez des publications sur votre compte).
 
@@ -781,7 +1140,7 @@ Cependant, encore une fois, il n'est pas obligatoire d'avoir des permissions li�
 
 1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication`. Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il est connecté et qu'il en est l'auteur.
 
-2. Utilisez votre nouvelle permission au niveau de la route `deletePublication`.
+2. Utilisez votre nouvelle permission au niveau de la route `supprimerPublication`.
 
 3. Modifiez le template `publication.html.twig` pour utiliser `is_granted` pour afficher le bouton de suppression de la publication au lieu du code que vous utilisiez avant.
 
