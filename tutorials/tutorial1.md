@@ -807,7 +807,7 @@ Lorsque l'on souhaite charger les ressources d'une configuration dans une page d
 </body>
 ```
 
-Les fichiers dynamiques (par exemple, une image uploadée par un utilisateur) ne sera pas gérée par l' asset mapper, mais sera directement placée dans `public` lors de l'upload.
+Les fichiers dynamiques (par exemple, une image uploadée par un utilisateur) ne sera pas gérée par l'asset mapper, mais sera directement placée dans `public` lors de l'upload.
 
 Concernant les ressources non globales, dans un template `twig`, on construit le chemin vers chaque asset en utilisant la fonction `{{ asset(chemin) }}` (dans un bloc twig permettant d'afficher des données). Pour le chemin à spécifier, la fonction va d'abord chercher dans le dossier `assets`, et s'il ne trouve rien, il va chercher dans le dossier `public`. La racine se trouve donc directement dans le dossier `assets` ou `public` selon là où on le programme cherche la ressource, on indique donc un sous-chemin à partir d'un de ces dossiers.
 
@@ -830,13 +830,13 @@ Dans un template, vous ne pouvez faire appel qu'une seule fois à `importmap`, m
     import './css/styles.css';
     ```
 
-4. Créez un dossier `img` dans `assets`, puis importez l'image {% endraw %}[anonyme.jpg]({{site.baseurl}}/assets/TD1/anonyme.jpg){% raw %} (clic-droit puis "Enregistrer la cible du lien...") à l'intérieur du répertoire `utilisateurs`.
+4. Importez l'image {% endraw %}[anonyme.jpg]({{site.baseurl}}/assets/TD1/anonyme.jpg){% raw %} dans le dossier `assets/img/utilisateurs` qu'il faudra créer préalablement.
 
 5. Dans votre template `feed.html.twig` :
 
     * Dans la section `head`, importez la configuration globale `app` à l'aide de la fonction `importmap`.
 
-    * Faites en sorte d'afficher l'image anonyme sur chaque publication (il faut ajouter un attribut `src` sur la balise `img` de chaque publication) en utilisant la fonction `assets`.
+    * Faites en sorte d'afficher l'image anonyme sur chaque publication (il faut ajouter un attribut `src` sur la balise `img` de chaque publication) en utilisant la fonction `asset`.
 
 6. Testez. C'est un peu mieux, non ?
 
@@ -1150,7 +1150,7 @@ Concernant l'attribut **method** et **action** du formulaire, ils sont définis 
 2. Dans votre template `feed.html.twig`, au tout début du `div` d'identifiant `feed` insérez (à l'intérieur du div) et complétez le template suivant :
 
     ```twig
-    <!-- Génération de la balise <form>
+    <!-- Génération de la balise <form> -->
     {{ form_start(..., {'attr' : {'id' : "feedy-new"}}) }}
         <fieldset>
             <legend>Nouveau feedy</legend>
@@ -1449,7 +1449,7 @@ Pour inclure ces erreurs, il suffit d'ajouter le code suivant dans le template, 
 
 1. Dans votre template `feed.html.twig`, ajoutez le code nécessaire juste avant le widget qui gère la zone de texte pour la saisie de la publication afin de lister les erreurs relatives à ce champ.
 
-2. Dans `ControllerPublication` au niveau de votre route `feed`, revenez en arrière et annulez l'ajout des erreurs comme des messages flashs (mais ne supprimez pas la gestion des messages flashs niveau du template twig, nous nous en reservirons dans le prochain TP!).
+2. Dans `PublicationController` au niveau de votre route `feed`, revenez en arrière et annulez l'ajout des erreurs comme des messages flashs (mais ne supprimez pas la gestion des messages flashs niveau du template twig, nous nous en reservirons dans le prochain TP!).
 
 3. Tentez de publier un message invalide (par exemple, avec moins de 4 caractères) et constatez l'horrible affichage que cela produit.
 
@@ -1483,12 +1483,12 @@ Pour notre problème, nous allons créer notre propre thème dérivé de celui p
 
 2. Dans le fichier `config/packages/twig.yaml` ajoutez la ligne suivante pour prendre en compte notre thème :
 
-    ```yaml
-    twig:
-    ...
-        form_themes:
-            - 'form/theme.html.twig'
-    ```
+   ```yaml
+   twig:
+   ...
+       form_themes:
+           - 'form/theme.html.twig'
+   ```
 
 3. Tentez de publier un message invalide et constatez l'affichage qui devrait être un peu meilleur.
 
@@ -1616,7 +1616,7 @@ Une petite dernière section supplémentaire à l'attention du parcours **RACDV*
 
  * Symfony contient un **routeur**. Dans notre projet, la déclaration des routes s'est faite en lisant les attributs `#[Route(...)]` comme nous le faisions (à terme) l'année dernière. Mais il est tout à fait possible de les déclarer avec du code PHP (ou bien un fichier de configuration). Si on regarde la [documentation officielle](https://symfony.com/doc/current/routing.html#matching-http-methods), on constate qu'il est possible de switcher entre quatre manières de faire. L'onglet `PHP` devrait vous remémorer certaines choses ! D'ailleurs, dans le framework `Laravel` il est obligatoire d'utiliser du code PHP pour déclarer les routes (sauf si vous installez quelques bibliothèques). Cela a pour avantage de centraliser le code des routes au lieu de les disperser dans divers contrôleurs. 
  
- Fait amusant : si vous êtes amené à utiliser **Laravel**, vous pourrez constater que le framework importe le routeur de Symfony et l'étend ! Et c'est une bonne chose : on évite de réinventer la roue.
+   Fait amusant : si vous êtes amené à utiliser **Laravel**, vous pourrez constater que le framework importe le routeur de Symfony et l'étend ! Et c'est une bonne chose : on évite de réinventer la roue.
 
  * Symfony utilise un `ControllerResolver` et un `ArgumentResolver` pour appeler la bonne action (bon controller, bonne méthode) avec les bons arguments. Vous aviez déjà utilisé exactement ces classes (issues de Symfony) dans votre framework maison ! En effet, nous les avions installées avec composer.
 
