@@ -123,21 +123,21 @@ Vous aurez aussi besoin de nouvelles **assertions** :
 Pour rappel, pour ajouter un champ qui ne fait pas partie de l'entité (et lui ajouter des assertions) on le configure ainsi dans la classe du formulaire :
 
 ```php
-    $builder
-        //Champ qui n'est pas lié à l'entité : on rajoute l'option "mapped => false"
-        ->add('monChamp', TextType::class, [
-            "mapped" => false,
-            //Les assertions
-            "constraints" => [
-                new NotBlank(),
-                new Length(...)
-            ],
-            "attr" => [
-                //Attributs HTML éventuels
-            ],
-            "label" => "..." //Titre du label associé au champ...
-        ])
-    ;
+$builder
+    //Champ qui n'est pas lié à l'entité : "mapped => false"
+    ->add('monChamp', TextType::class, [
+        "mapped" => false,
+        //Les assertions
+        "constraints" => [
+            new NotBlank(),
+            new Length(...)
+        ],
+        "attr" => [
+            //Attributs HTML éventuels
+        ],
+        "label" => "..." //Titre du label associé au champ...
+    ])
+;
 ```
 
 L'exemple d'assertion `File` donné plus tôt se transformerait ainsi dans le tableau du champ `constraints` :
@@ -200,13 +200,13 @@ Enfin, il existe une fonction utile qui permet de générer tout ce qui est rela
 
     Quelques imports utiles à faire dans `InscrireUtilisateurType` :
 
-    ```php
-    use Symfony\Component\Form\Extension\Core\Type\EmailType;
-    use Symfony\Component\Form\Extension\Core\Type\FileType;
-    use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-    use Symfony\Component\Form\Extension\Core\Type\SubmitType;
-    use Symfony\Component\Form\Extension\Core\Type\TextType;
-    ```
+   ```php
+   use Symfony\Component\Form\Extension\Core\Type\EmailType;
+   use Symfony\Component\Form\Extension\Core\Type\FileType;
+   use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+   use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+   use Symfony\Component\Form\Extension\Core\Type\TextType;
+   ```
 
     Comme nous l'avons vu, `mapped` permet de spécifier qu'un champ n'est pas mappé dans l'entité cible. L'option `required` permet de gérer le fait que le champ soit obligatoire ou non côté HTML (pas d'envoi tant que le champ n'est pas complété). Par défaut, la valeur est à `true`. Enfin, on remarquera qu'il n'y pas besoin de spécifier `mapped` sur un champ de type **Submit** qui est automatiquement non mappé. Aussi, le `label` de ce champ est en fait le texte du bouton.
 
@@ -222,25 +222,25 @@ Enfin, il existe une fonction utile qui permet de générer tout ce qui est rela
 
         Classes à importer :
 
-        ```php
-        use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
-        use Symfony\Component\Validator\Constraints as Assert;
-        ```
+       ```php
+       use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+       use Symfony\Component\Validator\Constraints as Assert;
+       ```
 
     2. Au niveau de `InscrireUtilisateurType` :
 
-        * `plainPassword` : non blanc, entre 8 et 30 caractères, et doit respecter l'expression régulière (**regex**) suivante : `#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#` (au moins une minuscule, une majuscule et un chiffre). Configurez des messages d'erreurs pour la taille du mot de passe et aussi si l'expression régulière n'est pas validée (juste `message`).
+       * `plainPassword` : non blanc, entre 8 et 30 caractères, et doit respecter l'expression régulière (**regex**) suivante : `#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#` (au moins une minuscule, une majuscule et un chiffre). Configurez des messages d'erreurs pour la taille du mot de passe et aussi si l'expression régulière n'est pas validée (juste `message`).
 
-        * `fichierPhotoProfil` : taille maximum **10 mégaoctets**, formats autorisés : **jpg**, et **png**. Configurez des messages d'erreurs dans le cas où la taille n'est pas respectée (`maxSizeMessage`) ou que le format n'est pas respecté (`extensionsMessage`).
+       * `fichierPhotoProfil` : taille maximum **10 mégaoctets**, formats autorisés : **jpg**, et **png**. Configurez des messages d'erreurs dans le cas où la taille n'est pas respectée (`maxSizeMessage`) ou que le format n'est pas respecté (`extensionsMessage`).
         Classes à importer :
 
-        ```php
-        use Symfony\Component\Validator\Constraints\File;
-        use Symfony\Component\Validator\Constraints\Length;
-        use Symfony\Component\Validator\Constraints\NotBlank;
-        use Symfony\Component\Validator\Constraints\NotNull;
-        use Symfony\Component\Validator\Constraints\Regex;
-        ```
+       ```php
+       use Symfony\Component\Validator\Constraints\File;
+       use Symfony\Component\Validator\Constraints\Length;
+       use Symfony\Component\Validator\Constraints\NotBlank;
+       use Symfony\Component\Validator\Constraints\NotNull;
+       use Symfony\Component\Validator\Constraints\Regex;
+       ```
 
 4. Dans le dossier `templates`, créez un dossier `utilisateur` puis, à l'intérieur de ce nouveau répertoire, un template nommé `inscription.html.twig` :
 
@@ -256,46 +256,46 @@ Enfin, il existe une fonction utile qui permet de générer tout ce qui est rela
 
 7. Dans votre template, redéfinissez le bloc de contenu (`page_content`) en incluant et en complétant le squelette suivant afin d'afficher le formulaire :
 
-    ```twig
-    {% raw %}
-    <main>
-        {{ form_start(..., {'attr': {'class': 'center basic-form'}}) }}
-            <fieldset>
-                <legend>Inscription</legend>
-                <div class="access-container">
-                    <!-- Affichage du label du login -->
-                    {{ form_label(...) }}
-                    <p class="help-input-form">Entre 4 et 20 caractères</p>
-                    <!-- Affichage des erreurs du login -->
-                    {{ form_errors(...) }}
-                    <!-- Affichage de l'input du login -->
-                    {{ form_widget(...) }}
-                </div>
-                <div class="access-container">
-                    <!-- Affichage du label du mot de passe -->
-                    {{ form_label(...) }}
-                    <p class="help-input-form">Entre 8 et 30 caractères, au moins une minuscule, une majuscule et un nombre</p>
-                    <!-- Affichage des erreurs du mot de passe -->
-                    {{ form_errors(...) }}
-                    <!-- Affichage de l'input du mot de passe -->
-                    {{ form_widget(...) }}
-                </div>
-                <div class="access-container">
-                    <!-- Affichage du champ adresse email (label + erreurs + input) -->
-                    {{ form_row(...) }}
-                </div>
-                <div class="access-container">
-                    <!-- Affichage du champ photo de profil (label + erreurs + input) -->
-                    {{ form_row(...) }}
-                </div>
-                <!-- Affichage du bouton d'envoi, contenant le texte (label) "S'inscrire" -->
-                {{ form_widget(..., {..., 'attr': {'class': 'basic-form-submit'}}) }}
-            </fieldset>
-            {{ form_rest(...) }}
-        {{ form_end(...) }}
-    </main>
-    {% endraw %}
-    ```
+   {% raw %}
+   ```twig
+   <main>
+       {{ form_start(..., {'attr': {'class': 'center basic-form'}}) }}
+           <fieldset>
+               <legend>Inscription</legend>
+               <div class="access-container">
+                   <!-- Affichage du label du login -->
+                   {{ form_label(...) }}
+                   <p class="help-input-form">Entre 4 et 20 caractères</p>
+                   <!-- Affichage des erreurs du login -->
+                   {{ form_errors(...) }}
+                   <!-- Affichage de l'input du login -->
+                   {{ form_widget(...) }}
+               </div>
+               <div class="access-container">
+                   <!-- Affichage du label du mot de passe -->
+                   {{ form_label(...) }}
+                   <p class="help-input-form">Entre 8 et 30 caractères, au moins une minuscule, une majuscule et un nombre</p>
+                   <!-- Affichage des erreurs du mot de passe -->
+                   {{ form_errors(...) }}
+                   <!-- Affichage de l'input du mot de passe -->
+                   {{ form_widget(...) }}
+               </div>
+               <div class="access-container">
+                   <!-- Affichage du champ adresse email (label + erreurs + input) -->
+                   {{ form_row(...) }}
+               </div>
+               <div class="access-container">
+                   <!-- Affichage du champ photo de profil (label + erreurs + input) -->
+                   {{ form_row(...) }}
+               </div>
+               <!-- Affichage du bouton d'envoi, contenant le texte (label) "S'inscrire" -->
+               {{ form_widget(..., {'attr': {'class': 'basic-form-submit'}}) }}
+           </fieldset>
+           {{ form_rest(...) }}
+       {{ form_end(...) }}
+   </main>
+   ```
+   {% endraw %}
 
 8. Accédez à votre nouvelle page et vérifiez que le formulaire s'affiche correctement.
 
