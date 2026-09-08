@@ -86,13 +86,13 @@ Au niveau de la classe `Utilisateur` :
 
 * La méthode `eraseCredentials` permet d'effacer de la mémoire de Symfony des données sensibles, éventuellement stockées dans la classe de l'utilisateur, temporairement (comme le mot de passe en clair, pour la connexion). Dans notre cas, nous ne nous en servirons pas. Vous noterez d'ailleurs que cette méthode est dépréciée et va être supprimée dans la prochaine version de Symfony.
 
-* La classe implémente `UserInterface` qui est demandée comme paramètre de nombreux services (comme pour le chiffrement du mot de passe). Notre classe `Utilisateur` sera donc compatible.
+* La classe implémente `UserInterface` qui est demandée comme paramètre de nombreux services (comme pour le hachage du mot de passe). Notre classe `Utilisateur` sera donc compatible.
 
 Au niveau du fichier `security.yaml` :
 
 * La zone `app_user_provider` permet d'informer Symfony quelle est l'entité qui représente nos utilisateurs ainsi que la propriété utilisée comme identifiant de connexion.
 
-* Un peu plus bas, `password_hashers` permet de sélectionner l'algorithme de chiffrement des mots de passe. Depuis les dernières versions de Symfony, on peut utiliser la valeur `auto` (comme c'est le cas ici) qui permet de sélectionner **le meilleur algorithme de chiffrement disponible**. Cela permet aux mots de passe d'être le plus sécurisé possible. De plus, si cet algorithme vient à changer (par exemple, un meilleur algorithme est publié dans le futur), Symfony procède à la **migration** des mots de passe. La prochaine fois qu'ils se connecteront, les utilisateurs dont le mot de passe utilise encore l'ancien algorithme de chiffrement déclencheront automatiquement la migration de leur mot de passe qui sera re-chiffré avec le nouvel algorithme puis stocké, et tout cela de manière invisible. Ainsi, avec ce paramètre, le développeur n'a pas (trop) à se soucier d'être à jour niveau sécurité des mots de passe. Une partie du code de ce système se trouve dans la classe `Repository/UtilisateurRepository` au niveau de la méthode `upgradePassword` (vous pouvez y jeter un œil). Les algorithmes de chiffrement contiennent un système de `salt`, comme vous l'avez vu l'année dernière.
+* Un peu plus bas, `password_hashers` permet de sélectionner l'algorithme de hachage des mots de passe. Depuis les dernières versions de Symfony, on peut utiliser la valeur `auto` (comme c'est le cas ici) qui permet de sélectionner **le meilleur algorithme de hachage disponible**. Cela permet aux mots de passe d'être le plus sécurisé possible. De plus, si cet algorithme vient à changer (par exemple, un meilleur algorithme est publié dans le futur), Symfony procède à la **migration** des mots de passe. La prochaine fois qu'ils se connecteront, les utilisateurs dont le mot de passe utilise encore l'ancien algorithme de hachage déclencheront automatiquement la migration de leur mot de passe qui sera re-haché avec le nouvel algorithme puis stocké, et tout cela de manière invisible. Ainsi, avec ce paramètre, le développeur n'a pas (trop) à se soucier d'être à jour niveau sécurité des mots de passe. Une partie du code de ce système se trouve dans la classe `Repository/UtilisateurRepository` au niveau de la méthode `upgradePassword` (vous pouvez y jeter un œil). Les algorithmes de hachage contiennent un système de `salt`, comme vous l'avez vu l'année dernière.
  
 ### Formulaire d'inscription
 
@@ -102,7 +102,7 @@ Nous allons maintenant mettre en place un formulaire d'inscription pour nos util
 
 À la différence du formulaire que nous avons créé pour les publications, celui-ci contiendra deux champs qui ne seront pas liés directement à la classe Utilisateur :
 
-* `plainPassword` : il s'agit du mot de passe **en clair** transmis via le formulaire, qui diffère de l'attribut `password` qui lui représente le mot de passe chiffré et ne doit justement pas faire partie du formulaire ! Cela signifie que pour les **assertions** concernant `plainPassword`, il faudra le faire au niveau de la classe du formulaire, et non pas au niveau de l'entité `Utilisateur`.
+* `plainPassword` : il s'agit du mot de passe **en clair** transmis via le formulaire, qui diffère de l'attribut `password` qui lui représente le mot de passe haché et ne doit justement pas faire partie du formulaire ! Cela signifie que pour les **assertions** concernant `plainPassword`, il faudra le faire au niveau de la classe du formulaire, et non pas au niveau de l'entité `Utilisateur`.
 
 * `fichierPhotoProfil` : il s'agit du **fichier** contenant la photo de profil de l'utilisateur. Cela est différent de `nomPhotoProfil` qui ne doit pas faire partie du formulaire et qui stocke seulement le nom de la photo de profil (pour l'afficher plus tard).
 
@@ -306,7 +306,7 @@ Enfin, il existe une fonction utile qui permet de générer tout ce qui est rela
 
 Maintenant que nous pouvons afficher notre formulaire d'inscription, il faut pouvoir le traiter ! Mais ce n'est pas aussi simple que pour les publications, car :
 
-* Il faut chiffrer/hacher le mot de passe.
+* Il faut hacher le mot de passe.
 
 * Il faut sauvegarder la photo de profil (s'il y en a une) et enregistrer le nom de la photo dans les données de l'utilisateur. Il faut faire en sorte que le nom de cette image soit unique.
 
@@ -376,7 +376,7 @@ $fichier->move($destination, $fileName);
 
 L'utilisation de `bin2hex(random_bytes(16))` permet de générer un identifiant (chaîne de caractère) aléatoire. La méthode vérifie l'unicité du fichier par une boucle (même si des collisions sont extrêmement peu probables). Ainsi, on devrait obtenir un nom de fichier unique, pour l'image de profil de l'utilisateur. La méthode `guessExtension` permet d'obtenir l'extension du fichier (png, jpg...). Enfin, `move` déplace le fichier vers un dossier de destination.
 
-Ensuite, le service `UserPasswordHasherInterface` permet de **hacher/chiffrer** un mot de passe, en utilisant l'algorithme configuré dans `security.yaml` (dans notre cas `auto`, donc, le meilleur algorithme de chiffrement disponible).
+Ensuite, le service `UserPasswordHasherInterface` permet de **hacher** un mot de passe, en utilisant l'algorithme configuré dans `security.yaml` (dans notre cas `auto`, donc, le meilleur algorithme de hachage disponible).
 
 ```php
 // $this->passwordHasher est de type UserPasswordHasherInterface
@@ -443,10 +443,10 @@ $valeurChamp = $form->get("monChamp")->getData();
         ){}
 
         /**
-         * Chiffre le mot de passe puis l'affecte au champ correspondant dans la classe de l'utilisateur
+         * Hache le mot de passe puis l'affecte au champ correspondant dans la classe de l'utilisateur
          */
-        private function chiffrerMotDePasse(Utilisateur $utilisateur, ?string $plainPassword) : void {
-            //On chiffre le mot de passe en clair
+        private function hacherMotDePasse(Utilisateur $utilisateur, ?string $plainPassword) : void {
+            //On hache le mot de passe en clair
             //On met à jour l'attribut "password" de l'utilisateur
         }
 
@@ -465,7 +465,7 @@ $valeurChamp = $form->get("monChamp")->getData();
          * Réalise toutes les opérations nécessaires avant l'enregistrement en base d'un nouvel utilisateur, après soumission du formulaire (hachage du mot de passe, sauvegarde de la photo de profil...)
          */
         public function processNewUtilisateur(Utilisateur $utilisateur, ?string $plainPassword, ?UploadedFile $fichierPhotoProfil) : void {
-            //On chiffre le mot de passe
+            //On hache le mot de passe
             //On sauvegarde (et on déplace) l'image de profil
         }
 
@@ -683,7 +683,7 @@ security:
     }
     ```
 
-    Il est alors possible de simplement passer cette donnée au template et de l'utiliser pour préciser l'attribut `value` du champ correspondant au login. Ce champ sera donc tout le temps prérempli, ce qui est pratique en cas d'erreur de mot de passe, mais aussi si l'utilisateur se déconnecte puis se reconnecte plus tard. Cette donnée est mémorisée dans un **cookie**.
+    Il est alors possible de simplement passer cette donnée au template et de l'utiliser pour préciser l'attribut `value` du champ correspondant au login. Ce champ sera alors prérempli, ce qui est pratique quand on doit soumettre de nouveau le formulaire, en cas d'erreur de mot de passe.
 
     Effectuez les modifications nécessaires dans votre route `connexion` et dans le template `connexion.html.twig` pour que le champ du login soit automatiquement prérempli avec le dernier login avec lequel l'utilisateur a essayé de se connecter.
 

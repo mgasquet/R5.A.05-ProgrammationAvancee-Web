@@ -1592,13 +1592,21 @@ Pour notre site, nous allons donc adopter la stratégie suivante :
 
 1. Créez un template `base.html.twig` à la racine du dossier `templates`. À l'intérieur, déplacez globalement tout ce qui se trouve dans le template `feed.html.twig` sauf le `main` (en gros, tout ce qui sera a priori commun à toutes les pages de notre site...).
 
-2. Dans le `body` de ce template, juste après la zone affichant les messages flash, créez un block `page_content`.
+2. Dans le `head` de ce template, ajoutez la ligne suivante :
 
-3. Dans `feed.html.twig`, faites en sorte d'étendre `base.html.twig` puis de réécrire le block `page_content` de manière adéquate, en ne gardant que le contenu propre à cette page (le `main`). Si ce n'est pas déjà fait, supprimez tout le reste (qui est redondant avec ce qui est déjà contenu `base.html.twig`).
+    ```html
+    <meta name="turbo-cache-control" content="no-preview">
+    ```
 
-4. Rechargez votre page principale et vérifiez qu'elle s'affiche toujours correctement. Vérifiez le code HTML généré pour être sûr qu'il n'y a pas d'erreur.
+    Nous reviendrons plus en détail sur le terme "turbo" dans le troisième TD, mais pour l'instant, tout ce que vous devez savoir est que cette ligne désactive un système de preview de pages qui pourrait être utile dans plusieurs contextes, mais qu'il est préférable de désactiver dans notre cas afin d'éviter des petites "anomalies" visuelles lors d'un changement de page.
 
-5. On souhaite que le titre (contenu de `<title></title>`) de chaque page puisse être redéfini par chaque sous-template étendant `base.html.twig`. Faites cela en créant un block (vide) nommé `page_title` dans `base.html.twig`, puis, dans le template `feed.html.twig`, faites en sorte de nommer la page "The Feed" en utilisant ce nouveau block. Vérifiez que cela fonctionne bien.
+3. Dans le `body` de ce template, juste après la zone affichant les messages flash, créez un block `page_content`.
+
+4. Dans `feed.html.twig`, faites en sorte d'étendre `base.html.twig` puis de réécrire le block `page_content` de manière adéquate, en ne gardant que le contenu propre à cette page (le `main`). Si ce n'est pas déjà fait, supprimez tout le reste (qui est redondant avec ce qui est déjà contenu `base.html.twig`).
+
+5. Rechargez votre page principale et vérifiez qu'elle s'affiche toujours correctement. Vérifiez le code HTML généré pour être sûr qu'il n'y a pas d'erreur.
+
+6. On souhaite que le titre (contenu de `<title></title>`) de chaque page puisse être redéfini par chaque sous-template étendant `base.html.twig`. Faites cela en créant un block (vide) nommé `page_title` dans `base.html.twig`, puis, dans le template `feed.html.twig`, faites en sorte de nommer la page "The Feed" en utilisant ce nouveau block. Vérifiez que cela fonctionne bien.
 
 </div>
 
