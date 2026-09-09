@@ -656,7 +656,7 @@ Il faut maintenant choisir la stratégie pour gérer le système "premium". Il y
 
 Les deux solutions fonctionnent, mais la première est assez discutable et peut être bonne ou mauvaise selon le contexte. Il faut bien distinguer la notion d'autorisation et l'accès à de nouvelles fonctionnalités. Une autorisation peut être par exemple de pouvoir supprimer un compte donné, ou alors, supprimer n'importe quel message (pour un rôle type "admin"). 
 
-Dans notre cas, le fait d'afficher le pseudonyme en doré et de pouvoir écrire de plus longs messages relève plus de  fonctionnalités qui deviennent "accessibles" au membre premium plutôt que d'une autorisation particulière. Nous allons donc plutôt nous orienter vers la deuxième solution. Si plusieurs formes de "premium" étaient possibles (différents plans) il faudrait plutôt créer une nouvelle entité "Plan" avec les informations, le prix, etc... Ici, nous n'aurons qu'un seul plan premium, donc l'attribut booléen suffit.
+Dans notre cas, le fait d'afficher le pseudonyme en doré et de pouvoir écrire de plus longs messages relève plus de fonctionnalités qui deviennent "accessibles" au membre premium plutôt que d'une autorisation particulière. Nous allons donc plutôt nous orienter vers la deuxième solution. Si plusieurs formes de "premium" étaient possibles (différents plans) il faudrait plutôt créer une nouvelle entité "Plan" avec les informations, le prix, etc... Ici, nous n'aurons qu'un seul plan premium, donc l'attribut booléen suffit.
 
 La question d'attribuer un rôle ou non pour ce genre de situation fait débat dans la communauté, et il n'y a pas vraiment de solution précise. Cependant, comme montré dans [ce fil de discussion](https://github.com/symfony/symfony/issues/39763#issuecomment-757493411), l'avis général des développeurs de Symfony est plutôt de ne pas faire de rôles dans ce genre de cas.
 
@@ -791,7 +791,7 @@ $form = $this->createForm(MonType::class, $entity, [
 
 1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `publication:write:normal`.
 
-2. Modifiez la classe `PublicationType` pour activer le bon groupe selon la situation de l'utilisateur (premium ou non). Vous aurez besoin du service `Security`. Ce service vous permet de récupérer l'utilisateur courant. Attention, il faudra vérifier s'il n'est pas `null`, car le formulaire peut être généré (mais pas forcément montré) via la route `feed`, même pour un utilisateur déconnecté (si l'utilisateur n'est pas connecté ou non premium, on utilisera le groupe `publication:write:normal`) :
+2. Modifiez la classe `PublierType` pour activer le bon groupe selon la situation de l'utilisateur (premium ou non). Vous aurez besoin du service `Security`. Ce service vous permet de récupérer l'utilisateur courant. Attention, il faudra vérifier s'il n'est pas `null`, car le formulaire peut être généré (mais pas forcément montré) via la route `feed`, même pour un utilisateur déconnecté (si l'utilisateur n'est pas connecté ou non premium, on utilisera le groupe `publication:write:normal`) :
 
     ```php
     use Symfony\Bundle\SecurityBundle\Security;
@@ -799,11 +799,13 @@ $form = $this->createForm(MonType::class, $entity, [
     $user = $this->security->getUser();
     ```
 
-    L'autocomplétion ne vous montrera pas forcément les attributs/méthodes de la classe `Utilisateur`, car on nous renvoie un objet de type `UserInterface`. Ce n'est pas grave, car en réalité, c'est bien notre entité `Utilisateur` qui est utilisé (et qui implémente justement cette interface).
+    L'autocomplétion ne vous montrera pas forcément les attributs/méthodes de la classe `Utilisateur`, car on nous renvoie un objet de type `UserInterface`. Ce n'est pas grave, car en réalité, c'est bien notre entité `Utilisateur` qui est utilisée (et qui implémente justement cette interface).
 
-    Comme d'habitude, il faudra penser à ajouter un constructeur dans `PublicationType` afin de réaliser l'injection de dépendance nécessaire.
+    Comme d'habitude, il faudra penser à ajouter un constructeur dans `PublierType` afin de réaliser l'injection de dépendance nécessaire.
 
-3. Utilisez un compte non premium et vérifiez que l'erreur apparaît bien si vous faites un message dépassant 50 caractères. Vérifiez également que l'erreur n'apparait pas si vous faites la même chose sur un compte premium (mais que dans ce cas, la limite à 200 est toujours présente) !
+3. Utilisez un compte non premium et vérifiez que l'erreur apparaît bien si vous faites un message dépassant 50 caractères. Vérifiez également que l'erreur n’apparaît pas si vous faites la même chose sur un compte premium (mais que dans ce cas, la limite à 200 est toujours présente) !
+
+4. Vous pouvez suivre la même logique afin d'adapter la contrainte cliente `maxlength` selon le statut de l'utilisateur (toujours dans `PublierType`).
 
 </div>
 
@@ -874,7 +876,7 @@ Pour cela, il existe deux solutions :
 
 </div>
 
-Même si nous masquons le lien dans le menu de navigation, un utilisateur qui possède le statut premium peut quand même accéder à la page des informations et d'achat du premium. Ce qui ne devrait pas être le cas, un utilisateur étant déjà premium n'a pas à voir cette page. Mais comme nous n'avons pas de rôle "premium" (au sens des rôles de Symfony) nous ne pouvons pas utiliser l'attribut `IsGranted` comme auparavant... Ou peut-être que si ?
+Actuellement, même si nous masquons le lien dans le menu de navigation, un utilisateur qui possède le statut premium peut quand même accéder à la page des informations et d'achat du premium. Ce qui ne devrait pas être le cas, un utilisateur étant déjà premium n'a pas à voir cette page. Mais comme nous n'avons pas de rôle "premium" (au sens des rôles de Symfony) nous ne pouvons pas utiliser l'attribut `IsGranted` comme auparavant... Ou peut-être que si ?
 
 Rappelez-vous, sur les routes `connexion` et `inscription`, nous avions évoqué la possibilité d'utiliser `IsGranted` en formulant une condition complexe :
 
@@ -911,7 +913,7 @@ Dans l'exemple ci-dessus, l'âge est stocké dans l'entité représentant nos ut
     use Symfony\Component\Security\Http\Attribute\IsGranted;
     ```
 
-2. Connectez-vous à un compte premium et vérifiez que la page n'est plus accessible. Connectez-vous à un compte non-premium et vérifiez que la page est accessible (cela génère un message d'erreur détaillé en mode développement, mais en mode production, la page d'erreur que vous avez configuré lors du dernier TD sera affichée à la place).
+2. Connectez-vous à un compte premium et vérifiez que la page n'est plus accessible (cela génère un message d'erreur détaillé en mode développement, mais en mode production, la page d'erreur que vous avez configuré lors du dernier TD sera affichée à la place). Connectez-vous ensuite à un compte non-premium et vérifiez que la page est accessible.
 
 </div>
 
@@ -925,7 +927,7 @@ Actuellement, votre route `supprimerPublication` doit à peu près ressembler à
 
 ```php
 #[IsGranted('ROLE_USER')]
-#[Route('/publications/{id}', name: 'supprimerPublication', options: ["expose" => true], methods: ["DELETE"])]
+#[Route('/publications/{id:publication}', name: 'supprimerPublication', options: ["expose" => true], methods: ["DELETE"])]
 public function supprimerPublication(?Publication $publication, EntityManagerInterface $entityManager) : Response {
     if($publication === null) {
         return new JsonResponse(null, Response::HTTP_NOT_FOUND);
@@ -1017,13 +1019,18 @@ class ExempleVoter extends Voter
     /*
     Vote pour accorder la permission (ou non).
     Le paramètre $token nous donne accès à l'utilisateur.
+    Le paramètre $vote permet d'ajouter des messages d'erreur customisés selon la raison pour laquelle une permission est refusée.
     */
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         $user = $token->getUser();
         ...
         switch ($attribute) {
             case self::EXEMPLE:
+                if(...) {
+                    $vote?->addReason("...");
+                    ...
+                }
                 return ...
             ...
         }
@@ -1044,8 +1051,7 @@ class VideoVoter extends Voter
     public const EDIT = 'VIDEO_EDIT';
 
     public function __construct()
-    {
-    }
+    {}
 
     protected function supports(string $attribute, mixed $subject): bool
     {
@@ -1054,7 +1060,7 @@ class VideoVoter extends Voter
             && $subject instanceof Video;
     }
 
-    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
+    protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         //a ce stade, comme `supports` oblige $subject à être du type Video, je sais que $subject est une vidéo.
 
@@ -1064,12 +1070,15 @@ class VideoVoter extends Voter
         switch ($attribute) {
             case self::VIEW:
                 if($subject->isPrivate() && ($user == null || $subject->getAuthor() != $user)) {
+                    $vote?->addReason("La vidéo est privée.");
                     return false;
                 }
                 else if($subject->isAdultOnly() && ($user == null || $user.getAge() < 18)) {
+                    $vote?->addReason("Vous n'avez pas l'âge requis pour regarde la vidéo.");
                     return false;
                 }
                 else if(!empty($subject->getBannedCountries()) && ($user == null || in_array($user->getCountry(), $subject->getBannedCountries()))) {
+                    $vote?->addReason("La vidéo ne peut pas être vue dans votre pays.");
                     return false;
                 }
                 return true;
@@ -1081,6 +1090,21 @@ class VideoVoter extends Voter
     }
 }
 ```
+
+L'appel à la méthode `addReason` sur `$vote` est tout à fait optionnel. Cela permet d'ajouter des messages customisés en cas de permission refusée. Cela peut servir dans certains cas au niveau de l'interface pour afficher des messages d'erreur (même si généralement, on fera en sorte de cacher à l'utilisateur les fonctions auxquelles il n'a pas accès) et surtout dans le cadre du développement d'une API.
+
+Avez-vous remarqué la syntaxe `$objet?->methode(...)` ? Ici, on peut un opérateur dit  **Null-safe** qui permet de faire en sorte que la méthode ne s'exécute que si `$objet` n'est **pas null** (autrement, cela provoquerait une erreur). C'est ce qu'on fait ici avec `$vote?->addReason(...)` car `$vote` peut être null.
+
+Si toutes les permissions relatives à l'objet sont refusées automatiquement dans le cas où l'utilisateur n'est pas connecté, on peut ajouter ce bout de code au début de la fonction `voteOnAttribute` :
+
+```php
+if (!$user instanceof UserInterface) {
+    $vote?->addReason('Vous devez être connecté pour réaliser des opérations sur cet objet...');
+    return false;
+}
+```
+
+Ce qui n'est pas pertinent dans notre exemple, parce qu'une vidéo publique peut être vue par tout le monde.
 
 Enfin, dans mon contrôleur (ou ailleurs) dès que je veux contrôler l'autorisation, par exemple, quand un utilisateur accède à une vidéo, j'utilise la permission `VIDEO_VIEW` :
 
@@ -1129,6 +1153,21 @@ Il est aussi tout à fait possible d'utiliser cette permission avec la méthode 
 {% endraw %}
 ```
 
+Si on a ajouté des messages customisés (en cas de permission refusée) et que l'on souhaite les afficher sur l'interface, on peut les récupérer ainsi :
+
+```twig
+{% raw %}
+{% set voter_decision = access_decision('VIDEO_VIEW', video) %}
+{% if voter_decision.isGranted %}
+    {# ... #}
+{% else %}
+    <p>{{ voter_decision.message }}</p>
+{% endif %}
+{% endraw %}
+```
+
+Cependant, comme nous l'avons expliqué plus tôt, on utilisera plutôt rarement ces messages sur l'interface, donc, la première méthode avec `is_granted` sera largement suffisante pour la majorité des cas.
+
 La commande suivante permet de générer une classe `NomEntiteVoter` contenant du code basique pour un **Voter**, lié à l'entité `NomEntite` :
 
 ```php 
@@ -1138,7 +1177,7 @@ Cependant, encore une fois, il n'est pas obligatoire d'avoir des permissions li�
 
 <div class="exercise">
 
-1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication`. Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il est connecté et qu'il en est l'auteur.
+1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication` (facilitez-vous la vie, utilisez le commande !). Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il est connecté et qu'il en est l'auteur.
 
 2. Utilisez votre nouvelle permission au niveau de la route `supprimerPublication`.
 
@@ -1166,23 +1205,24 @@ security:
 
     role_hierarchy:
         ROLE_CUSTOM: ROLE_USER
-        ROLE_CUSTOM2: ROLE_USER
-        ROLE_SUPER_CUSTOM : ROLE_CUSTOM, ROLE_CUSTOM2
+        ROLE_SUPER_CUSTOM : ROLE_CUSTOM, ROLE_CUSTOM_2
 ```
 
-Dans l'exemple ci-dessus, un utilisateur possédant le rôle `ROLE_CUSTOM` possède automatiquement tous les privilèges de `ROLE_USER` (en plus des siens). Pareil pour `ROLE_CUSTOM2`. Enfin, `ROLE_SUPER_CUSTOM` possède les privilèges de `ROLE_CUSTOM`, `ROLE_CUSTOM2` et aussi `ROLE_USER` (car `ROLE_CUSTOM` et/ou `ROLE_CUSTOM2` dérivent de `ROLE_USER`...).
+Dans l'exemple ci-dessus, un utilisateur possédant le rôle `ROLE_CUSTOM` possède automatiquement tous les privilèges de `ROLE_USER` (en plus des siens). Enfin, `ROLE_SUPER_CUSTOM` possède les privilèges de `ROLE_CUSTOM`, `ROLE_CUSTOM_2` et aussi `ROLE_USER` (car `ROLE_CUSTOM` a les privilèges de `ROLE_USER`...).
 
 <div class="exercise">
 
 1. Dans le fichier `security.yaml`, définissez une hiérarchie pour le rôle `ROLE_ADMIN` (nouveau rôle) en faisant en sorte que celui-ci hérite de tous les privilèges du rôle de base : `ROLE_USER`.
 
-2. Modifiez le voter `PublicationVoter` afin de voter favorablement si l'utilisateur possède le privilège `ROLE_ADMIN`. Pour cela, il vous faudra injecter et utiliser le service `Security` qui permet d'utiliser la méthode `isGranted` :
+2. Modifiez le voter `PublicationVoter` afin de voter favorablement si l'utilisateur possède le privilège `ROLE_ADMIN`. Pour cela, il vous faudra injecter et utiliser le service `AccessDecisionManagerInterface` afin d'utiliser la méthode `decide` sur l'objet `$token` donné dans `voteOnAttribute` :
 
     ```php
-    use Symfony\Bundle\SecurityBundle\Security;
+    use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 
-    $this->security->isGranted(role)
+    $this->accessDecisionManager->decide($token, ["ROLE", "..."]);
     ```
+
+    La fonction `decide` a le même objectif que `isGranted` : déterminer si l'utilisateur à une (ou plusieurs) permission(s) (ou certains rôles). La documentation de Symfony précise que si l'on souhaite vérifier des permissions à l'intérieur d'un voter, il faut impérativement utiliser cette méthode, et ne surtout pas appeler la méthode `isGranted` sur l'utilisateur récupéré via `getUser` dans le service **Security** (comme montré dans certains tutoriels, ou la documentation de versions antérieures de Symfony). De plus, la méthode `decide` permet aussi de vérifier les permissions d'autres utilisateurs.
 
 3. Dans votre base de données, ajoutez le rôle `ROLE_ADMIN` à un utilisateur : affectez la valeur `["ROLE_ADMIN"]` dans le champ `roles`. Si vous étiez connecté avec ce compte, vous serez déconnecté après le changement de rôle, par mesure de sécurité.
 
@@ -1202,61 +1242,61 @@ php bin/console macommande ...
 
 Il peut être très utile de créer des commandes pour assurer certaines opérations de maintenance ou d'administration du site. On peut aussi relier cela à un système qui exécutera périodiquement des commandes (par exemple, chaque semaine, chaque mois...). L'avantage (par rapport à un script classique) c'est qu'on est déjà dans l'environnement de l'application. On peut donc injecter et utiliser des services, des paramètres, etc...
 
-Pour initialiser la classe d'une commande, on exécute :
+Pour créer une commande, on va d'abord ajouter un dossier `src/Command` afin de placer nos commandes à l'intérieur.
 
-```
-php bin/console make:command MaCommande
-```
-
-Ce qui génère une classe `MaCommande` dans le dossier `src/Command`. Faisons un tour des possibilités proposées par cette classe :
+Ensuite, on peut créer une classe dédiée pour chaque commande :
 
 ```php
+namespace App\Command;
+
+use Symfony\Component\Console\Attribute\Argument;
+use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Attribute\Option;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+
 #[AsCommand(
     /* Nom de la commande, tel qu'on l'utilisera lors de l'exécution de php bin/console ... */
     name: 'nomcommande',
     /* Pour décrire ce que fait la commande, si l'utilisateur utilise l'option --help, par exemple. */
     description: '...',
 )]
-class MaCommande extends Command
+class MaCommande
 {
+
     public function __construct(
         /* Injection de dépendances... */
-    ) {
-        //Il faut quand même appeller le constructeur parent (de la classe Command)
-        parent::__construct();
-    }
+    ) {}
 
-    //On configure les paramètres de la commande ici
-    protected function configure(): void
-    {
-        $this
-            //Argument (se place dans l'ordre, quand on écrit la commande)
-            //Peut être obligatoire ou optionnel
-            ->addArgument('arg1', InputArgument::REQUIRED, "Argument description")
-            ->addArgument('arg2', InputArgument::OPTIONAL, "Argument description")
-
-            //On peut configurer des options qui s'utilisent ainsi `--nomOption` dans la commande. Il n'y a pas de valeur associée à l'option, contrairement aux arguments. Il s'agit simplement d'une option qu'on active ou non.
-            ->addOption('nomOption', null, InputOption::VALUE_NONE, "Option description")
-        ;
-    }
-
-    //Méthode déclenchée lors de l'exécution de la commande.
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    //C'est la fonction qui définit les paramètres de la commande et qui l'exécute
+    public function __invoke(
         //Permet de gérer les messages d'entrées/sorties
-        $io = new SymfonyStyle($input, $output);
+        //Doit être placé avant les autres paramètres
+        SymfonyStyle $io,
+        
+        //Premier argument (obligatoire)
+        #[Argument(description: "...")] string $arg1,
 
-        //On récupère un argument
-        $arg1 = $input->getArgument('arg1');
+        //Deuxième argument (obligatoire) : pose une question en console à l'utilisateur
+        #[Ask("Question...")] int $arg2,
 
-        if ($arg1) {
-            //Permet de vérifier que l'argument est défini ou non (s'il est optionnel)
-        }
+        //Troisième argument (obligatoire) : pose une question en console à l'utilisateur, et cache la valeur saisie (par exemple, pour un mon de passe...)
+        #[Ask("Question...", hidden: true)] int $arg3,
+                            
+        //Quatrième argument (optionnel) : à mettre après les arguments obligatoires.
+        //Il est optionnel car on donne une valeur par défaut
+        #[Argument(description: "...")] string $arg4 = "Valeur par défaut...",
+                           
+        //On peut configurer des options qui s'utilisent ainsi `--nomOption` n'importe où dans la commande, et qui donnent une valeur booléenne (activer, désactiver)
+        #[Option(description:"...")] bool $option1 = false,
+                        
+        //On peut aussi définir une option à laquelle on associe une valeur `--nomOption=valeur`
+        #[Option(description:"...")] int $option2 = 5
+    ): int
+   {
 
-        //Permet de voir si une option est activée.
-        if ($input->getOption('nomOption')) {
-            // ...
-        }
+        //Exécution de la logique de la commande...
 
         //Pour afficher un message normal.
         $io->writeln("message");
@@ -1270,7 +1310,7 @@ class MaCommande extends Command
         //Pour afficher un message d'avertissement.
         $io->warning("message");
 
-        //On peut aussi utiliser $io->ask pour poser une question et récupérer des arguments de manière intéractive... $io contient plein de méthodes utiles!
+        //On peut aussi utiliser $io->ask pour poser une question et récupérer des arguments de manière interactive... $io contient plein de méthodes utiles!
 
         /* 
         On retourne une des trois valeurs possibles :
@@ -1279,9 +1319,26 @@ class MaCommande extends Command
         * Command::FAILURE : il y a eu un problème lors de l'exécution.
         */
         return Command::SUCCESS;
-    }
+
+   }
 }
 ```
+
+Bien sûr, dans l'exemple, on utilise `$arg1`, `$option1`, etc, mais vous pouvez nommer les arguments et options comme vous voulez ! La description d'une commande (et de ses paramètres) peut être affichée avec :
+
+```bash
+php bin/console macommande --help
+```
+
+Dans `#[Argument]`, `#[Option]`, etc, il est aussi possible de changer le nom du paramètre affiché en console avec la propriété `name`, et de suggérer des valeurs avec `suggestedValues`. Il est aussi possible de créer une classe externe pour regrouper plusieurs arguments puis les utiliser dans la commande grâce à [l'attribut `#[MapInput]`](https://symfony.com/doc/7.4/console/input.html#mapping-input-to-objects).
+
+{% comment %}
+Pour initialiser la classe d'une commande, on exécute :
+
+```bash
+php bin/console make:command MaCommande
+```
+{% endcomment %}
 
 Reprenons l'exemple du site de partage de vidéos. Je veux créer une commande qui me permet de supprimer une vidéo dont le code unique est passé en paramètre (pas l'id, mais une chaîne de caractère unique du style `whIu75m`, comme sur YouTube par exemple).
 
@@ -1290,34 +1347,26 @@ Reprenons l'exemple du site de partage de vidéos. Je veux créer une commande q
     name: 'delete:video',
     description: 'Delete a video (by using its unique identifier)',
 )]
-class MaCommande extends Command
+class DeleteVideoCommand
 {
     public function __construct(
        private VideoRepository $videoRepository,
        private EntityManagerInterface $entityManager
-    ) {
-        parent::__construct();
-    }
+    ) {}
 
-    protected function configure(): void
+    public function __invoke(
+        SymfonyStyle $io,
+        #[Argument(description: "The unique identifier of the video.")] string $videoCode,
+    ): int
     {
-        $this
-            ->addArgument('videoCode', InputArgument::REQUIRED, "The unique identifier of the video.")
-        ;
-    }
-
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $io = new SymfonyStyle($input, $output);
-        $code = $input->getArgument('videoCode');
-        $video = $this->videoRepository->findOneBy(["videoCode" => $code]);
+        $video = $this->videoRepository->findOneBy(["videoCode" => $videoCode]);
         if($video === null) {
-            $io->error("Video not found.");
+            $io->error("Video $videoCode not found.");
             return Command::FAILURE;
         }
         $this->entityManager->remove($video);
         $this->entityManager->flush();
-        $io->success("The video has been deleted !");
+        $io->success("The video $videoCode has been deleted !");
         return Command::SUCCESS;
     }
 }
@@ -1325,7 +1374,7 @@ class MaCommande extends Command
 
 <div class="exercise">
 
-1. Créez et testez la commande `GivePremiumCommand` nommée `give:premium` qui prend en paramètre le login d'un utilisateur et le rend membre premium. Pour mettre à jour les données de l'utilisateur en base de données, il faudra utiliser le service `EntityManagerInterface`, comme quand vous créez une entité. Après avoir modifié les données de l'utilisateur, il suffit d'appeler `flush`.
+1. Créez et testez la commande `GivePremiumCommand` nommée `give:premium` qui prend en paramètre le login d'un utilisateur et le rend membre premium. Pour récupérer l'utilisateur en question, il faudra utiliser `UtilisateurRepository`. Pour mettre à jour les données de l'utilisateur en base de données, il faudra utiliser le service `EntityManagerInterface`, comme quand vous créez une entité. Après avoir modifié les données de l'utilisateur, il suffit d'appeler `flush`.
 
 2. Créez et testez la commande `RevokePremiumCommand` nommée `revoke:premium` qui prend en paramètre le login d'un utilisateur et le lui enlève le statut premium.
 
@@ -1489,7 +1538,7 @@ Nous allons construire un service dédié à la gestion des paiements. On aura u
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 //Pour générer une URL absolue
-$url = $generator->generate(nomRoute, ["param" => ..., ], UrlGeneratorInterface::ABSOLUTE_URL)
+$url = $generator->generate(nomRoute, ["param" => ..., ], UrlGeneratorInterface::ABSOLUTE_URL);
 ```
 
 Bien sûr, si la route n'est pas paramétrable, il suffit de préciser un tableau vide comme second argument. Le dernier paramètre `UrlGeneratorInterface::ABSOLUTE_URL` permet de générer une URL absolue. Vous en aurez besoin pour générer les liens pour les paramètres `success_url` et `cancel_url`.
