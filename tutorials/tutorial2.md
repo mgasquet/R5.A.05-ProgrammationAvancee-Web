@@ -231,7 +231,7 @@ Enfin, il existe une fonction utile qui permet de générer tout ce qui est rela
 
        * `plainPassword` : non blanc, entre 8 et 30 caractères, et doit respecter l'expression régulière (**regex**) suivante : `#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#` (au moins une minuscule, une majuscule et un chiffre). Configurez des messages d'erreurs pour la taille du mot de passe et aussi si l'expression régulière n'est pas validée (juste `message`).
 
-       * `fichierPhotoProfil` : taille maximum **10 mégaoctets**, formats autorisés : **jpg**, et **png**. Configurez des messages d'erreurs dans le cas où la taille n'est pas respectée (`maxSizeMessage`) ou que le format n'est pas respecté (`extensionsMessage`).
+       * `fichierPhotoProfil` : taille maximum **10 mégaoctets**, formats autorisés : **jpg** et **png**. Configurez des messages d'erreurs dans le cas où la taille n'est pas respectée (`maxSizeMessage`) ou que le format n'est pas respecté (`extensionsMessage`).
         Classes à importer :
 
        ```php
@@ -242,7 +242,7 @@ Enfin, il existe une fonction utile qui permet de générer tout ce qui est rela
        use Symfony\Component\Validator\Constraints\Regex;
        ```
 
-4. Dans le dossier `templates`, créez un dossier `utilisateur` puis, à l'intérieur de ce nouveau répertoire, un template nommé `inscription.html.twig` :
+4. Dans le dossier `templates`, créez un dossier `utilisateur` puis à l'intérieur de ce nouveau répertoire, un template nommé `inscription.html.twig` :
 
     * Comme toutes nos futures pages, ce template doit étendre le template `base.html.twig`.
 
@@ -329,16 +329,13 @@ class ExempleService {
     ) {}
 
     public function maFonction() : void {
-        // ...
         $ex = $this->exempleRepository->findAll();
-        // ...
         $this->entityManager->persist(...)
-        // ...
     }
 }
 ```
 
-La syntaxe utilisée pour définir ce constructeur ne doit pas vous être inconnue. Pour rappel, avec cette syntaxe, on signifie qu'on souhaite enregistrer directement les paramètres comme attributs de la classe (en précisant, au passage, leur visibilité). Ainsi, il n'y a pas de code basique à écrire pour déclarer manuellement ces attributs et les affecter dans le constructeur. Le corps du constructeur peut rester vide. En fait, on peut voir cela comme une version compacte entre la déclaration et l'affectation d'un attribut de la classe.
+La syntaxe avec `private` utilisée pour définir ce constructeur ne doit pas vous être inconnue. Pour rappel, avec cette syntaxe, on signifie qu'on souhaite enregistrer directement les paramètres comme attributs de la classe (en précisant, au passage, leur visibilité). Ainsi, il n'y a pas de code basique à écrire pour déclarer manuellement ces attributs et les affecter dans le constructeur. Le corps du constructeur peut rester vide. En fait, on peut voir cela comme une version compacte entre la déclaration et l'affectation d'un attribut de la classe.
 
 Ainsi, si j'ai une classe avec le constructeur suivant :
 
@@ -425,52 +422,45 @@ $valeurChamp = $form->get("monChamp")->getData();
 
 3. Dans le fichier `config/services.yaml`, ajoutez un paramètre `dossier_photo_profil` ayant pour valeur : `'%kernel.project_dir%/public/img/utilisateurs/uploads'`. La partie `%kernel.project_dir%` désigne la racine du projet. C'est un paramètre défini par Symfony (notez qu'en utilisant `%` on peut utiliser la valeur d'autres paramètres pour construire un autre paramètre, comme c'est le cas ici.).
 
-4. Créez un dossier `Service` dans `src` puis, créez et complétez la classe suivante à l'intérieur de ce nouveau répertoire :
+4. Créez un dossier `Service` dans `src` puis créez et complétez la classe suivante à l'intérieur de ce nouveau répertoire :
 
-    ```php
-    namespace App\Service;
-
-    use App\Entity\Utilisateur;
-    use Symfony\Component\DependencyInjection\Attribute\Autowire;
-    use Symfony\Component\HttpFoundation\File\UploadedFile;
-    use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-
-    class UtilisateurManager {
-
-        public function __construct(
-            //Injection du paramètre dossier_photo_profil
-            //Injection du service UserPasswordHasherInterface
-        ){}
-
-        /**
-         * Chiffre le mot de passe puis l'affecte au champ correspondant dans la classe de l'utilisateur
-         */
-        private function chiffrerMotDePasse(Utilisateur $utilisateur, ?string $plainPassword) : void {
-            //On chiffre le mot de passe en clair
-            //On met à jour l'attribut "password" de l'utilisateur
-        }
-
-        /**
-         * Sauvegarde l'image de profil dans le dossier de destination puis affecte son nom au champ correspondant dans la classe de l'utilisateur
-         */
-        private function sauvegarderPhotoProfil(Utilisateur $utilisateur, ?UploadedFile $fichierPhotoProfil) : void {
-            if($fichierPhotoProfil != null) {
-                //On configure le nom de l'image à sauvegarder
-                //On la déplace vers son dossier de destination
-                //On met à jour l'attribut "nomPhotoProfil" de l'utilisateur
-            }
-        }
-
-        /**
-         * Réalise toutes les opérations nécessaires avant l'enregistrement en base d'un nouvel utilisateur, après soumission du formulaire (hachage du mot de passe, sauvegarde de la photo de profil...)
-         */
-        public function processNewUtilisateur(Utilisateur $utilisateur, ?string $plainPassword, ?UploadedFile $fichierPhotoProfil) : void {
-            //On chiffre le mot de passe
-            //On sauvegarde (et on déplace) l'image de profil
-        }
-
-    }
-    ```
+   ```php
+   namespace App\Service;   
+   use App\Entity\Utilisateur;
+   use Symfony\Component\DependencyInjection\Attribute\Autowire;
+   use Symfony\Component\HttpFoundation\File\UploadedFile;
+   use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;   
+   class UtilisateurManager {   
+       public function __construct(
+           //Injection du paramètre dossier_photo_profil
+           //Injection du service UserPasswordHasherInterface
+       ){}   
+       /**
+        * Chiffre le mot de passe puis l'affecte au champ correspondant dans la classe de l'utilisateur
+        */
+       private function chiffrerMotDePasse(Utilisateur $utilisateur, ?string $plainPassword) : void {
+           //On chiffre le mot de passe en clair
+           //On met à jour l'attribut "password" de l'utilisateur
+       }   
+       /**
+        * Sauvegarde l'image de profil dans le dossier de destination puis affecte son nom au champ correspondant dans la classe de l'utilisateur
+        */
+       private function sauvegarderPhotoProfil(Utilisateur $utilisateur, ?UploadedFile $fichierPhotoProfil) : void {
+           if($fichierPhotoProfil != null) {
+               //On configure le nom de l'image à sauvegarder
+               //On la déplace vers son dossier de destination
+               //On met à jour l'attribut "nomPhotoProfil" de l'utilisateur
+           }
+       }   
+       /**
+        * Réalise toutes les opérations nécessaires avant l'enregistrement en base d'un nouvel utilisateur, après soumission du formulaire (hachage du mot de passe, sauvegarde de la photo de profil...)
+        */
+       public function processNewUtilisateur(Utilisateur $utilisateur, ?string $plainPassword, ?UploadedFile $fichierPhotoProfil) : void {
+           //On chiffre le mot de passe
+           //On sauvegarde (et on déplace) l'image de profil
+       }   
+   }
+   ```
 
 5. Dans votre route `inscription`, faites en sorte de gérer la soumission du formulaire et de sauvegarder l'utilisateur construit à partir du formulaire dans la base de données. Cependant, **avant de sauvegarder l'utilisateur**, il faudra extraire `plainPassword` puis `fichierPhotoProfil` et enfin utiliser votre nouveau service avec sa méthode `processNewUtilisateur`.
     
@@ -496,7 +486,7 @@ $valeurChamp = $form->get("monChamp")->getData();
 
     * `pattern` sur le mot de passe avec valeur : `"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$"`
 
-    * `accept`sur la photo de profil, avec pour valeur : `"image/jpeg, image/png"`
+    * `accept` sur la photo de profil, avec pour valeur : `"image/jpeg, image/png"`
 
     ```php
     $builder
@@ -575,7 +565,7 @@ Il peut être intéressant de créer une **interface** pour son service, même s
 
 3. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
 
-4. Pour bien vérifier que vous avez compris les explications précédentes, ajoutez une classe `TestService.php` dans le dossier `Service` qui implémente aussi `UtilisateurManagerInterface`. Laissez le corps de la méthode `processNewUtilisateur` vide. Essayez de recharger la page d'accueil. Symfony renvoie alors une erreur qui explique qu'il n'a pas pu trouver le service en question. Comme dans l'exemple, éditez le fichier `services.yaml` afin de faire pointer le service `UtilisateurManagerInterface` vers `UtilisateurManager`. Testez que tout fonctionne à nouveau, puis, supprimez les modifications apportées dans `services.yaml` lors de cet exercice et supprimez également `TestService.php`.
+4. Pour bien vérifier que vous avez compris les explications précédentes, ajoutez une classe `TestService.php` dans le dossier `Service` qui implémente aussi `UtilisateurManagerInterface`. Laissez le corps de la méthode `processNewUtilisateur` vide. Essayez de recharger la page d'accueil. Symfony renvoie alors une erreur qui explique qu'il n'a pas pu trouver le service en question. Comme dans l'exemple, éditez le fichier `services.yaml` afin de faire pointer le service `UtilisateurManagerInterface` vers `UtilisateurManager`. Testez que tout fonctionne à nouveau, puis supprimez les modifications apportées dans `services.yaml` lors de cet exercice et supprimez également `TestService.php`.
 
 </div>
 
@@ -645,25 +635,25 @@ security:
 
 3. Concernant le **contenu de la page**, importez et complétez le code du formulaire suivant : 
 
-    ```html
-    <main>
-        <form action="...A compléter..." method="post" class="basic-form center">
-            <fieldset>
-                <legend>Connexion</legend>
-                <div class="access-container">
-                    <label for="login">Login</label>
-                    <input id="login" type="text" name="_username" required/>
-                </div>
-                <div class="access-container">
-                    <label for="password">Mot de passe</label>
-                    <input id="password" type="password" name="_password" required/>
-                </div>
-                <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="...A compléter...">
-                <button type="submit" class="basic-form-submit">Se connecter</button>
-            </fieldset>
-        </form>
-    </main>
-    ```
+   ```html
+   <main>
+       <form action="...A compléter..." method="post" class="basic-form center">
+           <fieldset>
+               <legend>Connexion</legend>
+               <div class="access-container">
+                   <label for="login">Login</label>
+                   <input id="login" type="text" name="_username" required/>
+               </div>
+               <div class="access-container">
+                   <label for="password">Mot de passe</label>
+                   <input id="password" type="password" name="_password" required/>
+               </div>
+               <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="...A compléter...">
+               <button type="submit" class="basic-form-submit">Se connecter</button>
+           </fieldset>
+       </form>
+   </main>
+   ```
 
 4. Mettez à jour le fichier `config/packages/security.yaml` de manière adéquate. L'utilisateur doit être redirigé vers la route `feed` après s'être connecté.
 
@@ -673,15 +663,14 @@ security:
 
 7. Actuellement, si l'utilisateur se trompe dans son mot de passe, quand le formulaire est rechargé, le champ du login n'est pas prérempli. Il est possible d'améliorer cet aspect en récupérant le **dernier login avec lequel l'utilisateur a tenté de se connecter**. Pour cela, on utilise le service `AuthenticationUtils` :
 
-    ```php
-    use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-
-    #[Route('/exempleConnexion', name: 'exempleConnexion', methods: ['GET', 'POST'])]
-    public function connexion(AuthenticationUtils $authenticationUtils) : Response {
-        $lastUsername = $authenticationUtils->getLastUsername();
-        ....
-    }
-    ```
+   ```php
+   use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;   
+   #[Route('/exempleConnexion', name: 'exempleConnexion', methods: ['GET', 'POST'])]
+   public function connexion(AuthenticationUtils $authenticationUtils) : Response {
+       $lastUsername = $authenticationUtils->getLastUsername();
+       ....
+   }
+   ```
 
     Il est alors possible de simplement passer cette donnée au template et de l'utiliser pour préciser l'attribut `value` du champ correspondant au login. Ce champ sera donc tout le temps prérempli, ce qui est pratique en cas d'erreur de mot de passe, mais aussi si l'utilisateur se déconnecte puis se reconnecte plus tard. Cette donnée est mémorisée dans un **cookie**.
 
@@ -697,17 +686,17 @@ Maintenant, nous devons gérer la **déconnexion**. Cela est encore plus simple,
 
 * Tout d'abord, le fichier `config/packages/security.yaml` en paramétrant notre route de déconnexion avec une section nommée `logout`, un peu comme nous l'avons fait pour la connexion :
 
-    ```yaml
-    security:
-        ...
-        firewalls:
-        ...
-            main:
-                ...
-                logout:
-                    path: /cheminRouteDeconnexion
-                    target: routeRetour
-    ```
+  ```yaml
+  security:
+      ...
+      firewalls:
+      ...
+          main:
+              ...
+              logout:
+                  path: /cheminRouteDeconnexion
+                  target: routeRetour
+  ```
 
     Dans `path`, on précise le **chemin** de la route (par exemple `/deconnexion`) et dans `target` la **route** (cette fois, pas avec son chemin, mais bien avec son nom) vers laquelle est redirigé l'utilisateur après s'être déconnecté.
 
@@ -949,7 +938,7 @@ Voici la liste des attributs disponibles, qui devraient notamment vous rappeler 
 
 * `#[ORM\ManyToOne(inversedBy: ...)]` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder **une instance** de l'entité ciblée. Le paramètre `inversedBy` permet de spécifier le nom de l'attribut de la classe cible qui fait référence à l'entité (où on place cette annotation).
 
-* `#[ORM\OneToMany(targetEntity: Target::class, mappedBy: ..., cascade: [...])]` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder une **collection** de l'entité ciblée (l'attribut est de type `Collection`). Le paramètre `targetEntity` permet de spécifier la classe cible. Le paramètre `mappedBy` fonctionne de la même manière que `inversedBy`.
+* `#[ORM\OneToMany(targetEntity: Target::class, mappedBy: ...)]` : À utiliser dans une relation **1 - plusieurs**, du côté de l'entité qui doit posséder une **collection** de l'entité ciblée (l'attribut est de type `Collection`). Le paramètre `targetEntity` permet de spécifier la classe cible. Le paramètre `mappedBy` fonctionne de la même manière que `inversedBy`.
 
 * `#[OneToOne(mappedBy: ...)]` : À utiliser dans une relation `1 - 1`. Dans l'autre entité, on utilise le même attribut en remplaçant `mappedBy` par `inversedBy`.
 
@@ -1118,7 +1107,7 @@ Nous allons maintenant créer une page qui regroupera l'ensemble des publication
 Pour récupérer les informations d'un utilisateur précis, on peut utiliser une route paramétrée comme nous l'avons déjà vu : `/route/{propriete}/test`. On pourrait ensuite alors utiliser le repository de l'entité ciblée puis utiliser `findOne` ou `findOneBy` (si la propriété n'est pas la clé primaire) pour retrouver l'entité :
 
 ```php
- #[Route('/route/{propriete}/test', name: 'route_exemple', methods: ["GET"])]
+#[Route('/route/{propriete}/test', name: 'route_exemple', methods: ["GET"])]
 public function methodeExemple(string $propriete, ExempleRepository $repository): Response
 {
     $exemple = $repository->findOneBy(["propriete" => $propriete]);
@@ -1135,7 +1124,7 @@ Si cette méthode est bien valide, Symfony propose une méthode encore plus simp
 Par exemple, ce bout de code fait exactement la même chose (en arrière-plan) que le précédent :
 
 ```php
- #[Route('/route/{propriete:exemple}/test', name: 'route_exemple', methods: ["GET"])]
+#[Route('/route/{propriete:exemple}/test', name: 'route_exemple', methods: ["GET"])]
 public function methodeExemple(?Exemple $exemple): Response
 {
     if($exemple == null) {
@@ -1153,7 +1142,7 @@ Il faut donc que le paramètre de la route porte **exactement le même nom que l
 Il est tout à fait possible de combiner plusieurs critères de recherche ! Par exemple, si une entité à une clé primaire composée de deux attributs (ou plus) :
 
 ```php
- #[Route('/route/{critere1:exemple}/test/{critere2:exemple}', name: 'route_exemple', methods: ["GET"])]
+#[Route('/route/{critere1:exemple}/test/{critere2:exemple}', name: 'route_exemple', methods: ["GET"])]
 public function methodeExemple(?Exemple $exemple): Response
 {
     //Execute (en arrière-plan) : $exemple = findOneBy(["critere1" => {critere1}, "critere2" => {critere2}]);
@@ -1164,7 +1153,7 @@ public function methodeExemple(?Exemple $exemple): Response
 Il est aussi tout à fait possible de chercher automatiquement plus d'une entité à la fois !
 
 ```php
- #[Route('/entreprise/{id:entreprise}/employes/{id:employe}', name: 'route_entreprise_employe', methods: ["GET"])]
+#[Route('/entreprise/{id:entreprise}/employes/{id:employe}', name: 'route_entreprise_employe', methods: ["GET"])]
 public function employeEntreprise(?Entreprise $entreprise, ?Employe $employe): Response
 {
     /* 
@@ -1179,7 +1168,7 @@ public function employeEntreprise(?Entreprise $entreprise, ?Employe $employe): R
 Bref, dans la plupart des cas, on cherche une seule entité avec un seul paramètre :
 
 ```php
- #[Route('/livres/{isbn:livre}', name: 'get_livre', methods: ["GET"])]
+#[Route('/livres/{isbn:livre}', name: 'get_livre', methods: ["GET"])]
 public function getLivre(?Livre $livre): Response
 {
     /* 
@@ -1200,30 +1189,27 @@ Dans ce contexte, il est important de placer un point d'interrogation `?` devant
 
     * Si l'utilisateur existe bien, retourner la page générée par le template `utilisateur/page_perso.html.twig` que nous allons créer juste après. Il faudra passer l'utilisateur que vous avez récupéré en paramètre de ce template.
 
-2. Créez le template `page_perso.html.twig` dans le dossier `templates/utilisateur`.
+2. Créez le template `page_perso.html.twig` dans le dossier `templates/utilisateur`. Le contenu de cette page doit être la liste des publications de l'utilisateur. On veut le même style d'affichage que sur la page principale.
 
-    * Le contenu de cette page doit être la liste des publications de l'utilisateur. On veut le même style d'affichage que sur la page principale. Pour le moment, vous pouvez donc reprendre le code de la liste des publications depuis `feed.html.twig` (et l'adapter) pour cette partie. Ce n'est pas très optimisé, car on duplique le code. Nous allons améliorer cet aspect un peu plus tard. On rappelle que, comme on a défini la relation entre publication et utilisateur comme étant bidirectionnelle, on peut accéder à la liste des publications depuis l'utilisateur, qui possède une propriété dédiée.
+   * Importez le template suivant :
+     {% raw %}
+     ```twig
+     {% extends 'base.html.twig' %} 
+     {% block page_title %}Page de <!-- login de l'utilisateur -->{% endblock %}
+     {% block page_content %}
+     <main>
+         <div class="center">
+             <p id="titre-page-perso">Page de <!-- login de l'utilisateur --></p>
+         </div>
+         <div id="feed">
+            <!-- Liste des publications de l'utilisateur -->
+         </div>
+     </main>
+     {% endblock %}
+     ```
+     {% endraw %}
 
-    * Importez et complétez le template suivant :
-
-    ```twig
-    {% raw %}
-    {% extends 'base.html.twig' %}
-
-    {% block page_title %}Page de <!-- login de l'utilisateur -->{% endblock %}
-
-    {% block page_content %}
-    <main>
-        <div class="center">
-            <p id="titre-page-perso">Page de <!-- login de l'utilisateur --></p>
-        </div>
-        <div id="feed">
-           <!-- Liste des publications de l'utilisateur -->
-        </div>
-    </main>
-    {% endblock %}
-    {% endraw %}
-    ```
+   *  Complétez le template en reprenant le code de la liste des publications depuis `feed.html.twig` (et l'adapter) pour cette partie. Ce n'est pas très optimisé, car on duplique le code. Nous allons améliorer cet aspect un peu plus tard. On rappelle que, comme on a défini la relation entre publication et utilisateur comme étant bidirectionnelle, on peut accéder à la liste des publications depuis l'utilisateur, qui possède une propriété dédiée.
 
 3. Accédez aux différentes pages personnelles de vos utilisateurs pour vérifier que tout fonctionne.
 
