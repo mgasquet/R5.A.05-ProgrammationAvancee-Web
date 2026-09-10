@@ -7,7 +7,7 @@ lang: fr
 
 ## Introduction
 
-Dans ce nouveau TD, nous allons améliorer le site en rajoutant diverses fonctionnalités qui vont vous permettre d'affiner et de renforcer votre maîtrise de Symfony.
+Dans ce nouveau TD, nous allons améliorer le site en ajoutant diverses fonctionnalités qui vont vous permettre d'affiner et de renforcer votre maîtrise de Symfony.
 
 Voici les nouveaux objectifs pour "The Feed" :
 
@@ -23,15 +23,15 @@ Voici les nouveaux objectifs pour "The Feed" :
 
 * Ajout d'un **système de paiement** (pour obtenir le statut premium) avec **Stripe**.
 
-**On rappelle que les commandes doivent être exécutées à l'intérieur de votre conteneur Docker** à l'exception des commandes liées au logiciel client **Stripe** (dont nous allons parler dans ce TP, mais cela sera précisé en temps voulu).
+**On rappelle que les commandes doivent être exécutées à l'intérieur de votre conteneur Docker**, à l'exception des commandes liées au logiciel client **Stripe** (dont nous allons parler dans ce TP, mais cela sera précisé en temps voulu).
 
 ## Fonctionnalités dynamiques
 
-L'année dernière, vous avez découvert la possibilité d'avoir certaines fonctionnalités dynamiques afin d'effectuer des actions et recevoir des réponses sans avoir besoin de recharger la page courante, afin de rendre votre site plus dynamique. C'est d'ailleurs la logique au cœur des frameworks réactifs (Vue.js, Angular, React) qui seront abordés dans de prochains TDs.
+L'année dernière, vous avez découvert la possibilité d'avoir certaines fonctionnalités dynamiques afin d'effectuer des actions et de recevoir des réponses sans avoir besoin de recharger la page courante, afin de rendre votre site plus dynamique. C'est d'ailleurs la logique au cœur des frameworks réactifs (Vue.js, Angular, React) qui seront abordés dans de prochains TD.
 
-Avec Symfony, il existe plusieurs moyens d'ajouter des fonctionnalités dynamiques. La première, que vous connaissez, consiste à coder ces fonctionnalités via JavaScript. La seconde utilise une librairie `Turbo` qui est déjà chargée et active sur votre site.
+Avec Symfony, il existe plusieurs moyens d'ajouter des fonctionnalités dynamiques. La première, que vous connaissez, consiste à coder ces fonctionnalités via JavaScript. La seconde utilise une bibliothèque `Turbo` qui est déjà chargée et active sur votre site.
 
-Par exemple, comme on souhaite ajouter la possibilité aux utilisateurs de supprimer leurs publications, on pourrait donc ajouter du JavaScript à notre site et une route prévue pour être utilisée de manière asynchrone (qui n'utilise pas twig et qui ne renvoie pas de page, mais éventuellement des données JSON).
+Par exemple, comme on souhaite ajouter la possibilité aux utilisateurs de supprimer leurs publications, on pourrait ajouter du JavaScript à notre site et une route prévue pour être utilisée de manière asynchrone (qui n'utilise pas Twig et qui ne renvoie pas de page, mais éventuellement des données JSON).
 
 Aussi, actuellement, notre route `deconnexion` est accessible en `GET`. Nous avions évoqué le fait qu'il serait plus judicieux et sécurisé d'avoir cette route en mode `POST` (ce qui n'est pas possible avec un lien simplement généré). Nous pourrions également gérer cela avec JavaScript.
 
@@ -45,7 +45,7 @@ Traditionnellement, l'ajout de **JavaScript** à une page s'effectue dans la par
 
 On pourrait donc tout à fait charger un fichier placé dans `assets` (comme pour les images) grâce à la fonction `asset` de twig. Une autre solution serait de créer [un entry point dédié](https://symfony.com/doc/current/frontend/asset_mapper.html#page-specific-css-javascript) pour charger tous les fichiers `js` (et éventuellement `css`) relatifs à cette page (préférable à la première solution).
 
-Cependant, Symfony inclut un ensemble de librairies et d'outils nommé **Symfony UX** qui permet de gérer le JavaScript d'une manière particulière, en s'appuyant sur **framework** JavaScript nommé **Stimulus**. Cet outil facilite l'intégration de JavaScript sans avoir besoin d'importer manuellement de fichiers ou de définir de configuration particulière. C'est la méthode à privilégier dans la mesure du possible, notamment quand on utilise la librairie `Turbo` (incluse dans Symfony UX) dont nous allons parler un peu plus tard.
+Cependant, Symfony inclut un ensemble de bibliothèques et d'outils nommé **Symfony UX** qui permet de gérer le JavaScript d'une manière particulière, en s'appuyant sur le **framework** JavaScript nommé **Stimulus**. Cet outil facilite l'intégration de JavaScript sans avoir besoin d'importer manuellement de fichiers ou de définir de configuration particulière. C'est la méthode à privilégier dans la mesure du possible, notamment quand on utilise la bibliothèque `Turbo` (incluse dans Symfony UX) dont nous allons parler un peu plus tard.
 
 Pour utiliser du JavaScript avec **Stimulus** dans une page, il faut définir un (ou plusieurs) **controller** JavaScript. Ce controller doit être nommé `xxx_controller.js` (`xxx` étant un nom custom que l'on donne) et placé dans le dossier `assets/controllers`. Ce fichier à cette allure :
 
@@ -110,12 +110,12 @@ Et, dans un template twig :
 
 ```html
 <div data-controller="exemple">
-    <button data-action="click->exemple#monActionA">
+    <button data-action="click->exemple#monActionA"></button>
     <input type="text" data-action="input->exemple#monActionB"/>
 </div>
 ```
 
-À chaque clic sur le bouton, la console affichera "Clic!" et à chaque saisie dans le champ textuel affichera la nouvelle valeur dans la console. Il n'y a rien d'autres à faire : simplement marquer les zones et les événements, et définir le fichier controller.
+À chaque clic sur le bouton, la console affichera « Clic ! » et à chaque saisie dans le champ textuel, elle affichera la nouvelle valeur dans la console. Il n'y a rien d'autre à faire : il suffit de marquer les zones et les événements, puis de définir le fichier controller.
 
 Comme on le remarque, la valeur de `data-action` se décompose ainsi : `nomAction->nomController#nomFonction`. Il peut sembler étrange d'avoir à préciser le nom du controller, mais n'oubliez pas que ce fragment de code est potentiellement contenu dans un autre fragment de code pour lequel on a spécifié un controller, donc, on pourrait aussi préciser un autre controller dans nos balises.
 
@@ -181,7 +181,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  #[Route('/exemple', name: 'route_exemple', options: ["expose" => true], methods: ["POST"])]
 public function methodeExemple(Request $request): Response
 {
-    //Recupération de données fournies dans le payload JSON
+    //Récupération des données fournies dans le payload JSON
     $donnee = $request->get('donnee');
 
     //Traitement...
@@ -191,13 +191,13 @@ public function methodeExemple(Request $request): Response
 }
 ```
 
-* Afin que le chemin de la route puisse être généré à partir de son nom (côté JavaScript), il faut **exposer la route** en ajoutant `options: ["expose" => true]` dans l'attribut contenant les méta-données de la route.
+* Afin que le chemin de la route puisse être généré à partir de son nom (côté JavaScript), il faut **exposer la route** en ajoutant `options: ["expose" => true]` dans l'attribut contenant les métadonnées de la route.
 
 * Si des données `JSON` (ou autre) sont envoyées et doivent être lues, on peut les récupérer avec l'objet `Request`. En fait, cela marche de la même façon que pour récupérer des données depuis query string, ou bien même d'un formulaire...
 
-* On renvoie un objet `JsonResponse` contenant éventuellement des données au format `JSON` (qui peuvent être `null`) et un code de réponse HTTP (200, 400, etc...)
+* On renvoie un objet `JsonResponse` contenant éventuellement des données au format `JSON` (qui peuvent être `null`) et un code de réponse HTTP (200, 400, etc.).
 
-Dans les premiers TDs, nous n'avons que lu ou créé des entités ! Pour en supprimer une, il faut là-aussi utiliser `EntityManagerInterface` (en l'injectant dans la méthode de la route) et utiliser la méthode `remove` (au lieu de `persist` qui créée / met à jour une entité).
+Dans les premiers TD, nous n'avons fait que lire ou créer des entités ! Pour en supprimer une, il faut là aussi utiliser `EntityManagerInterface` (en l'injectant dans la méthode de la route) et utiliser la méthode `remove` (au lieu de `persist`, qui crée ou met à jour une entité).
 
 ```php
 $entityManager->remove($entity);
@@ -388,7 +388,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
             //Ici, on a la garantie que la requête a fini de s'exécuter (on a un code de réponse, et éventuellement un résultat)
             if(response.status === ...) {
-                //response.status permet d'accèder au code de réponse HTTP (200, 204, 403, 404, etc...)
+                //response.status permet d'accéder au code de réponse HTTP (200, 204, 403, 404, etc.).
             }
 
 
@@ -412,7 +412,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 N'avez-vous pas remarqué quelque-chose d'étrange depuis le milieu du TD1 ? Naviguez entre les différentes pages de votre site depuis le menu de navigation, postez une publication... Vous ne verrez jamais le logo de chargement sur votre onglet ! Tout cela, grâce à **Turbo**.
 
-**Turbo** est une des librairies incluse dans **Symfony UX**, qui permet d'offrir une expérience `SPA` (Single-page application) à l'utilisateur. Par défaut, lors de l'envoi d'une requête "classique" qui ne passe pas par notre JavaScript (donc des liens, envoi de formulaire...), **Turbo** intercepte la demande et effectue la requête. Il récupère ensuite le résultat (code HTML) et met à jour le contenu de la page sans rechargement complet du `DOM`, tout cela via du JavaScript intégré à la librairie.
+**Turbo** est l'une des bibliothèques incluses dans **Symfony UX**, qui permet d'offrir une expérience `SPA` (Single-page application) à l'utilisateur. Par défaut, lors de l'envoi d'une requête "classique" qui ne passe pas par notre JavaScript (donc des liens, envoi de formulaire...), **Turbo** intercepte la demande et effectue la requête. Il récupère ensuite le résultat (code HTML) et met à jour le contenu de la page sans rechargement complet du `DOM`, tout cela via du JavaScript intégré à la bibliothèque.
 
 Ce système, activé par défaut, permet de fluidifier l'expérience utilisateur, car le navigateur "reste" sur la même page : le document html n'est chargé qu'une seule fois lors du premier accès au site et ensuite seul le contenu nécessaire est mis à jour, sans rechargement complet de la page. Ce système est utilisé dans beaucoup de frameworks Web modernes.
 
@@ -642,7 +642,7 @@ Nous allons maintenant mettre en place un système de membre "premium" qui donne
 
 * Une couleur dorée au niveau du pseudonyme (sur les publications)
 
-* Un plus grand nombre de caractères autorisé pour les publications.
+* Un plus grand nombre de caractères autorisés pour les publications.
 
 Nous allons tout d'abord commencer par inclure toutes les fonctionnalités "premium" avant de mettre en place un système de paiement pour permettre à nos utilisateurs d'acheter ce statut.
 
@@ -860,7 +860,7 @@ Pour cela, il existe deux solutions :
     ```html
     <main>
         <div id="premium-infos" class="center">
-            <h3>Devenez membre premium et accèdez aux avantages suivants :</h3>
+            <h3>Devenez membre premium et accédez aux avantages suivants :</h3>
             <p>Messages jusqu'à 200 caractères.</p>
             <p>Un superbe pseudonyme doré !</p>
             <a href=""><button id="btn-buy-premium">ACHETER MAINTENANT (prix €)</button></a>
@@ -1007,7 +1007,7 @@ class ExempleVoter extends Voter
 
     /*
     $attribute correspond à la permission vérifiée
-    $subject correspond au sujet sur lequelle la vérification est effectué (par exemple, une publication, un utilisateur)
+    $subject correspond au sujet sur lequel la vérification est effectuée (par exemple, une publication, un utilisateur)
     Le sujet peut être éventuellement null!
     La méthode renvoie true si ce Voter est habilité à voter pour cette permission (et ce subject)
     */
@@ -1019,7 +1019,7 @@ class ExempleVoter extends Voter
     /*
     Vote pour accorder la permission (ou non).
     Le paramètre $token nous donne accès à l'utilisateur.
-    Le paramètre $vote permet d'ajouter des messages d'erreur customisés selon la raison pour laquelle une permission est refusée.
+    Le paramètre $vote permet d'ajouter des messages d'erreur personnalisés selon la raison pour laquelle une permission est refusée.
     */
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
@@ -1091,7 +1091,7 @@ class VideoVoter extends Voter
 }
 ```
 
-L'appel à la méthode `addReason` sur `$vote` est tout à fait optionnel. Cela permet d'ajouter des messages customisés en cas de permission refusée. Cela peut servir dans certains cas au niveau de l'interface pour afficher des messages d'erreur (même si généralement, on fera en sorte de cacher à l'utilisateur les fonctions auxquelles il n'a pas accès) et surtout dans le cadre du développement d'une API.
+L'appel à la méthode `addReason` sur `$vote` est tout à fait optionnel. Cela permet d'ajouter des messages personnalisés en cas de permission refusée. Cela peut servir dans certains cas au niveau de l'interface pour afficher des messages d'erreur (même si généralement, on fera en sorte de cacher à l'utilisateur les fonctions auxquelles il n'a pas accès) et surtout dans le cadre du développement d'une API.
 
 Avez-vous remarqué la syntaxe `$objet?->methode(...)` ? Ici, on peut un opérateur dit **Null-safe** qui permet de faire en sorte que la méthode ne s'exécute que si `$objet` n'est **pas null** (autrement, cela provoquerait une erreur). C'est ce qu'on fait ici avec `$vote?->addReason(...)` car `$vote` peut être null.
 
@@ -1153,7 +1153,7 @@ Il est aussi tout à fait possible d'utiliser cette permission avec la méthode 
 {% endraw %}
 ```
 
-Si on a ajouté des messages customisés (en cas de permission refusée) et que l'on souhaite les afficher sur l'interface, on peut les récupérer ainsi :
+Si on a ajouté des messages personnalisés (en cas de permission refusée) et que l'on souhaite les afficher sur l'interface, on peut les récupérer ainsi :
 
 ```twig
 {% raw %}
@@ -1424,7 +1424,7 @@ Dans le cadre de notre application, nous allons travailler avec un système de *
 
 * L'utilisateur est redirigé vers le lien généré à l'étape précédente qui le mène hors du site (sur Stripe) pour finaliser le paiement.
 
-* Lorsque le formulaire paiement est complété et validé, Stripe utilise un **webhook**. Cela signifie que Stripe envoi une requête à notre site web (pas depuis votre navigateur, mais depuis les serveurs de Stripe) informant que le paiement est valide (ou non, d'ailleurs).
+* Lorsque le formulaire de paiement est complété et validé, Stripe utilise un **webhook**. Cela signifie que Stripe envoie une requête à notre site web (pas depuis votre navigateur, mais depuis les serveurs de Stripe) informant que le paiement est valide (ou non, d'ailleurs).
 
 * L'application reçoit la requête de Stripe sur une route dédiée. Elle vérifie l'état du paiement et **doit capturer le paiement** ou bien l'annuler. En effet, à ce stade, le client n'est pas encore réellement débité. Si pour certaines raisons, le service ou le produit n'est plus disponible à ce moment-là (rupture de stock, places limitées à un concert) alors l'application peut annuler le paiement. Si tout est bon, on demande à Stripe de "capturer" le paiement ce qui finalise l'opération. On peut alors réaliser diverses tâches annexes, comme envoyer un mail de confirmation.
 
@@ -1493,7 +1493,7 @@ class MonService {
 }
 ```
 
-Cependant, dans notre cas, nous nous servirons d'un service prédéfini qui fait déjà se travaille et initialise le client Stripe avec la clé stockée dans `.env`.
+Cependant, dans notre cas, nous nous servirons d'un service prédéfini qui fait déjà ce travail et initialise le client Stripe avec la clé stockée dans `.env`.
 
 ### Création d'un paiement
 
@@ -1688,7 +1688,7 @@ final class ExempleRequestParser extends AbstractRequestParser
         ]);
     }
 
-    //Permet d'extraire les données de la requête et d'émettre un événement contenant les données intéressantes (nom de l'événement, identifiant, contenu de la requête...). cete événement sera traité par un "consumer" (autre classe).
+    // Permet d'extraire les données de la requête et d'émettre un événement contenant les données intéressantes (nom de l'événement, identifiant, contenu de la requête...). Cet événement sera traité par un "consumer" (autre classe).
     //L'objet $request nous permet d'extraire les données.
     //L'objet $secret est un paramètre qui permet de vérifier l'identité de la requête et de la rejeter si elle est émise par une source non autorisée. L'attribut #[\SensitiveParameter] permet d'indiquer la nature critique de ce paramètre qui ne doit jamais être dévoilé/affiché, etc. Ce paramètre sera injecté automatiquement.
     // On peut lever une exception RejectWebhookException s'il y a un problème (par exemple, si le webhook est émis par un service/utilisateur non autorisé)
@@ -1785,7 +1785,7 @@ final class StripeRequestParser extends AbstractRequestParser
             */
             $event = Webhook::constructEvent($content, $sig_header, $secret);
 
-            //On retourne un événement avec différentes informations utiles, notamment le type d'événement (dans notre cas, nous ne traiterons qu'un seule événement, lorsque le paiement est complété, mais Stripe peut en envoyer d'autres).
+            //On retourne un événement avec différentes informations utiles, notamment le type d'événement (dans notre cas, nous ne traiterons qu'un seul événement, lorsque le paiement est complété, mais Stripe peut en envoyer d'autres).
             //Les données de la requête (le JSON) sont converties en tableau associatif.
             return new RemoteEvent(
                 $event->type,
@@ -1793,7 +1793,7 @@ final class StripeRequestParser extends AbstractRequestParser
                 $event->toArray()
             );
         } catch (SignatureVerificationException $e) {
-            //Si la signature est invalide, c'est que la requête est émise par une osurc einconnue/non autorisé, on rejette donc le webhook.
+            //Si la signature est invalide, c'est que la requête est émise par une source inconnue ou non autorisée, on rejette donc le webhook.
             throw new RejectWebhookException(Response::HTTP_UNAUTHORIZED, 'Invalid signature.');
         }
     }
@@ -1858,7 +1858,7 @@ Pour le reste du traitement (qui sera délégué à un service), plusieurs objet
 $paymentIntent = $session["payment_intent"];
 
 //On peut récupérer les meta-données depuis les données de la session transmises par Stripe.
-//Dans notre cas, cela permettra de récupérer l'utilisateur visé par la requête (grâce à son id que nous avons placé dans les méta-données).
+// Dans notre cas, cela permettra de récupérer l'utilisateur visé par la requête (grâce à son identifiant que nous avons placé dans les métadonnées).
 $metadata = $session["metadata"];
 
 //Avant d'extraire une donnée, on peut bien sûr vérifier sa présence...
@@ -1876,7 +1876,7 @@ if($paymentCapture == null || $paymentCapture["status"] != "succeeded") {
     return;
 }
 
-//Après avoir avoir capturé le paiement avec succès, on peut réaliser nos actions complémentaires (dans notre cas, mettre l'attribut "premium" de l'utilisateur cible à true, puis sauvegarder).
+//Après avoir capturé le paiement avec succès, on peut réaliser nos actions complémentaires (dans notre cas, mettre l'attribut "premium" de l'utilisateur cible à true, puis sauvegarder).
 
 ```
 
@@ -1935,7 +1935,7 @@ Vous aurez sans doute remarqué que quand il y a une erreur, nous ne levons pas 
 4. Créez un nouveau webhook grâce à la commande `make:webhook` :
 
     * Son nom est `stripe`.
-    * Choisissez-les request matchers suivants : `IsJsonRequestMatcher` et `MethodRequestMatcher`.
+    * Choisissez les request matchers suivants : `IsJsonRequestMatcher` et `MethodRequestMatcher`.
 
 5. Modifiez le fichier `src/config/packages/webhook.yaml` pour injecter la signature secrète que vous avez ajoutée dans `.env` en tant que `$secret` du service `StripeRequestParser`.
 
@@ -1959,7 +1959,7 @@ stripe listen --skip-verify --events=checkout.session.completed --forward-to htt
 
 Ici, dès que l'événement correspondant à la validation du formulaire de paiement est émis, Stripe enverra une requête à l'adresse précisée (à travers notre machine, car le client est connecté à notre compte).
 
-Ainsi, il est possible d'avoirs plusieurs **webhooks** différents, pour plusieurs événements.
+Ainsi, il est possible d'avoir plusieurs **webhooks** différents, pour plusieurs événements.
 
 <div class="exercise">
 
@@ -1975,7 +1975,7 @@ Ainsi, il est possible d'avoirs plusieurs **webhooks** différents, pour plusieu
 
 </div>
 
-Si tout a bien marché, félicitations, votre système de paiement est fonctionnel ! Pour une entreprise réelle, l'adresse du **webhook** concret (utilisé avec la clé réelle pour recevoir des paiements et pas celle de test) ne se configure pas via le terminal, mais dans un onglet dédié du dashboard de Stripe. Dans ce cas, l'adresse ciblée doit être publiquement accessible (pas de localhost ou autre). Le **webhook** cible un site déjà hébergé/en production. Comme dans le terminal, il est possible de filtrer les événements qui déclenche l'appel au webhook. Il est donc aussi possible de créer plusieurs webhooks, pour des événements différents.
+Si tout a bien marché, félicitations, votre système de paiement est fonctionnel ! Pour une entreprise réelle, l'adresse du **webhook** concret (utilisé avec la clé réelle pour recevoir des paiements et pas celle de test) ne se configure pas via le terminal, mais dans un onglet dédié du dashboard de Stripe. Dans ce cas, l'adresse ciblée doit être publiquement accessible (pas de localhost ou autre). Le **webhook** cible un site déjà hébergé/en production. Comme dans le terminal, il est possible de filtrer les événements qui déclenchent l'appel au webhook. Il est donc aussi possible de créer plusieurs webhooks, pour des événements différents.
 
 La signature secrète de requête que vous possédez ne sera pas aussi la même entre le mode test et le mode production. Une fois l'entreprise enregistrée, vous avez accès à toutes les données nécessaires pour réellement recevoir des paiements (clé privée, signature...)
 
@@ -2014,11 +2014,11 @@ return;
 
     * Pour le second, créez un compte, connectez-vous, ouvrez le formulaire de paiement, supprimez l'utilisateur dans la base de données, simulez le paiement. Le paiement ne devrait pas avoir lieu.
 
-    * Pour le troisième, connectez-vous à un compte non-premium, ouvre deux fois le formulaire de paiement et simulez deux paiements. Vérifiez que le deuxième paiement n'aboutit pas (code 400 sur le client Stripe).
+    * Pour le troisième, connectez-vous à un compte non-premium, ouvrez deux fois le formulaire de paiement et simulez deux paiements. Vérifiez que le deuxième paiement n'aboutit pas (code 400 sur le client Stripe).
 
 </div>
 
-Idéalement, il faudrait entourer l'appel à `cancel` d'un bloc `try/catch` car une erreur pourrait éventuellement survenir si on tente d'annuler un paiement déjà annuler (en cas de doublons, par exemple).
+Idéalement, il faudrait entourer l'appel à `cancel` d'un bloc `try/catch`, car une erreur pourrait éventuellement survenir si on tente d'annuler un paiement déjà annulé (en cas de doublons, par exemple).
 
 ### Confirmation du paiement
 
@@ -2032,7 +2032,7 @@ L'idée est la suivante :
 
 Pour rappel, le **query string** est la partie de l'URL contenant des paramètres supplémentaires : `https://exemple.com/route?param1=exemple&param2=exemple`
 
-Cela diffère de nos routes "paramétrée" où les paramètres font parties de la route en elle-même.
+Cela diffère de nos routes « paramétrées », où les paramètres font partie de la route elle-même.
 
 Avec Symfony, il y a deux moyens d'extraire les données contenues dans le "query string".
 
@@ -2099,7 +2099,7 @@ Maintenant, à vous de jouer !
 1. Dans votre service `PaymentHandler`, ajoutez et complétez la méthode suivante :
 
     ```php
-    //Renvoie true si le paiement lié à la session dont l'identifiant est passé en paramètre a aboutit (a été capturé...) et renvoie false sinon.
+    //Renvoie true si le paiement lié à la session dont l'identifiant est passé en paramètre a abouti (a été capturé...) et renvoie false sinon.
     public function checkPaymentStatus(string $sessionId) : bool {
 
     }
@@ -2122,7 +2122,7 @@ Maintenant, à vous de jouer !
     * Complétez le second : cette fois-ci, après redirection, le message d'erreur devrait être affiché (le paiement n'a pas abouti, car vous êtes déjà membre premium !)
 </div>
 
-Voilà, notre système de membre premium est complet ! Attention toutefois, dans un contexte réel, il y aurait un autre cas d'erreur à gérer (peu probable, mais qui peut arriver) : comme dans le dernier scénario, l'utilisateur ouvre deux fois le formulaire, mais cette fois, il les valide quasi simultanément. Il est possible que Stripe envoi donc deux requêtes pour déclencher votre **webhook** quasi simultanément. Comme les deux requêtes s'exécutent alors en parallèle, sur la seconde, la vérification que l'utilisateur n'est pas déjà membre premium pourrait passer, car la première requête n'a pas fini de s'exécuter ! Dans ce cas-là, comme expliqué plus tôt, il faut utiliser un système de "verrou" pour bloquer le code de la méthode `handlePaymentPremium`. Diverses librairies vous permettent de faire cela plus ou moins facilement. En tant que développeur, vous devez réfléchir à tous les problèmes qui peuvent découler de ce genre de système !
+Voilà, notre système de membre premium est complet ! Attention toutefois, dans un contexte réel, il y aurait un autre cas d'erreur à gérer (peu probable, mais qui peut arriver) : comme dans le dernier scénario, l'utilisateur ouvre deux fois le formulaire, mais cette fois, il les valide quasi simultanément. Il est possible que Stripe envoie donc deux requêtes pour déclencher votre **webhook** quasi simultanément. Comme les deux requêtes s'exécutent alors en parallèle, sur la seconde, la vérification que l'utilisateur n'est pas déjà membre premium pourrait passer, car la première requête n'a pas fini de s'exécuter ! Dans ce cas-là, comme expliqué plus tôt, il faut utiliser un système de "verrou" pour bloquer le code de la méthode `handlePaymentPremium`. Diverses bibliothèques vous permettent de faire cela plus ou moins facilement. En tant que développeur, vous devez réfléchir à tous les problèmes qui peuvent découler de ce genre de système !
 
 Stripe propose aussi un système d'identification qui permet de ne pas exécuter deux fois des paiements considérés identiques (même service). Il faut alors fournir un identifiant spécial qui permet à Stripe si deux paiements sont équivalents. On utilise pour cela l'attribut `idempotency_key` lors de la création du paiement, dans un tableau `$options` passé comme second paramètre de la fonction `Session::create`. Dans notre cas, on pourrait générer un identifiant unique qu'on stockerait dans les informations de l'utilisateur dans la base quand l'utilisateur clique sur le bouton de "Acheter" (sur notre site). Il s'agirait de la clé d'idempotence. Si le client re-essaye d'acheter à nouveau (avant d'avoir validé le paiement), la clé n'est pas écrasée. Quand le paiement est terminé (ou mieux, si l'utilisateur annule son mode premium, si on ajoute cette fonctionnalité) cette clé est supprimée de la base. Cela nous éviterait aussi de gérer certains cas d'erreurs que nous avons gérés plus tôt (paiement si l'utilisateur déjà premium, par exemple).
 
