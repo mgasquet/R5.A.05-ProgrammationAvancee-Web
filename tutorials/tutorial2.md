@@ -149,7 +149,7 @@ Vous l'aurez remarqué, nous utilisons la syntaxe des [arguments nommés](https:
 
 Ensuite, au niveau de la classe `Utilisateur`, nous pouvons utiliser un attribut 
 ```php
-#[UniqueEntity(propriete)]
+#[UniqueEntity('propriete')]
 ``` 
 Cet attribut se place juste au-dessus du nom de la classe et permet de signifier à l'application qu'une valeur d'une propriété de la classe est **unique** (pas de doublons entre les utilisateurs pour cet attribut, comme le "unique" en base de données). Cela peut paraître redondant avec l'attribut `ORM\UniqueConstraint` lié à la base de données, mais cela permet de détecter cette erreur plus tôt, au niveau de l'application, et ainsi de la gérer par nous-même plutôt qu'obtenir une page d'erreur liée à la base de données que l'utilisateur n'est pas censé voir.
 

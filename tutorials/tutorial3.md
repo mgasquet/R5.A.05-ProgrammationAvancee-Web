@@ -45,7 +45,7 @@ Traditionnellement, l'ajout de **JavaScript** à une page s'effectue dans la par
 
 On pourrait donc tout à fait charger un fichier placé dans `assets` (comme pour les images) grâce à la fonction `asset` de twig. Une autre solution serait de créer [un entry point dédié](https://symfony.com/doc/current/frontend/asset_mapper.html#page-specific-css-javascript) pour charger tous les fichiers `js` (et éventuellement `css`) relatifs à cette page (préférable à la première solution).
 
-Cependant, Symfony inclut un ensemble de librairies et d'outils nommé **Symfony UX** qui permet de gérer le JavaScript d'une manière particulière, en s'apuuyant sur **framework** JavaScript nommé **Stimulus**. Cet outil facilite l'intégration de JavaScript sans avoir besoin d'importer manuellement de fichiers ou de définir de configuration particulière. C'est la méthode à privilégier dans la mesure du possible, notamment quand on utilise la librairie `Turbo` (incluse dans Symfony UX) dont nous allons parler un peu plus tard.
+Cependant, Symfony inclut un ensemble de librairies et d'outils nommé **Symfony UX** qui permet de gérer le JavaScript d'une manière particulière, en s'appuyant sur **framework** JavaScript nommé **Stimulus**. Cet outil facilite l'intégration de JavaScript sans avoir besoin d'importer manuellement de fichiers ou de définir de configuration particulière. C'est la méthode à privilégier dans la mesure du possible, notamment quand on utilise la librairie `Turbo` (incluse dans Symfony UX) dont nous allons parler un peu plus tard.
 
 Pour utiliser du JavaScript avec **Stimulus** dans une page, il faut définir un (ou plusieurs) **controller** JavaScript. Ce controller doit être nommé `xxx_controller.js` (`xxx` étant un nom custom que l'on donne) et placé dans le dossier `assets/controllers`. Ce fichier à cette allure :
 
@@ -71,11 +71,11 @@ export default class extends Controller {
 }
 ```
 
-Comme vous pouvez le constater, à l'intérieur du **controller**, on peut définir diverses fonctions optionnelles, dont certaines peuvent recevoir des événements (un clic, par exemple). Les fonctions `connect` et `disconnect` sont des fonctions optionnelles spéciales qui sont appelées quand le controller est chargé ou décharger (au chargement d'une page, par exemple). On peut s'en servir pour initialiser certains éléments au chargement/déchargement de la page, au besoin.
+Comme vous pouvez le constater, à l'intérieur du **controller**, on peut définir diverses fonctions optionnelles, dont certaines peuvent recevoir des événements (un clic, par exemple). Les fonctions `connect` et `disconnect` sont des fonctions optionnelles spéciales qui sont appelées quand le controller est chargé ou déchargé (au chargement d'une page, par exemple). On peut s'en servir pour initialiser certains éléments au chargement/déchargement de la page, au besoin.
 
-Ensuite, nous pouvons attacher le **controller** à une **zone** d'une page. Cela peut être par exemple sur le `body` dans `base.html.twig` si l'on veut un controller général, actif sur toutes les pages. Ou bien sur le `main` d'un des templates, pour un cotnroller actif seulement sur une page donnée. Ou bien sur une `div` pour activer le controller seulement sur une sous-zone de la page, etc. Ou bien même juste sur un input simple, etc. Une page peut accueillir autant de controllers que l'on souhaite.
+Ensuite, nous pouvons attacher le **controller** à une **zone** d'une page. Cela peut être par exemple sur le `body` dans `base.html.twig` si l'on veut un controller général, actif sur toutes les pages. Ou bien sur le `main` d'un des templates, pour un controller actif seulement sur une page donnée. Ou bien sur une `div` pour activer le controller seulement sur une sous-zone de la page, etc. Ou bien même juste sur un input simple, etc. Une page peut accueillir autant de controllers que l'on souhaite.
 
-Le controller est définit comme attribut `data-controller` d'une balise html (simple, ou qui contient d'autres balises, comme `<div>`) du template twig (avec le nom `xxx` donné au fichier `js` contenant le controller). Par exemple :
+Le controller est défini comme attribut `data-controller` d'une balise html (simple, ou qui contient d'autres balises, comme `<div>`) du template twig (avec le nom `xxx` donné au fichier `js` contenant le controller). Par exemple :
 
 ```html
 <div data-controller="xxx">
@@ -123,7 +123,7 @@ Tous les événements que vous connaissez (click, change, focus, etc) sont dispo
 
 Il est important **de ne pas passer par le système classique d'événements js** (par exemple, onclick, oninput, etc) quand on utilise ce système, notamment si on utilise la librairie `Turbo`, comme nous le verrons après. Cependant, comme nous l'avons vu, il reste toujours possible de charger un fichier JavaScript "classique" si on ne souhaite pas utiliser ce système pour certaines raisons.
 
-Si on souhaite utiliser du JavaScript globalement, on peut définir un controller global et l'atatcher sur `body`, par exemple.
+Si on souhaite utiliser du JavaScript globalement, on peut définir un controller global et l'attacher sur `body`, par exemple.
 
 Bref, nous allons commencer par mettre en place une fonctionnalité JavaScript simple sur la page principale et la page personnelle des utilisateurs. Pour l'instant, cela permettra simplement de supprimer "visuellement" une publication de la page (mais pas encore réellement, elle sera toujours là au rechargement de la page).
 
@@ -153,7 +153,7 @@ Bref, nous allons commencer par mettre en place une fonctionnalité JavaScript s
     <button class="delete-feedy">Supprimer</button>
     ```
 
-    Ce bouton ne doit apparaître que si l'utilisateur connecté est l'auteur de la publication ! Pour rappel, vous avez accès à la variable `app.user` dans vos templates `twig`... Attention, avant d'y accéder il faut d'abord bien vérifier que l'utilisateur est bien connecté !
+    Ce bouton ne doit apparaître que si l'utilisateur connecté est l'auteur de la publication ! Pour rappel, vous avez accès à la variable `app.user` dans vos templates `twig`... Attention, avant d'y accéder, il faut d'abord bien vérifier que l'utilisateur est bien connecté !
 
 5. Faites en sorte que la fonction `supprimerPublication` du controller se déclenche lors du **clic** sur le bouton.
 
@@ -173,7 +173,7 @@ Bref, nous allons commencer par mettre en place une fonctionnalité JavaScript s
 
 Maintenant que nous avons de quoi supprimer visuellement une publication de manière dynamique, il faut confirmer cette suppression côté back-end. Il faut aussi pouvoir générer le lien de la route dans notre fichier JavaScript, comme nous le faisons avec `path` dans nos templates.
 
-Pour créer une route accessible par une requête HTTP exécutée en JavaScript (et qui ne renvoie pas de page mais plutôt des données), quelques éléments diffèrent :
+Pour créer une route accessible par une requête HTTP exécutée en JavaScript (et qui ne renvoie pas de page, mais plutôt des données), quelques éléments diffèrent :
 
 ```php
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -191,7 +191,7 @@ public function methodeExemple(Request $request): Response
 }
 ```
 
-* Afin que le chemin de la route puisse être généré à partir de son nom (côté JavaScript), il faut **exposer la route** en ajoutant `options: ["expose" => true]` dans l'attribut contenant les meta-données de la route.
+* Afin que le chemin de la route puisse être généré à partir de son nom (côté JavaScript), il faut **exposer la route** en ajoutant `options: ["expose" => true]` dans l'attribut contenant les méta-données de la route.
 
 * Si des données `JSON` (ou autre) sont envoyées et doivent être lues, on peut les récupérer avec l'objet `Request`. En fait, cela marche de la même façon que pour récupérer des données depuis query string, ou bien même d'un formulaire...
 
@@ -300,7 +300,7 @@ let URL = Routing.generate('maRoute', {"param": val, ...});
 
 Nous allons mettre en place une route : `/publications/{id}` qui sera accessible via la méthode `DELETE`.
 
-Néanmoins, un problème subsiste : comment récupérer l'id de la publication associée au bouton "Supprimer" sur lequel on clique, pour le passer en paramètre de la route ?
+Néanmoins, un problème subsiste : comment récupérer l'id de la publication associée au bouton "Supprimer" sur lequel on clique pour le passer en paramètre de la route ?
 
 Pour cela, nous pouvons utiliser un attribut `data-xxx` qui permet de créer des attributs "dynamiques" sur un élément HTML. **Attention**, le nom custom donné (`xxx`) suit des règles lexicographiques précises :
 
@@ -410,7 +410,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 ### Ajout d'une publication avec Turbo
 
-N'avez-vous pas remarqué quelque-chose d'étrange depuis le milieu du TD1 ? Naviguez entre les différentes pages de votre site depuis le menu de navigation, postez une publication...Vous ne verrez jamais le logo de chargement sur votre onglet ! Tout cela, grâce à **Turbo**.
+N'avez-vous pas remarqué quelque-chose d'étrange depuis le milieu du TD1 ? Naviguez entre les différentes pages de votre site depuis le menu de navigation, postez une publication... Vous ne verrez jamais le logo de chargement sur votre onglet ! Tout cela, grâce à **Turbo**.
 
 **Turbo** est une des librairies incluse dans **Symfony UX**, qui permet d'offrir une expérience `SPA` (Single-page application) à l'utilisateur. Par défaut, lors de l'envoi d'une requête "classique" qui ne passe pas par notre JavaScript (donc des liens, envoi de formulaire...), **Turbo** intercepte la demande et effectue la requête. Il récupère ensuite le résultat (code HTML) et met à jour le contenu de la page sans rechargement complet du `DOM`, tout cela via du JavaScript intégré à la librairie.
 
@@ -422,7 +422,7 @@ Nous allons explorer les deux mécanismes principaux de **Turbo** : **turbo fram
 
 #### Turbo Frame
 
-Un **turbo frame** est une simple balise html que nous pouvons placer n'importe où dans un template. Il faut donner un **identifiant** à cette balise. Lors de l'execution d'une requête classique, Turbo permet de cibler et de remplacer le contenu de cette balise par le code html (ou une partie du code) résultat de la requête.
+Un **turbo frame** est une simple balise html que nous pouvons placer n'importe où dans un template. Il faut donner un **identifiant** à cette balise. Lors de l'exécution d'une requête classique, Turbo permet de cibler et de remplacer le contenu de cette balise par le code html (ou une partie du code) résultat de la requête.
 
 Par exemple, prenons l'exemple d'une page `HTML` renvoyée par le serveur.
 
@@ -494,7 +494,7 @@ if($form->isSubmitted() && $form->isValid()) {
 
 Et le tour est joué ! Dorénavant, seul la partie qui correspond à la liste de films sera mise à jour. Ce qui relie tout cela est l'id `films` utilisé :
 * Sur la balise **turbo-frame** (afin que Turbo sache "où" aller chercher et insérer les données de la réponse du serveur).
-* Sur le formulaire dans `data-turbo-frame` (pour informer Turbo que ce formulaire déclenche la mise à  jour du frame). À noter que si le formulaire/lien est inclus dans le contenu du frame, on n'a pas besoin de préciser cet attribut.
+* Sur le formulaire dans `data-turbo-frame` (pour informer Turbo que ce formulaire déclenche la mise à jour du frame). À noter que si le formulaire/lien est inclus dans le contenu du frame, on n'a pas besoin de préciser cet attribut.
 
 La puissance des frames va plus loin : si la page renvoyée vers le serveur contient plusieurs données (voir une page complète), il ira chercher juste le bout dont l'id correspond à l'id du `turbo-frame` pour ne mettre à jour que cette partie.
 
@@ -582,7 +582,7 @@ if($form->isSubmitted() && $form->isValid()) {
 
 1. Mettez en place un système d'ajout de publications en utilisant le système **turbo stream**. Comme nous souhaitons ajouter la publication au début de la liste, il faut utiliser l'action `prepend`. Contrairement à l'exemple, l'affichage d'une publication est complexe. Heureusement, nous avons déjà isolé ce code dans un template dédié : il suffira de l'importer (avec `include`) dans votre `<turbo-stream>`...
 
-2. Vérifiez que tout fonctionne. Vous pouvez notamment visualiser le contenu de la réponse du serveur (`F12` -> `Réseau`) pour vérifier le contenu de la réponse renvoyée par le serveur.
+2. Vérifiez que tout fonctionne. Vous pouvez notamment visualiser le contenu de la réponse du serveur (`F12` → `Réseau`) pour vérifier le contenu de la réponse renvoyée par le serveur.
 
 </div>
 
@@ -654,7 +654,7 @@ Il faut maintenant choisir la stratégie pour gérer le système "premium". Il y
 
 * Définir un attribut (booléen) "premium" dans la classe Utilisateur.
 
-Les deux solutions fonctionnent, mais la première est assez discutable et peut être bonne ou mauvaise selon le contexte. Il faut bien distinguer la notion d'autorisation et l'accès à de nouvelles fonctionnalités. Une autorisation peut être par exemple de pouvoir supprimer un compte donné, ou alors, supprimer n'importe quel message (pour un rôle type "admin"). 
+Les deux solutions fonctionnent, mais la première est assez discutable et peut-être bonne ou mauvaise selon le contexte. Il faut bien distinguer la notion d'autorisation et l'accès à de nouvelles fonctionnalités. Une autorisation peut être par exemple de pouvoir supprimer un compte donné, ou alors, supprimer n'importe quel message (pour un rôle type "admin"). 
 
 Dans notre cas, le fait d'afficher le pseudonyme en doré et de pouvoir écrire de plus longs messages relève plus de fonctionnalités qui deviennent "accessibles" au membre premium plutôt que d'une autorisation particulière. Nous allons donc plutôt nous orienter vers la deuxième solution. Si plusieurs formes de "premium" étaient possibles (différents plans) il faudrait plutôt créer une nouvelle entité "Plan" avec les informations, le prix, etc... Ici, nous n'aurons qu'un seul plan premium, donc l'attribut booléen suffit.
 
@@ -668,7 +668,7 @@ Ne pas avoir de rôle ne signifie pas que nous ne pourrons pas utiliser l'attrib
 
     * Donner la valeur `false` (au lieu de **null**) à votre propriété. Cela constitue sa valeur par défaut. Comme pour la date de publication, cette donnée doit être générée automatiquement par l'application quand un utilisateur s'inscrit. Pour la date, nous avions dû utiliser une méthode spéciale, car nous avions besoin d'utiliser un objet `DateTime`. Ici, comme c'est un booléen simple, on peut le faire directement lors de la définition de la propriété dans la classe.
 
-    * Rajoutez le paramètre `options: ["default" => false]` dans l'attribut `ORM\Column` lié à cette propriété. Comme nous allons modifier la structure de la base, nous allons nous retrouver avec plusieurs utilisateurs qui ne possédaient pas cette propriété avant. Cette option permet d'effectuer la migration et indiquer à notre base de données quelle valeur placer pour `premium` pour les utilisateurs déjà existant. Ici, tous les utilisateurs déjà enregistrés ne sont pas membre premium, par défaut. Cette option est très utile pour ne pas "casser" la base en cas de mise à jour !
+    * Rajoutez le paramètre `options: ["default" => false]` dans l'attribut `ORM\Column` lié à cette propriété. Comme nous allons modifier la structure de la base, nous allons nous retrouver avec plusieurs utilisateurs qui ne possédaient pas cette propriété avant. Cette option permet d'effectuer la migration et indiquer à notre base de données quelle valeur placer pour `premium` pour les utilisateurs déjà existant. Ici, tous les utilisateurs déjà enregistrés ne sont pas membres premium, par défaut. Cette option est très utile pour ne pas "casser" la base en cas de mise à jour !
 
     Quand tout est prêt, mettez à jour votre base de données avec `make:migration` puis `doctrine:migrations:migrate`.
 
@@ -821,7 +821,7 @@ Vous savez déjà comment définir un paramètre :
 parameters:
     serviceParameter: valeur
 ```
-Pour pouvoir l'utiliser dans un template twig, il faudra l'injecter dans le template, depuis l'action utilisant le template dans contrôleur.
+Pour pouvoir l'utiliser dans un template twig, il faudra l'injecter dans le template, depuis l'action utilisant le template dans le contrôleur.
 Pour cela, il existe deux solutions :
 
 * Utiliser l'attribut `#[Autowire(...)]` que nous avons déjà utilisé lors du précédent TP (mais cette fois, dans un contrôleur au lieu d'un service) :
@@ -1093,7 +1093,7 @@ class VideoVoter extends Voter
 
 L'appel à la méthode `addReason` sur `$vote` est tout à fait optionnel. Cela permet d'ajouter des messages customisés en cas de permission refusée. Cela peut servir dans certains cas au niveau de l'interface pour afficher des messages d'erreur (même si généralement, on fera en sorte de cacher à l'utilisateur les fonctions auxquelles il n'a pas accès) et surtout dans le cadre du développement d'une API.
 
-Avez-vous remarqué la syntaxe `$objet?->methode(...)` ? Ici, on peut un opérateur dit  **Null-safe** qui permet de faire en sorte que la méthode ne s'exécute que si `$objet` n'est **pas null** (autrement, cela provoquerait une erreur). C'est ce qu'on fait ici avec `$vote?->addReason(...)` car `$vote` peut être null.
+Avez-vous remarqué la syntaxe `$objet?->methode(...)` ? Ici, on peut un opérateur dit **Null-safe** qui permet de faire en sorte que la méthode ne s'exécute que si `$objet` n'est **pas null** (autrement, cela provoquerait une erreur). C'est ce qu'on fait ici avec `$vote?->addReason(...)` car `$vote` peut être null.
 
 Si toutes les permissions relatives à l'objet sont refusées automatiquement dans le cas où l'utilisateur n'est pas connecté, on peut ajouter ce bout de code au début de la fonction `voteOnAttribute` :
 
@@ -1177,7 +1177,7 @@ Cependant, encore une fois, il n'est pas obligatoire d'avoir des permissions li�
 
 <div class="exercise">
 
-1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication` (facilitez-vous la vie, utilisez le commande !). Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il est connecté et qu'il en est l'auteur.
+1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication` (facilitez-vous la vie, utilisez la commande !). Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il est connecté et qu'il en est l'auteur.
 
 2. Utilisez votre nouvelle permission au niveau de la route `supprimerPublication`.
 
@@ -1224,13 +1224,13 @@ Dans l'exemple ci-dessus, un utilisateur possédant le rôle `ROLE_CUSTOM` poss�
 
     La fonction `decide` a le même objectif que `isGranted` : déterminer si l'utilisateur à une (ou plusieurs) permission(s) (ou certains rôles). La documentation de Symfony précise que si l'on souhaite vérifier des permissions à l'intérieur d'un voter, il faut impérativement utiliser cette méthode, et ne surtout pas appeler la méthode `isGranted` sur l'utilisateur récupéré via `getUser` dans le service **Security** (comme montré dans certains tutoriels, ou la documentation de versions antérieures de Symfony). De plus, la méthode `decide` permet aussi de vérifier les permissions d'autres utilisateurs.
 
-3. Dans votre base de données, ajoutez le rôle `ROLE_ADMIN` à un utilisateur : affectez la valeur `["ROLE_ADMIN"]` dans le champ `roles`. Si vous étiez connecté avec ce compte, vous serez déconnecté après le changement de rôle, par mesure de sécurité.
+3. Dans votre base de données, ajoutez le rôle `ROLE_ADMIN` à un utilisateur : affectez la valeur `["ROLE_ADMIN"]` dans le champ `roles`. Si vous êtes connecté avec ce compte, vous serez déconnecté après le changement de rôle, par mesure de sécurité.
 
 4. Connectez-vous avec le compte admin. Si vous avez bien configuré votre voter, le bouton de suppression devrait alors apparaître sur toutes les publications !
 
 </div>
 
-Comme vous le constatez, les voters sont assez puissant ! L'intérêt est encore assez limité ici, mais nous pourrions rajouter plus de permissions dans la classe publication (edit, delete, etc...). Cette classe permet de centraliser toute la logique de vérification des permissions. Nous n'avons pas eu à répéter le code vérifiant le statut de l'utilisateur (propriétaire ou admin) à la fois dans le contrôleur et à la fois dans le template twig. On utilise simplement notre permission `PUBLICATION_DELETE`.
+Comme vous le constatez, les voters sont assez puissants ! L'intérêt est encore assez limité ici, mais nous pourrions rajouter plus de permissions dans la classe publication (edit, delete, etc...). Cette classe permet de centraliser toute la logique de vérification des permissions. Nous n'avons pas eu à répéter le code vérifiant le statut de l'utilisateur (propriétaire ou admin) à la fois dans le contrôleur et à la fois dans le template twig. On utilise simplement notre permission `PUBLICATION_DELETE`.
 
 ## Créer ses propres commandes
 
@@ -1464,7 +1464,7 @@ Bref, après cette longue introduction, la première étape va être de récupé
 
     * Soit créer un compte Stripe [à cette adresse](https://dashboard.stripe.com/register). Attention, Stripe vous demandera éventuellement des informations sur votre entreprise après votre inscription, ne remplissez donc rien si c'est le cas (seule la partie "test" de l'application sera disponible, mais c'est ce qu'on veut !).
 
-    * Soit utiliser [cette clé de test](https://gitlabinfo.iutmontp.univ-montp2.fr/progweb-but3/documents-utiles/-/blob/main/Cl%C3%A9_API_secr%C3%A8te__test__partag%C3%A9e_-_Stripe.txt) que nous avons créé pour vous, notamment si vous ne souhaitez pas créer de compte et communiquer vos informations personnelles. Cette clé sera partagée par tous vos collègues, mais ce n'est pas trop contraignant. Néanmoins, vous n'aurez pas accès au dashbord de Stripe pour visualiser les transactions, mais rien de gênant, nous pourrons suivre cela sur un terminal, à la place.
+    * Soit utiliser [cette clé de test](https://gitlabinfo.iutmontp.univ-montp2.fr/progweb-but3/documents-utiles/-/blob/main/Cl%C3%A9_API_secr%C3%A8te__test__partag%C3%A9e_-_Stripe.txt) que nous avons créé pour vous, notamment si vous ne souhaitez pas créer de compte et communiquer vos informations personnelles. Cette clé sera partagée par tous vos collègues, mais ce n'est pas trop contraignant. Néanmoins, vous n'aurez pas accès au dashboard de Stripe pour visualiser les transactions, mais rien de gênant, nous pourrons suivre cela sur un terminal, à la place.
 
 2. **Si vous avez décidé de créer un compte Stripe**, rendez-vous dans **Développeurs** (en haut à droite). Ensuite, sur la nouvelle page, accédez à l'onglet **Clés API** et cliquez sur "Révéler la clé secrète". Cette clé débute par `sk_test_`. Notez-la quelque part.
 
@@ -1536,15 +1536,15 @@ La partie `paymentData` est un tableau contenant toutes les informations sur la 
 
 * `customer_email` : Stripe a besoin de connaître l'adresse email de l'utilisateur (pour être affichée au vendeur, dans l'historique Stripe). Elle peut être différente de l'adresse où sera envoyé le ticket de caisse (mais c'est généralement la même). Nous ne sommes pas obligés de la remplir ici. Cela permet simplement de préremplir le champ correspondant sur le formulaire de Stripe.
 
-* `success_url` : L'URL vers laquelle est redirigé l'utilisateur après que le paiement ait été traité (par Stripe et notre application).
+* `success_url` : L'URL vers laquelle est redirigé l'utilisateur après que le paiement a été traité (par Stripe et notre application).
 
 * `cancel_url` : L'URL vers laquelle est redirigé l'utilisateur s'il décide d'annuler la transaction (via un bouton).
 
-* `metadata` : un tableau contenant des données supplémentaires sur la transaction, qui pourront notamment être récupérées par notre back-end lors du déclenchement du **webhook**. Par exemple, on peut placer ici l'identifiant de l'utilisateur réalisant la transaction, pour le récupérer ensuite (c'est même quasiment obligatoire, car on rappelle que c'est Stripe qui utilise notre **webhook**, et pas l'utilisateur. Il faut donc un moyen d'identifier qui a payé).
+* `metadata` : un tableau contenant des données supplémentaires sur la transaction, qui pourront notamment être récupérées par notre back-end lors du déclenchement du **webhook**. Par exemple, on peut placer ici l'identifiant de l'utilisateur réalisant la transaction, pour le récupérer ensuite (c'est même quasiment obligatoire, car on rappelle que c'est Stripe qui utilise notre **webhook**, et pas l'utilisateur ; Il faut donc un moyen d'identifier qui a payé).
 
 * `line_items` : un tableau contenant plusieurs tableaux décrivant les produits de la transaction. Pour chaque produit, on remplit donc un tableau avec les informations suivantes :
 
-    * `price_data` : Un tableau précisant la devise (dans notre cas, `eur` pour "euros"), des donnés supplémentaires, comme le nom du produit (dans un sous-tableau) et enfin, le prix unitaire (donc le prix d'un produit). Attention, le prix s'exprime en centimes. Donc, si je veux vendre un produit 25 € je mets 2500.
+    * `price_data` : Un tableau précisant la devise (dans notre cas, `eur` pour "euros"), des données supplémentaires, comme le nom du produit (dans un sous-tableau) et enfin, le prix unitaire (donc le prix d'un produit). Attention, le prix s'exprime en centimes. Donc, si je veux vendre un produit 25 € je mets 2500.
 
     * `quantity` : La quantité vendue pour ce produit.
 
@@ -1935,11 +1935,11 @@ Vous aurez sans doute remarqué que quand il y a une erreur, nous ne levons pas 
 4. Créez un nouveau webhook grâce à la commande `make:webhook` :
 
     * Son nom est `stripe`.
-    * Choisissez les request matchers suivants : `IsJsonRequestMatcher` et `MethodRequestMatcher`.
+    * Choisissez-les request matchers suivants : `IsJsonRequestMatcher` et `MethodRequestMatcher`.
 
-5. Modifiez le fichier `src/config/packages/webhook.yaml` pour injecter la signature secrète que vous avez ajouté dans `.env` en tant que `$secret` du service `StripeRequestParser`.
+5. Modifiez le fichier `src/config/packages/webhook.yaml` pour injecter la signature secrète que vous avez ajoutée dans `.env` en tant que `$secret` du service `StripeRequestParser`.
 
-6. Modifiez le code des classes `StripeRequestParser` et `StripeWebhookConsumer` afin de traiter les requêtes envoyées par Stripe, comme montré un peu plus tôt. Concernant `StripeWebhookConsumer`, vous injecterez le service `PaymentHandlerInterface` afin de vous servir la méthode `handlePaymentPremium`   sur le tableau contenant les données de session.
+6. Modifiez le code des classes `StripeRequestParser` et `StripeWebhookConsumer` afin de traiter les requêtes envoyées par Stripe, comme montré un peu plus tôt. Concernant `StripeWebhookConsumer`, vous injecterez le service `PaymentHandlerInterface` afin de vous servir la méthode `handlePaymentPremium` sur le tableau contenant les données de session.
 
 </div>
 
@@ -1995,9 +1995,9 @@ Nous allons maintenant gérer quelques scénarios d'erreurs, où il faut donc an
 
 * Le paiement n'a pas pu être capturé, pour diverses raisons.
 
-Dans chaque cas, il faut **annuler le PaymentIntent** et expliuer pourquoi on l'annule.
+Dans chaque cas, il faut **annuler le PaymentIntent** et expliquer pourquoi on l'annule.
 
-Pour **anuller* un `PaymentIntent`, on peut utiliser la méthode `cancel` (suivi d'un `return` pour arrêter le traitement de la méthode) :
+Pour **annuler* un `PaymentIntent`, on peut utiliser la méthode `cancel` (suivi d'un `return` pour arrêter le traitement de la méthode) :
 
 ```php
 $this->stripeClient->paymentIntents->cancel($paymentIntent);
