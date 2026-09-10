@@ -1317,7 +1317,7 @@ Quelques exemples :
 
 * `#[Assert\NotBlank]` : vérifie que la propriété possède une valeur non `null` et non vide (pas de chaîne vide). On peut configurer l'assertion pour autoriser la valeur `null`, si besoin.
 
-* `#[Assert\NotNull]` : vérifie que la propriété n'est pas nulle (du côté de l'application). Cela signifie que la propriété transmise n'a pas la valeur `null` (mais elle peut être vide). Cela peut paraître redondant avec le fait que la propriété ne peut pas être nulle dans la base, mais avec cette assertion la vérification est faite au niveau de l'application et non pas du côté de la base. Si on veut s'assurer que la propriété n'est pas nulle et bien transmisse, on utilisera plutôt `#[Assert\NotBlank]` qui est plus strict.
+* `#[Assert\NotNull]` : vérifie que la propriété n'est pas nulle (du côté de l'application). Cela signifie que la propriété transmise n'a pas la valeur `null` (mais elle peut être vide). Cela peut paraître redondant avec le fait que la propriété ne peut pas être nulle dans la base, mais avec cette assertion la vérification est faite au niveau de l'application et non pas du côté de la base. Si on veut s'assurer que la propriété n'est pas nulle et bien transmise, on utilisera plutôt `#[Assert\NotBlank]` qui est plus strict.
 
 L'assertion [When](https://symfony.com/doc/current/reference/constraints/When.html) est également intéressante.
 
