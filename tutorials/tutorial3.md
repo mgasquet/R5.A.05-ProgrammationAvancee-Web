@@ -1473,8 +1473,27 @@ Bref, après cette longue introduction, la première étape va être de récupé
     ```bash
     composer require stripe/stripe-php 
     ```
+    Répondez oui (`y`) quand on vous pose la question quant à l'exécution de la recipe liée à **Stripe**. Cela va notamment ajouter un paramètre pour la clé secrète dans le fichier `.env`, un fichier de configuration, puis définir un service permettant d'accéder à un objet `StripeClient` que nous allons utiliser plus tard (notamment pour récupérer cette clé).
+
+4. Affectez la clé secrète au niveau du paramètre `STRIPE_SECRET_KEY` dans `.env`.
 
 </div>
+
+Concernant notre clé secrète, il s'agit d'une donnée sensible qui se trouve dans notre fichier `.env` ou `.env.local` (si on ne veut pas que la clé soit prise en compte par git). Dans un contexte réel, on pourrait aussi avoir un fichier `.env.dev` et placer la clé de test là-dedans et notre clé réelle dans `.env`. Faites **très attention** à ce que vous envoyez sur Github/Gitlab si votre repository est public. Pour rappel `.env` est versionné, mais pas `.env.local`. Dans le cas où vous manipuliez une véritable clé d'API, si elle se trouve dans `.env` et que votre repository est public, toutes les personnes ayant accès au repository pourront la récupérer (comme vous identifiants BDD, etc...).
+
+Comme nous l'avions fait pour le service `UtilisateurManager`, le paramètre peut facilement être injecté via le constructeur d'un service avec l'attribut `#[Autowire]` en précisant toutefois le paramètre `env` : `#[Autowire(env : '...')]`.
+
+Par exemple :
+
+```php
+class MonService {
+
+    public __construct(#[Autowire(env: 'MA_VAR')] private $maVar) {}
+
+}
+```
+
+Cependant, dans notre cas, nous nous servirons d'un service prédéfini qui fait déjà se travaille et initialise le client Stripe avec la clé stockée dans `.env`.
 
 ### Création d'un paiement
 
@@ -1505,8 +1524,7 @@ $paymentData = [
         ]
     ]
 ];
-Stripe::setApiKey(...);
-$stripeSession = Session::create($paymentData);
+$stripeSession = $this->stripeClient->checkout->sessions->create($paymentData);
 $url = $stripeSession->url;
 ```
 
@@ -1530,7 +1548,7 @@ La partie `paymentData` est un tableau contenant toutes les informations sur la 
 
     * `quantity` : La quantité vendue pour ce produit.
 
-On initialise ensuite le service `Stripe` avec la clé privée (celle récupérée dans l'exercice précédent) puis on génère l'URL vers laquelle rediriger l'utilisateur.
+On initialise ensuite une session (grâce au service `StripeClient`, qui sera injecté dans notre futur service) puis on génère l'URL vers laquelle rediriger l'utilisateur.
 
 Nous allons construire un service dédié à la gestion des paiements. On aura une première méthode permettant de générer un lien de paiement pour un utilisateur donné. En plus des classes de Stripe (que vous devez simplement importer), vous aurez besoin du service `UrlGeneratorInterface` permettant de générer des URLs (relatives ou absolues) à partir d'un nom de route. Son fonctionnement est similaire à la fonction `path` que nous utilisons dans nos templates `Twig` :
 
@@ -1543,32 +1561,17 @@ $url = $generator->generate(nomRoute, ["param" => ..., ], UrlGeneratorInterface:
 
 Bien sûr, si la route n'est pas paramétrable, il suffit de préciser un tableau vide comme second argument. Le dernier paramètre `UrlGeneratorInterface::ABSOLUTE_URL` permet de générer une URL absolue. Vous en aurez besoin pour générer les liens pour les paramètres `success_url` et `cancel_url`.
 
-Concernant notre clé secrète, il s'agit d'une donnée sensible à placer dans notre fichier `.env` ou `.env.local` (si on ne veut pas que la clé soit prise en compte par git). Dans un contexte réel, on pourrait aussi avoir un fichier `.env.dev` et placer la clé de test là-dedans et notre clé réelle dans `.env`. Faites **très attention** à ce que vous envoyez sur github/gitlab si votre repository est public. Pour rappel `.env` est versionné, mais pas `.env.local`. Dans le cas où vous manipuliez une véritable clé d'API, si elle se trouve dans `.env` et que votre repository est public, tout les personnes ayant accès au repository pourront la récupérer (comme vous identifiants BDD, etc...).
+Il vous faudra aussi injecter le service `StripeClient` qui permet de créer une session et de générer l'URL de paiement.
 
-
-Bref, la clé pourra se déclarer comme n'importe quelle variable de ce fichier, par exemple :
-
-```
-MA_VAR=test
-```
-
-À partir de là, comme nous l'avions fait pour le service `UtilisateurManager`, le paramètre peut facilement être injecté via le constructeur d'un service avec l'attribut `#[Autowire]` en précisant toutefois le paramètre `env` : `#[Autowire(env : '...')]`.
-
-Par exemple :
+Il faudra bien penser à inclure son import : 
 
 ```php
-class MonService {
-
-    public __construct(#[Autowire(env: 'MA_VAR')] private $maVar) {}
-
-}
+use Stripe\StripeClient;
 ```
 
 <div class="exercise">
 
-1. Dans le fichier `.env` (ou `.env.local`), créez une variable contenant la clé secrète de test.
-
-2. Créez un service `PaymentHandler` contenant la méthode suivante :
+1. Créez un service `PaymentHandler` contenant la méthode suivante :
 
     ```php
     //Génère et renvoie un lien vers Stripe afin de finaliser l'achat du statut Premium pour l'utilisateur passé en paramètre.
@@ -1585,9 +1588,9 @@ class MonService {
 
     Pensez à bien injecter tous les services/paramètres dont vous avez besoin.
 
-3. Définissez une interface `PaymentHandlerInterface` pour votre service.
+2. Définissez une interface `PaymentHandlerInterface` pour votre service.
 
-4. Dans `PremiumController`, ajoutez une route `premiumCheckout` ayant pour chemin `/premium/checkout` et accessible en `GET` qui devra simplement **générer le lien de paiement** en utilisant notre nouveau service et rediriger l'utilisateur vers ce lien. La route ne devra être accessible qu'aux membres connectés qui ne sont pas encore membres premium (comme pour la route `premiumInfos`).
+3. Dans `PremiumController`, ajoutez une route `premiumCheckout` ayant pour chemin `/premium/checkout` et accessible en `GET` qui devra simplement **générer le lien de paiement** en utilisant notre nouveau service et rediriger l'utilisateur vers ce lien. La route ne devra être accessible qu'aux membres connectés qui ne sont pas encore membres premium (comme pour la route `premiumInfos`).
 
 
     Pour rappel, dans un contrôleur, on peut directement accéder à l'utilisateur (`$this->getUser()`).
@@ -1602,15 +1605,15 @@ class MonService {
     }
     ```
 
-5. Modifiez le template `premium-infos.html.twig` en modifiant l'élément `<a></a>` attaché au bouton afin de placer un lien vers notre nouvelle route.
+4. Modifiez le template `premium-infos.html.twig` en modifiant l'élément `<a></a>` attaché au bouton afin de placer un lien vers notre nouvelle route.
 
-6. Rendez-vous sur la page d'informations du statut premium et cliquez sur le bouton. Vous devriez alors être redirigé sur Stripe. Vérifiez que le récapitulatif présenté est correct (email, prix, quantité, nom...). Vérifiez également que le bouton d'annulation vous renvoie bien sur la bonne page (informations du premium).
+5. Rendez-vous sur la page d'informations du statut premium et cliquez sur le bouton. Vous devriez alors être redirigé sur Stripe. Vérifiez que le récapitulatif présenté est correct (email, prix, quantité, nom...). Vérifiez également que le bouton d'annulation vous renvoie bien sur la bonne page (informations du premium).
 
 </div>
 
 ### Webhook
 
-Il ne nous reste plus qu'à finaliser le paiement et la demande en créant une route type `webhook` accessible par Stripe. Pour cela, il va falloir donner à Stripe une `route` vers laquelle envoyer la requête de confirmation quand la plateforme reçoit un paiement. Aussi, nous allons devoir sécuriser cette route afin que seul Stripe puisse y envoyer des requêtes !
+Il ne nous reste plus qu'à finaliser le paiement et la demande en créant un `webhook` sur lequel Stripe pourra envoyer des informations. Pour cela, il va falloir donner à Stripe une `route` vers laquelle envoyer la requête de confirmation quand la plateforme reçoit un paiement. Aussi, nous allons devoir sécuriser cette route afin que seul Stripe puisse y envoyer des requêtes !
 
 Mais, dans le cas où vous développez votre application sur un serveur local (localhost), comment Stripe peut-il envoyer des requêtes vers votre site ? Pour régler ce problème, Stripe met à disposition un outil très complet à utiliser sur votre machine (en ligne de commande) pour simuler différents événements et aussi spécifier vers quelle adresse envoyer les requêtes post-paiement.
 
@@ -1620,123 +1623,268 @@ Dans un premier temps, nous allons voir comment installer et configurer cet outi
 
 <div class="exercise">
 
-1. Suivez les instructions pour [télécharger Stripe CLI](https://stripe.com/docs/stripe-cli?locale=fr-FR#install) sur votre machine (et pas sur le **conteneur**), selon votre système d'exploitation.
-
-2. Une fois l'exécutable de Stripe extrait, placez le n'importe où sur votre machine (par exemple dans un dossier **Stripe**).
-
-3. Ouvrez un terminal (sur votre machine, pas dans le **conteneur**) dans le répertoire où se trouve l'exécutable puis exécutez la commande suivante :
+1. Dans votre conteneur docker, exécutez cette commande n'importe où pour installer le client Stripe :
 
     ```bash
-    ./stripe login --interactive
+    npm install --global @stripe/cli
     ```
 
-    Il s'agit de la syntaxe Linux. Sur Windows, il faut bien sur rajouter `.exe`. Si vous l'avez installé (via `apt`, par exemple) la commande sera plutôt `stripe login --interactive`.
-
-4. À l'étape d'après, collez votre clé secrète de test (clic-droit pour coller dans le terminal). Par sécurité, la clé n'est pas affichée (comme quand vous tapez un mot de passe dans un terminal, sous Linux), validez simplement après avoir collé la clé. On vous demande ensuite un nom pour votre machine. Un nom est proposé par défaut, vous pouvez valider ou le changer.
-
-5. Exécutez la commande suivante :
+2. Ensuite, exécutez la commande suivante :
 
     ```bash
-    ./stripe listen
+    stripe login --interactive
+    ```
+
+3. À l'étape d'après, collez votre clé secrète de test (clic-droit pour coller dans le terminal). Par sécurité, la clé n'est pas affichée (comme quand vous tapez un mot de passe dans un terminal, sous Linux), validez simplement après avoir collé la clé. On vous demande ensuite un nom pour votre machine. Un nom est proposé par défaut, vous pouvez valider ou le changer.
+
+4. Exécutez maintenant la commande suivante :
+
+    ```bash
+    stripe listen
     ```
 
     Une **signature** secrète de webhook vous est donné. Conservez-la quelque-part.
 
-6. Pour vérifier que tout est bien connecté, allez sur votre site puis accédez à la page du paiement sur Stripe. Validez le paiement en entrant les informations [d'une des cartes bancaires de test](https://stripe.com/docs/testing?locale=fr-FR#cards) mises à disposition par Stripe. Une fois validé, regardez votre terminal, vous devriez capter l'événement ! (si vous utilisez le compte "commun", vous capterez aussi les paiements des autres étudiants, mais ça ne sera pas trop gênant pour la suite.)
+5. Pour vérifier que tout est bien connecté, allez sur votre site puis accédez à la page du paiement sur Stripe. Validez le paiement en entrant les informations [d'une des cartes bancaires de test](https://stripe.com/docs/testing?locale=fr-FR#cards) mises à disposition par Stripe. Une fois validé, regardez votre terminal, vous devriez capter l'événement ! (si vous utilisez le compte "commun", vous capterez aussi les paiements des autres étudiants, mais ça ne sera pas trop gênant pour la suite.)
 
-7. Quittez le programme (pour le moment).
+6. Quittez le programme (pour le moment).
 
 </div>
 
 Le client est prêt à être utilisé et est bien relié à votre compte Stripe (ou au compte commun si vous n'avez pas créé de compte). La **signature** secrète qui vous a été donnée est très importante. Elle permettra de vérifier dans le code de votre route (le webhook) que la requête a bien été émise par Stripe.
 
-Nous allons diviser la gestion de la requête en deux parties :
+Nous allons diviser la gestion de la requête en trois parties :
 
-* Vérification de l'identité de la requête (avec la signature) et extraction des données (dans un contrôleur).
+* Vérification de l'identité de la requête (avec la signature) et extraction des données (dans une classe dédiée).
+
+* Vérification du type d'événement récupéré, puis lancement du traitement (aussi dans une classe dédiée).
 
 * Traitement de la demande, vérification d'éventuels problèmes, capture du paiement et changement de rôle de l'utilisateur (dans un service).
 
-Globalement, au niveau du contrôleur, pour la route traitant le **webhook** on va avoir la structure de code suivante :
+Pour les deux premières classes, Symfony permet de les initialiser très simplement avec une commande et de configurer automatiquement la route en relation avec notre `webhook` :
+
+```bash
+php bin/console make:webhook
+```
+
+On nous demande alors plusieurs informations :
+* Le nom du webhook (qui permettra de définir le chemin de la route). Par exemple, si j'appelle mon webhook "exemple", la route associée sera `/webhook/exemple`.
+* Les **matchers** que l'on souhaite utiliser. Cela permet d'informer Symfony de vérifier qu'une requête émise par un service sur ce webhook peut être traitée. On va par exemple regarder la forme de la requête (par exemple format JSON, formulaire), sa méthode, etc. On peut n'en spécifier aucun, un, ou plusieurs. Cela dépend de la documentation du service qui utilisera notre webhook.
+
+Une fois que la commande est exécutée, deux fichiers sont créés :
 
 ```php
-use Stripe\Webhook;
+//src/WebHook/ExempleRequestParser.php
+namespace App\Webhook;
 
-//On extrait le contenu de la requête (format imposé par Stripe, on utilise pas les outils de Symfony dans ce cas)
-$payload = @file_get_contents('php://input');
-
-//On extrait la signature de la requête
-$sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
-try {
-    /*
-    On construit l'événement.
-    On utilise $secretSignature qui contient la signature secrète récupérée plus tôt (dans le terminal)
-    Si la signature n'est pas bonne (vérifié avec la signature de la requête et celle secrète), une exception est déclenchée.
-    */
-    $event = Webhook::constructEvent($payload, $sig_header, $secretSignature);
-
-    /*
-    On vérifie le type d'événement.
-    Pour l'instant, nous ne traitons que l'événement checkout.session.completed qui est déclenché quand l'utilisateur valide le formulaire et le paiement est prêt à être capturé
-    Si l'application vient à évoluer, on pourrait traiter d'autres événements
-    */
-    if ($event->type == 'checkout.session.completed') {
-        /*
-        $session contient les données du paiement.
-        On pourra notamment accèder aux meta-données que nous avions initialement placé lors de la création du paiement
-        */
-        $session = $event->data->object;
-        //On imagine que $service est un service contenant une méthode permettant de traiter la suite de la requête.
-        $service->traitement($session);
-        //Si on arrive là, tout s'est bien passé, on renvoie un code de succès à Stripe.
-        return new Response(null, 200);
+final class ExempleRequestParser extends AbstractRequestParser
+{
+    //Permet à Symfony d'identifier si la requête reçue peut être traitée par ce parser.
+    protected function getRequestMatcher(): RequestMatcherInterface
+    {
+        //Les matchers
+        return new ChainRequestMatcher([
+            ...
+        ]);
     }
-    else {
-        //Si on arrive là, c'est qu'on ne gère pas l'événement déclenché, on renvoie alors un code d'erreur à Stripe.
-        return new Response(null, 400);
+
+    //Permet d'extraire les données de la requête et d'émettre un événement contenant les données intéressantes (nom de l'événement, identifiant, contenu de la requête...). cete événement sera traité par un "consumer" (autre classe).
+    //L'objet $request nous permet d'extraire les données.
+    //L'objet $secret est un paramètre qui permet de vérifier l'identité de la requête et de la rejeter si elle est émise par une source non autorisée. L'attribut #[\SensitiveParameter] permet d'indiquer la nature critique de ce paramètre qui ne doit jamais être dévoilé/affiché, etc. Ce paramètre sera injecté automatiquement.
+    // On peut lever une exception RejectWebhookException s'il y a un problème (par exemple, si le webhook est émis par un service/utilisateur non autorisé)
+    /**
+     * @throws JsonException
+     */
+    protected function doParse(Request $request, #[\SensitiveParameter] string $secret): ?RemoteEvent
+    {
+        $payload = ...
+        ...
+        return new RemoteEvent($nom, $id, $payload);
     }
-} catch(\Exception $e) {
-    /*
-    Ici, la signature n'est pas vérifiée, ou une autre erreur est survenue pendant le traitement.
-    On renvoie donc un code d'erreur à Stripe.
-    */
-    return new Response($e->getMessage(), 400);
 }
+```
+
+```php
+//src/RemoteEvent/ExempleWebhookConsumer.php
+namespace App\RemoteEvent;
+
+//On indique le nom du webhook pour lequel cette classe traite les événements émis.
+#[AsRemoteEventConsumer('exemple')]
+final class ExempleWebhookConsumer implements ConsumerInterface
+{
+    public function __construct(/* Injection de dépendances... */)
+    {}
+
+    public function consume(RemoteEvent $event): void
+    {
+        //Traitement du webhook...
+        //$event contient les données de l'événement émis par la classe précédente (ExempleRequestParser). On peut se servir du payload qui contient les données émises par le service qui a fait appel au webhook.
+        //Ici, on peut notamment faire appel à des services injectés.
+    }
+}
+```
+
+Enfin, le fichier `src/config/packages/webhook.yaml` est automatiquement modifié pour enregistrer notre webhook :
+
+```yaml
+#src/config/packages/webhook.yaml
+framework:
+  webhook:
+    routing:
+      exemple:
+        service: App\Webhook\ExempleRequestParser
+        #On précise à quoi correspond le secret utilisé dans le parser pour vérifier l'identité du service à l'origine de la requête.
+        secret: '%env(SECRET_EXEMPLE)%'
+```
+
+Ce qui configure la route `/webhook/exemple` en interne.
+
+Nous allons donc mettre en place un webhook pour traiter les notifications envoyées par Stripe après un paiement, avec la structure de code suivante :
+
+```php
+namespace App\Webhook;
+
+use Stripe\Exception\SignatureVerificationException;
+use Stripe\Webhook;
+use Symfony\Component\HttpFoundation\ChainRequestMatcher;
+use Symfony\Component\HttpFoundation\Exception\JsonException;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestMatcher\IsJsonRequestMatcher;
+use Symfony\Component\HttpFoundation\RequestMatcher\MethodRequestMatcher;
+use Symfony\Component\HttpFoundation\RequestMatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RemoteEvent\RemoteEvent;
+use Symfony\Component\Webhook\Client\AbstractRequestParser;
+use Symfony\Component\Webhook\Exception\RejectWebhookException;
+
+final class StripeRequestParser extends AbstractRequestParser
+{
+    protected function getRequestMatcher(): RequestMatcherInterface
+    {
+        return new ChainRequestMatcher([
+            new IsJsonRequestMatcher(),
+            new MethodRequestMatcher('POST'),
+        ]);
+    }
+
+    /**
+     * @throws JsonException
+     */
+    protected function doParse(Request $request, #[\SensitiveParameter] string $secret): ?RemoteEvent
+    {
+        //On récupère le contenu de la requête (payload JSON)
+        $content = $request->getContent();
+
+        //On extrait la signature de la requête, qui permet d'identifier la source à l'origine de la requête.
+        $sig_header = $request->server->get('HTTP_STRIPE_SIGNATURE');
+        try {
+            /*
+            On construit l'événement.
+            On utilise $secret qui contient la signature secrète récupérée plus tôt (dans le terminal)
+            Si la signature n'est pas bonne (vérifié avec la signature de la requête et celle secrète), une exception est déclenchée.
+            */
+            $event = Webhook::constructEvent($content, $sig_header, $secret);
+
+            //On retourne un événement avec différentes informations utiles, notamment le type d'événement (dans notre cas, nous ne traiterons qu'un seule événement, lorsque le paiement est complété, mais Stripe peut en envoyer d'autres).
+            //Les données de la requête (le JSON) sont converties en tableau associatif.
+            return new RemoteEvent(
+                $event->type,
+                $event->id,
+                $event->toArray()
+            );
+        } catch (SignatureVerificationException $e) {
+            //Si la signature est invalide, c'est que la requête est émise par une osurc einconnue/non autorisé, on rejette donc le webhook.
+            throw new RejectWebhookException(Response::HTTP_UNAUTHORIZED, 'Invalid signature.');
+        }
+    }
+}
+```
+
+```php
+namespace App\RemoteEvent;
+
+use App\Service\PaymentHandlerInterface;
+use Symfony\Component\RemoteEvent\Attribute\AsRemoteEventConsumer;
+use Symfony\Component\RemoteEvent\Consumer\ConsumerInterface;
+use Symfony\Component\RemoteEvent\RemoteEvent;
+
+#[AsRemoteEventConsumer('stripe')]
+final class StripeWebhookConsumer implements ConsumerInterface
+{
+    public function __construct(/* Injection d'un service...*/)
+    {}
+
+    //On récupère l'objet émis à l'étape précédente...
+    public function consume(RemoteEvent $event): void
+    {
+        /*
+        On vérifie le type d'événement.
+        Pour l'instant, nous ne traitons que l'événement checkout.session.completed qui est déclenché quand l'utilisateur valide le formulaire et le paiement est prêt à être capturé
+        Si l'application vient à évoluer, on pourrait traiter d'autres événements
+        */
+        if($event->getName() == 'checkout.session.completed') {
+            /*
+            $session est un tableau qui contient les données du paiement.
+            On pourra notamment accéder aux meta-données que nous avions initialement placées lors de la création du paiement.
+            */
+            $session = $event->getPayload()["data"]["object"];
+            //On imagine que $service est un service contenant une méthode permettant de traiter la suite de la requête.
+            $service->traitement($session);
+        }
+    }
+}
+```
+
+Afin d'injecter la signature secrète dans `$secret`, on la stocke dans une variable dans `.env` (par exemple, `STRIPe8SECRET_SIGNATURE`) et on l'injecte ainsi :
+
+```yaml
+#src/config/packages/webhook.yaml
+framework:
+  webhook:
+    routing:
+      stripe:
+        service: App\Webhook\StripeRequestParser
+        secret: '%env(STRIPE_SECRET_SIGNATURE)%'
+
 ```
 
 Pour le reste du traitement (qui sera délégué à un service), plusieurs objets et méthodes nous intéressent :
 
 ```php
-use Stripe\StripeClient;
+//La variable $this->stripeClient correspond au service StripeClient que nous avons déjà utilisé
+//La variable $session est le tableau contenant les données de la session.
 
-//On peut récupérer les meta-données depuis les données de la session transmises par Stripe
+//L'objet "paymentIntent" permet de capturer (confirmer) ou d'annuler le paiement.
+$paymentIntent = $session["payment_intent"];
+
+//On peut récupérer les meta-données depuis les données de la session transmises par Stripe.
+//Dans notre cas, cela permettra de récupérer l'utilisateur visé par la requête (grâce à son id que nous avons placé dans les méta-données).
 $metadata = $session["metadata"];
 
 //Avant d'extraire une donnée, on peut bien sûr vérifier sa présence...
 if(!isset($metadata["dataExemple"])) {
-    throw new \Exception("dataExemple manquant...");
+    return;
 }
 
-//L'objet "paymentIntent" permet de capturer (confirmer) ou d'annuler le paiement.
-$paymentIntent = $session["payment_intent"];
-//Pour réaliser ces opérations, on a besoin d'un objet StripeClient initialisé avec notre clé secrète d'API.
-$stripe = new StripeClient(cleSecreteApi);
-
-//On récupère de données
+//On récupère les données ainsi
 $dataExemple = $metadata["dataExemple"];
 
-//Pour "capturer" et valider le paiement
-$paymentCapture = $stripe->paymentIntents->capture($paymentIntent, []);
+//Pour "capturer" et valider le paiement : l'argent arrive définitivement sur notre compte Stripe
+$paymentCapture = $this->stripeClient->paymentIntents->capture($paymentIntent, []);
 //On peut ensuite vérifier si le paiement a bien été capturé (si oui, on dispose de l'argent sur le compte Stripe, à ce stade).
 if($paymentCapture == null || $paymentCapture["status"] != "succeeded") {
-    throw new \Exception("Le paiement n'a pas pu être complété...");
+    return;
 }
 
-//Après avoir fait diverses vérifications et avoir capturé le paiement avec succès, on peut réaliser nos actions complémentaires (dans notre cas, mettre l'attribut "premium" de l'utilisateur cible à true, puis sauvegarder).
+//Après avoir avoir capturé le paiement avec succès, on peut réaliser nos actions complémentaires (dans notre cas, mettre l'attribut "premium" de l'utilisateur cible à true, puis sauvegarder).
+
 ```
 
 Pour récupérer l'utilisateur ciblé à partir de son identifiant, vous pourrez bien sûr injecter et utiliser le **repository** de l'entité.
 
 Pour mettre à jour les données de l'utilisateur en base de données, il faudra utiliser le service `EntityManagerInterface`, comme quand vous créez une entité. Après avoir modifié les données de l'utilisateur, il suffit d'appeler `flush`.
+
+Vous aurez sans doute remarqué que quand il y a une erreur, nous ne levons pas d'exceptions et nous effectuons un simple `return` pour arrêter la méthode. C'est voulu, car, si on accepte de traiter la requête de webhook envoyée par Stripe (donc, après avoir passé le **parser**), nous devons renvoyer un code de succès (2xx) pour informer que nous avons bien reçu et identifié le webhook (peu importe qu'on arrive ou non au bout du traitement ensuite, dans le consumer). La levée d'une exception provoquerait une réponse d'erreur (typiquement 500) et Stripe pourrait penser que nous n'avons pas bien reçu sa requête à cause d'un problème technique, et ainsi la renvoyer plus tard. Bref, le seul endroit où l'on peut refuser la requête (si elle n'est pas bien formée, ou s'il n'y a pas les autorisations, etc). Cependant, s'il y a une erreur rencontrée lors du traitement, nous aurons bien sûr un moyen d'annuler le paiement.
 
  <!-- Il n'y a pas (encore) de méthode dans notre entité `Utilisateur` permettant d'ajouter un rôle. Nous l'ajouterons dans le prochain exercice. -->
 
@@ -1750,22 +1898,22 @@ Pour mettre à jour les données de l'utilisateur en base de données, il faudra
     /**
     * @throws Exception
     */
-    public function handlePaymentPremium(Session $session) : void {
+    public function handlePaymentPremium(array $session) : void {
         
     }
     ```
 
     Pour l'instant, cette méthode doit simplement : 
     
-    * Récupérer l'identifiant de l'utilisateur dans les métadonnées de l'objet `$session` (le nom correspond à celui que vous aviez donné dans `getPremiumCheckoutUrlFor`), 
+    * Récupérer l'identifiant de l'utilisateur dans les métadonnées de l'objet `$session` (le nom correspond à celui que vous aviez donné dans `getPremiumCheckoutUrlFor`). S'il n'existe pas dans les métadonnées, on arrêtera la fonction avec un `return`. 
     
     * Récupérer l'objet utilisateur lié à cet id.
 
-    * Valider le paiement (et vérifier qu'il est bien confirmé) puis changer la propriété "premium" de l'utilisateur (en la passant à `true`).
+    * Capturer le paiement (et vérifier qu'il l'est bien validé) puis changer la propriété "premium" de l'utilisateur (en la passant à `true`). Si le paiement n'est pas validé, on arrête la fonction avec un `return`.
     
     * Sauvegarder ces modifications en base de données.
 
-    N'oubliez pas d'ajouter les injections de dépendances nécessaires dans votre service. Vous aurez notamment besoin de quoi aller récupérer des utilisateurs dans la base de données, de quoi les sauvegarder, la clé d'api, le prix du premium, de quoi générer des URL... Et pensez également à mettre à jour son **interface** avec la signature de la méthode `handlePaymentPremium`.
+    N'oubliez pas d'ajouter les injections de dépendances nécessaires dans votre service. Vous aurez notamment besoin de quoi aller récupérer des utilisateurs dans la base de données et de quoi les sauvegarder... Et pensez également à mettre à jour son **interface** avec la signature de la méthode `handlePaymentPremium`.
 
 2. **Si vous utilisez le compte commun** et pas votre propre compte Stripe, nous avons un "léger" soucis à régler. En effet, comme expliqué plus tôt, vous allez recevoir les événements déclenchés par tous les autres étudiants utilisant le compte commun. Il faut donc trouver un moyen d'identifier vos requêtes de manière unique et d'ignorer celles des autres. Nous vous proposons donc les ajouts suivants :
 
@@ -1776,17 +1924,22 @@ Pour mettre à jour les données de l'utilisateur en base de données, il faudra
     ```php
     $metadata = $session["metadata"];
     if(!isset($metadata["studentToken"]) || $metadata["studentToken"] !== "votre_code_perso") {
-        throw new \Exception("Requête d'un autre étudiant...");
+        return;
     }
     ```
 
     Ce bricolage permet de rejeter les requêtes qui ne vous sont pas destinées. Bien sûr, dans un cas réel, il n'y a pas de tel système à mettre en place, vous aurez votre propre compte et ne capterez pas d'événement indésirable. Il s'agit juste d'une astuce pour que le TD se passe bien si vous utilisez le compte partagé !
 
-3. Enregistrez la signature secrète que vous aviez récupéré dans le terminal (lors de l'exécution du client Stripe) comme une **variable** de l'application définie dans `.env` ou `.env.local`.
+3. Enregistrez la signature secrète que vous aviez récupérée dans le terminal (lors de l'exécution du client Stripe) comme une **variable** de l'application définie dans `.env` ou `.env.local`.
 
-4. Créez un nouveau contrôleur `WebhookController`. À l'intérieur, ajoutez une nouvelle route nommée `stripeWebhook` ayant pour chemin `/webhook/stripe` accessible en `POST` (Stripe envoie sa requête en `POST`). Dans le code de cette route, vous devrez vérifier la signature de la requête, puis extraire les données (l'objet "session") et enfin appeler la méthode `handlePaymentPremium` de notre service. Vous pourrez reprendre la structure du code présenté plus tôt.
+4. Créez un nouveau webhook grâce à la commande `make:webhook` :
 
-    Niveau injection de dépendance, vous devrez bien sûr injecter notre service `PaymentHandlerInterface`, mais nous devons aussi accéder à la signature secrète que nous avons défini à l'étape précédente. Pour cela, vous pouvez injecter ce paramètre comme dans les services, en utilisant l'attribut `#[Autowire(env: '...')]` dans les paramètres de la méthode liée à la route.
+    * Son nom est `stripe`.
+    * Choisissez les request matchers suivants : `IsJsonRequestMatcher` et `MethodRequestMatcher`.
+
+5. Modifiez le fichier `src/config/packages/webhook.yaml` pour injecter la signature secrète que vous avez ajouté dans `.env` en tant que `$secret` du service `StripeRequestParser`.
+
+6. Modifiez le code des classes `StripeRequestParser` et `StripeWebhookConsumer` afin de traiter les requêtes envoyées par Stripe, comme montré un peu plus tôt. Concernant `StripeWebhookConsumer`, vous injecterez le service `PaymentHandlerInterface` afin de vous servir la méthode `handlePaymentPremium`   sur le tableau contenant les données de session.
 
 </div>
 
@@ -1795,13 +1948,13 @@ Tout est prêt pour finaliser notre système de paiement ! Avant de traiter les 
 Pour que Stripe utilise notre **webhook**, nous devons lui indiquer l'URL à laquelle il se trouve. Pour le mode "test", cela se fait donc avec le client que vous avez utilisé plus tôt, en ligne de commandes. Il suffit d'exécuter la commande suivante :
 
 ```bash
-./stripe listen --skip-verify --forward-to https://exemple.com
+stripe listen --skip-verify --forward-to https://exemple.com
 ```
 
 Par défaut, nous écoutons **tous les événements** en lien avec notre compte Stripe. Pour filtrer et n'utiliser que celui qui nous intéresse pour ce webhook, on utilise l'option `--events` :
 
 ```bash
-./stripe listen --skip-verify --events=checkout.session.completed --forward-to https://exemple.com
+stripe listen --skip-verify --events=checkout.session.completed --forward-to https://exemple.com
 ```
 
 Ici, dès que l'événement correspondant à la validation du formulaire de paiement est émis, Stripe enverra une requête à l'adresse précisée (à travers notre machine, car le client est connecté à notre compte).
@@ -1816,13 +1969,13 @@ Ainsi, il est possible d'avoirs plusieurs **webhooks** différents, pour plusieu
 
 3. Jetez un coup d'œil au terminal, si le code `200` apparaît quelque part, cela doit être bon. Attention toutefois, si vous utilisez le compte partagé, peut-être que vous verrez le résultat de la requête d'un autre étudiant qui a effectué un paiement en même temps que vous.
 
-   **Aide pour déboguer :** Si vous possédez votre propre compte Stripe et que le code `400` apparaît et que vous n'arrivez pas à savoir pourquoi, allez dans le terminal exécutant `stripe listen` et cliquez sur le lien ressemblant à `evt_xxx`. Après connexion à Stripe, vous trouverez en bas de la page dans la section *Réponses webhook CLI* la réponse HTTP que vous avez envoyé à Stripe. En la déroulant, vous verrez le message de l'exception qui a causé le code `400`.
+   **Aide pour déboguer :** Si le code `500` (ou autre) apparaît et que vous n'arrivez pas à savoir pourquoi, ouvrez le fichier `var/log/dev.log` et cherchez le détail des exceptions levées par le programme, en fin de fichier.
 
 4. Vérifiez sur le site que l'utilisateur est bien devenu membre premium.
 
 </div>
 
-Si tout à bien marché, félicitations, votre système de paiement est fonctionnel ! Pour une entreprise réelle, l'adresse du **webhook** concret (utilisé avec la clé réelle pour recevoir des paiements et pas celle de test) ne se configure pas via le terminal, mais dans un onglet dédié du dashboard de Stripe. Dans ce cas, l'adresse ciblée doit être publiquement accessible (pas de localhost ou autre). Le **webhook** cible un site déjà hébergé/en production. Comme dans le terminal, il est possible de filtrer les événements qui déclenche l'appel au webhook. Il est donc aussi possible de créer plusieurs webhooks, pour des événements différents.
+Si tout a bien marché, félicitations, votre système de paiement est fonctionnel ! Pour une entreprise réelle, l'adresse du **webhook** concret (utilisé avec la clé réelle pour recevoir des paiements et pas celle de test) ne se configure pas via le terminal, mais dans un onglet dédié du dashboard de Stripe. Dans ce cas, l'adresse ciblée doit être publiquement accessible (pas de localhost ou autre). Le **webhook** cible un site déjà hébergé/en production. Comme dans le terminal, il est possible de filtrer les événements qui déclenche l'appel au webhook. Il est donc aussi possible de créer plusieurs webhooks, pour des événements différents.
 
 La signature secrète de requête que vous possédez ne sera pas aussi la même entre le mode test et le mode production. Une fois l'entreprise enregistrée, vous avez accès à toutes les données nécessaires pour réellement recevoir des paiements (clé privée, signature...)
 
@@ -1834,31 +1987,38 @@ Bref, tout cela ne vous concerne pas vraiment pour le moment, car nous nous limi
 
 Nous allons maintenant gérer quelques scénarios d'erreurs, où il faut donc annuler le paiement :
 
+* Les méta-données ne contiennent pas l'identifiant de l'utilisateur.
+
 * L'utilisateur ciblé n'existe pas. Par exemple, l'utilisateur a supprimé son compte (une fonctionnalité que nous n'avons pas encore développée, mais qui pourrait être là dans le futur).
 
 * L'utilisateur est déjà membre premium : par exemple, vous avez ouvert deux formulaires de paiement et vous les remplissez à la suite. Il ne faut pas débiter le client deux fois !
 
 * Le paiement n'a pas pu être capturé, pour diverses raisons.
 
-Dans chaque cas, il faut **annuler le PaymentIntent** et lever une Exception (ce qui renverra donc un code 400 à Stripe).
+Dans chaque cas, il faut **annuler le PaymentIntent** et expliuer pourquoi on l'annule.
 
-Pour **anuller* un `PaymentIntent`, on peut utiliser la méthode `cancel` :
+Pour **anuller* un `PaymentIntent`, on peut utiliser la méthode `cancel` (suivi d'un `return` pour arrêter le traitement de la méthode) :
 
 ```php
-$stripe->paymentIntents->cancel($paymentIntent);
+$this->stripeClient->paymentIntents->cancel($paymentIntent);
+return;
 ```
 
 <div class="exercise">
 
-1. Modifiez la méthode `handlePaymentPremium` pour gérer ces trois scénarios d'erreur.
+1. Modifiez la méthode `handlePaymentPremium` pour gérer ces quatre scénarios d'erreur et annuler le paiement.
 
-2. Vérifiez les deux premiers scénarios d'erreur (le troisième est plus difficile à simuler) :
+2. Vérifiez les trois premiers scénarios d'erreur (le quatrième est plus difficile à simuler) :
 
-    * Pour le premier, créez un compte, connectez-vous, ouvrez le formulaire de paiement, supprimez l'utilisateur dans la base de données, simulez le paiement. Le paiement ne devrait pas avoir lieu.
+    * Pour le premier, retirez temporairement `idUtilisateur` des méta-données lors de la création du lien de paiement (dans `getPremiumCheckoutUrlFor`).
 
-    * Pour le second, connectez-vous à un compte non-premium, ouvre deux fois le formulaire de paiement et simulez deux paiements. Vérifiez que le deuxième paiement n'aboutit pas (code 400 sur le client Stripe).
+    * Pour le second, créez un compte, connectez-vous, ouvrez le formulaire de paiement, supprimez l'utilisateur dans la base de données, simulez le paiement. Le paiement ne devrait pas avoir lieu.
+
+    * Pour le troisième, connectez-vous à un compte non-premium, ouvre deux fois le formulaire de paiement et simulez deux paiements. Vérifiez que le deuxième paiement n'aboutit pas (code 400 sur le client Stripe).
 
 </div>
+
+Idéalement, il faudrait entourer l'appel à `cancel` d'un bloc `try/catch` car une erreur pourrait éventuellement survenir si on tente d'annuler un paiement déjà annuler (en cas de doublons, par exemple).
 
 ### Confirmation du paiement
 
@@ -1919,17 +2079,14 @@ $paymentData = [
 Enfin, une fois l'identifiant de session récupéré, on peut vérifier l'état du paiement ainsi :
 
 ```php
-//On initialise le client Stripe avec notre clé secrète
-$stripe = new StripeClient(cleSecreteApi);
-
 //On récupère les données de la session à partir de l'identifiant de la session
-$session = $stripe->checkout->sessions->retrieve($sessionId);
+$session = $this->stripeClient->checkout->sessions->retrieve($sessionId);
 
 //On extraie l'identifiant du paiement depuis la session
 $paymentIntentId = $session->payment_intent;
 
 //On récupère les données du paiement 
-$paymentIntent = $stripe->paymentIntents->retrieve($paymentIntentId);
+$paymentIntent = $this->stripeClient->paymentIntents->retrieve($paymentIntentId);
 
 //L'état "succeeded" signifie que le paiement a bien été capturé (le client a été débité)
 $status = $paymentIntent->status;
@@ -1943,7 +2100,7 @@ Maintenant, à vous de jouer !
 
     ```php
     //Renvoie true si le paiement lié à la session dont l'identifiant est passé en paramètre a aboutit (a été capturé...) et renvoie false sinon.
-    public function checkPaymentStatus($sessionId) : bool {
+    public function checkPaymentStatus(string $sessionId) : bool {
 
     }
     ```
