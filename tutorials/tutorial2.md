@@ -1283,7 +1283,7 @@ Donc, si la route `route_exemple` possède pour chemin `/route/{propriete}/test`
 <a href="/route/coucou/test">Exemple</a>
 ```
 
-Autre élément important à connaître : Symfony met à disposition un objet `app.user` qui est un objet représentant l'utilisateur connecté. On peut donc accéder à ses propriétés, par exemple `app.user.id`, etc...
+Rappelons que Symfony met à disposition un objet `app.user` représentant l'utilisateur connecté. On peut donc accéder à ses propriétés, par exemple `app.user.id`, etc...
 
 <div class="exercise">
 
@@ -1446,7 +1446,7 @@ Ces templates seront chargés automatiquement (en mode `prod`) si une erreur sur
 
     N'oubliez pas que si vous faites des modifications pour améliorer ou corriger votre résultat, il faudra vider le cache (car nous sommes dans le mode `prod`).
 
-8. Repassez l'environnement de l'application à `dev` et **supprimez le dossier** `puclic/assets` généré lors de la compilation des assets. Pensez aussi à vider le cache.
+8. Repassez l'environnement de l'application à `dev` et **supprimez le dossier** `public/assets` généré lors de la compilation des assets. Pensez aussi à vider le cache.
 
 </div>
 

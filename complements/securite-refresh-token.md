@@ -504,7 +504,7 @@ class RefreshTokenExtractor implements RefreshTokenExtractorInterface
 
 ### Gestion des cookies
 
-La prochaine étape est de pouvoir créer et demander la suppression d'un cookie contenant le token de rafraîchissement (si l'option de stocker le token dans un cookie est activée) dans la réponse transmisse au client (donc, lors de l'authentification ou bien lors du rafraîchissement du token où un nouveau token de rafraîchissement est généré puis transmis). Ce cookie sera généré avec l'option `secure`, `httpOnly` et la politique **sameSite** définie sur `lax`.
+La prochaine étape est de pouvoir créer et demander la suppression d'un cookie contenant le token de rafraîchissement (si l'option de stocker le token dans un cookie est activée) dans la réponse transmise au client (donc, lors de l'authentification ou bien lors du rafraîchissement du token où un nouveau token de rafraîchissement est généré puis transmis). Ce cookie sera généré avec l'option `secure`, `httpOnly` et la politique **sameSite** définie sur `lax`.
 
 Notre implémentation utilisera deux paramètres définis dans notre configuration : le nom du token de rafraîchissement et aussi le `path` configuré pour le cookie.
 
