@@ -775,7 +775,19 @@ public function methodeExemple(): Response
 }
 ```
 
-Si jamais il y a plusieurs méthodes autorisées pour une route (par exemple, `GET` et `POST`) et que l'on souhaite seulement interdire l'accès à cette route pour une méthode donnée, on peut vérifier quelle est la méthode utilisée avec la méthode `isMethod(method)` de l'objet `Request` et refuser l'accès à la route en utilisant `denyAccessUnlessGranted(role)` si l'utilisateur ne possède pas le rôle spécifié :
+Si jamais il y a plusieurs méthodes autorisées pour une route (par exemple, `GET` et `POST`) et que l'on souhaite seulement interdire l'accès à cette route pour une méthode donnée, on peut vérifier quelle est la méthode utilisée en spécifiant l'arguments `methods` de l'attribut `IsGranted`:
+
+
+```php
+#[IsGranted('ROLE_USER', methods : ['POST'])]
+#[Route('/exemple', name: 'route_exemple', methods: ["GET", "POST"])]
+public function methodeExemple(Request $request): Response
+{
+    //Tous les utilisateurs (connectés ou non) peuvent accéder à cette route avec la méthode 'GET' mais seuls les utilisateurs qui ont le rôle 'ROLE_USER' (donc, tous les utilisateurs connectés) peuvent déclencher cette route avec la méthode 'POST'.
+}
+```
+
+Alternativement, si on ne souhaite pas utiliser `IsGranted`, il est possible de faire la même chose avec la méthode `isMethod(method)` de l'objet `Request` et refuser l'accès à la route en utilisant `denyAccessUnlessGranted(role)` si l'utilisateur ne possède pas le rôle spécifié :
 
 ```php
 #[Route('/exemple', name: 'route_exemple', methods: ["GET", "POST"])]
@@ -786,7 +798,7 @@ public function methodeExemple(Request $request): Response
         //Si l'utilisateur n'a pas le rôle 'ROLE_USER' l'exécution s'arrête et une page d'erreur est affichée.
     }
 
-    //Tous les utilisateurs (connectés ou non) peuvent accéder à cette route avec la méthode 'GET' mais seuls les utilisateurs qui ont le rôle 'ROLE_USER' (donc, tous les utilisateurs connectés) peuvent déclencher cette route avec la méthode 'POST'.
+    //...
 }
 ```
 
@@ -809,7 +821,7 @@ public function methodeExemplePost(): Response
 }
 ```
 
-Cependant, comme nous l'avons vu, dans le cadre d'un formulaire, nous pouvons regrouper GET et POST dans la même méthode. Dans le cas particulier où l'on souhaite afficher une page formulaire, mais réserver son traitement à un rôle particulier, on utilisera donc plutôt la méthode utilisant `denyAccessUnlessGranted`. Néanmoins, ce cas de figure ne se produit pas souvent, mais c'est le cas pour notre route `feed`, par exemple : on souhaite pouvoir afficher la page à tout le monde, mais réserver la création d'une publication aux utilisateurs connectés.
+Cependant, comme nous l'avons vu, dans le cadre d'un formulaire, nous pouvons regrouper GET et POST dans la même méthode. Dans le cas particulier où l'on souhaite afficher une page formulaire, mais réserver son traitement à un rôle particulier, on utilisera donc une des techniques présentées ci-dessus. Néanmoins, ce cas de figure ne se produit pas souvent, mais c'est le cas pour notre route `feed`, par exemple : on souhaite pouvoir afficher la page à tout le monde, mais réserver la création d'une publication aux utilisateurs connectés.
 
 <div class="exercise">
 
