@@ -1485,3 +1485,7 @@ Vous possédez maintenant de solides bases pour construire des sites web à l'ai
  * Le concept de dépendre d'interfaces plutôt que de classes concrètes a aussi été abordé lors du TD4 de complément web. Cela permet à votre application d'être plus modulable et plus facilement testable !
 
  * Nous avions déjà vu la syntaxe des constructeurs avec visibilité devant les arguments, afin de déclarer un attribut.
+
+### Des notifications plus élégantes
+
+Si le temps le permet, vous pouvez consulter [cette note complémentaire]({{site.baseurl}}/complements/notifications) qui permet de remplacer nos messages flashs par des notifications plus élégantes.

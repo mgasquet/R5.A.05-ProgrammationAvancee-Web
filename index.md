@@ -48,13 +48,14 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
 Quelques guides et tutoriels en complément des TDs.
 
 1. [Le Doctrine Query Language (DQL)](complements/dql).
-2. [Déploiement sur le serveur du département](complements/deploiement).
+2. [Des notifications plus élégantes](complements/notifications).
+3. [Déploiement sur le serveur du département](complements/deploiement).
 
 {% comment %}
-3. [API Platform - Utilisation d'identifiants simples à la place des IRIs](complements/iri)
-4. [API Platform - Les State Providers](complements/state-provider)
-5. [API Platform - Sécurité des sous-ressources](complements/securite-subressources-api-platform)
-6. [API Platform - Gestion des relations entre les entités 1/2](complements/relations1)
-7. [API Platform - Gestion des relations entre les entités 2/2](complements/relations2)
-8. [API Platform - Sécurisation et extension du token de rafraîchissement](complements/securite-refresh-token)
+4. [API Platform - Utilisation d'identifiants simples à la place des IRIs](complements/iri)
+5. [API Platform - Les State Providers](complements/state-provider)
+6. [API Platform - Sécurité des sous-ressources](complements/securite-subressources-api-platform)
+7. [API Platform - Gestion des relations entre les entités 1/2](complements/relations1)
+8. [API Platform - Gestion des relations entre les entités 2/2](complements/relations2)
+9. [API Platform - Sécurisation et extension du token de rafraîchissement](complements/securite-refresh-token)
 {% endcomment %}
