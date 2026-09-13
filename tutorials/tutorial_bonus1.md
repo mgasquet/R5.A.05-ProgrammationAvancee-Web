@@ -440,7 +440,7 @@ final class StripeWebhookConsumer implements ConsumerInterface
 }
 ```
 
-Afin d'injecter la signature secrète dans `$secret`, on la stocke dans une variable dans `.env` (par exemple, `STRIPe8SECRET_SIGNATURE`) et on l'injecte ainsi :
+Afin d'injecter la signature secrète dans `$secret`, on la stocke dans une variable dans `.env` (par exemple, `STRIPE_SECRET_SIGNATURE`) et on l'injecte ainsi :
 
 ```yaml
 #src/config/packages/webhook.yaml
@@ -568,7 +568,7 @@ Ainsi, il est possible d'avoir plusieurs **webhooks** différents, pour plusieur
 
 <div class="exercise">
 
-1. Utilisez la commande `listen` du client Stripe en précisant l'URL pointant vers la route de votre site correspondant au **webhook** créé lors de l'exercice précédent (quelque chose comme [https://localhost/the_feed/public/webhook/stripe](https://localhost/the_feed/public/webhook/stripe)).
+1. Utilisez la commande `listen` du client Stripe en précisant l'URL pointant vers la route de votre site correspondant au **webhook** créé lors de l'exercice précédent (normalement [https://localhost/the_feed/public/webhook/stripe](https://localhost/the_feed/public/webhook/stripe) si vous avez bien nommé votre webhook **stripe**).
 
 2. Testez d'acheter du mode premium (comme tout à l'heure, en utilisant une [carte bancaire de test](https://stripe.com/docs/testing?locale=fr-FR#cards)).
 

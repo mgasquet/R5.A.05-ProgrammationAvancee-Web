@@ -1406,4 +1406,6 @@ Avec ce TD, vous avez pu consolider votre maîtrise de Symfony et vous connaisse
 
 Si vous avez un peu de temps, vous pouvez effectuer ce [TP bonus]({{site.baseurl}}/tutorials/tutorial_bonus1) qui consiste à la mise en place d'un système de paiement (pour obtenir le statut premium) sur notre site à l'aide de **Stripe**. Ce TP aborde aussi la notion de **webhook** qui est un mécanisme courant dès qu'on utilise un service externe.
 
+Vous pouvez également consulter [cette note complémentaire]({{site.baseurl}}/complements/deploiement) et vous entraîner en déployant **The Feed** sur le serveur de l'IUT (pour avoir une première expérience à ce niveau, avant le premier projet).
+
 Dans le prochain TD (le dernier consacré à Symfony), nous allons voir comment créer une **API REST** pour notre application "The Feed" avec un outil dédié : **API Platform.** Nous allons transposer tout ce que nous avons fait jusqu'ici sous la forme d'une API (donc, sans rendu HTML) qui pourra être utilisée par n'importe quel application : une application mobile, un autre service, ou bien une application **Vue.js**, ce qui sera l'objet des futurs TDs !
