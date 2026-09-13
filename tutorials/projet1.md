@@ -24,7 +24,7 @@ Voici les détails du service qui devra être développé :
 
 * Attention, comme expliqué juste avant, même si le profil est **non répertorié**, il peut toujours être consulté via l'adresse et le code du profil (contrairement aux profils privés). S'il est **non répertorié**, il n'est simplement pas listé sur la page principale de l'annuaire.
 
-* Lors de l'inscription (via un formulaire) l'utilisateur précise seulement un minimum d'informations : login, adresse email, mot de passe et la visibilité du profil (public/non répertorié/privé).
+* Lors de l'inscription (via un formulaire) l'utilisateur précise seulement un minimum d'informations : login, adresse email, mot de passe et la visibilité du profil (public/non répertorié/privé). Par mesure de sécurité, l'utilisateur doit saisir son mot de passe deux fois dans le formulaire d'inscription. Deux utilisateurs différents ne peuvent pas avoir le même login et la même adresse email.
 
 * Chaque profil doit être associé à un **code unique**. Pendant l'inscription, l'utilisateur peut choisir de préciser lui-même ce code ou non (à condition qu'il ne soit pas déjà pris). S'il ne précise rien, un code aléatoire sera alors généré.
 
@@ -50,6 +50,8 @@ Voici les détails du service qui devra être développé :
 
 * Certains utilisateurs peuvent posséder le rôle d'**administrateur**. Sur la page principale, en plus des profils **visibles**, un les profils **non répertoriés** et **privés** sont également listés, et il peut y accéder. De même, il **peut tout à fait accéder aux à la page de détails d'un profil privé**. Aussi, à partir d'un profil, un administrateur peut **supprimer le compte** de l'utilisateur qui possède ce profil, sauf si cet utilisateur est aussi un administrateur.
 
+* Sur la page de profil d'un utilisateur, un administrateur peut voir la **dernière date de connexion** de l'utilisateur à qui appartient le profil.
+
 * Un système permet aux utilisateurs de **signaler** un profil dont le contenu est inapproprié, avec un commentaire. Les administrateurs ont alors accès à une page spéciale qui liste les signalements, avec les différentes informations nécessaires (utilisateur à l'origine du signalement, commentaire, lien vers le profil signalé...). Il doit être possible de supprimer un signalement (afin qu'il ne reste pas listé une fois qu'il a été traité...).
 
 * Plusieurs commandes (**Symfony**) doivent être ajoutées :
@@ -64,7 +66,9 @@ Voici les détails du service qui devra être développé :
 
 * Pour le style du site, faites ce que vous voulez, tant que ce n'est pas trop laid ! Cependant, **il est interdit de reprendre le style de The Feed**. Par contre, vous pouvez utiliser n'importe quel Framework CSS (par exemple [bootstrap](https://getbootstrap.com/docs/5.3/getting-started/download/), [tailwind css](https://tailwindcss.com/) ou bien quelque chose d'encore plus simple comme [bulma](https://bulma.io/)). De plus, **Symfony** vous permet d'intégrer facilement [bootstrap](https://symfony.com/doc/7.4/form/bootstrap5.html) pour générer facilement des formulaires stylisés. Le site de [tailwind css](https://tailwindcss.com/docs/guides/symfony) possède aussi un guide d'installation pour Symfony.
 
-* Faites en sorte de ne pas avoir d'actions (dans les contrôleurs) trop grosses, de séparer les responsabilités, de créer et utiliser des **services**, etc.
+* Faites en sorte de vérifier les données saisies, côté serveur (via les assertions) et côté client également (via les attributs HTML relatifs aux champs). Le mot de passe doit bien sûr être chiffré et suffisamment fort.
+
+* Faites en sorte de ne pas avoir d'actions (dans les contrôleurs) trop grosses, de séparer les responsabilités, de créer et utiliser des **services**, d'éviter la duplication de code le plus possible, etc.
 
 * Vous pouvez utiliser les fonctionnalités **Turbo** au besoin (frame, stream) abordés dans le TD3, mais aucune obligation. Vous pouvez remplacer les fonctionnalités dynamiques proposées par ce système par du JavaScript.
 
@@ -78,11 +82,11 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 * L'attribut `#[ORM\PrePersist]` n'est utilisé que dans le cas d'une insertion dans la base de données (donc, quand l'entité est créée, pas lorsqu'elle est mise à jour).
 
+* Concernant le fait de vérifier que la valeur d'un champ est bien répété dans un formulaire, vous pouvez jeter un œil [ici](https://symfony.com/doc/7.4/reference/forms/types/repeated.html).
+
 * Nous avons vu comment générer une chaîne aléatoire lors de la sauvegarde de la photo de profil de l'utilisateur dans le [TD2]({{site.baseurl}}/tutorials/tutorial2).
 
 * Dans les [TD2]({{site.baseurl}}/tutorials/tutorial2), nous avons vu comment capter des **événements** (`LoginSuccessEvent`, `LoginFailureEvent` et `LogoutEvent`) afin d'exécuter du code lorsque ces événements surviennent. [D'autres événements](https://symfony.com/doc/7.4/event_dispatcher.html) peuvent vous permettre de facilement implémenter la fonctionnalité relative à **la date de dernière connexion** d'un utilisateur ainsi que le **système de maintenance**.
-
-* Dans le [TD2]({{site.baseurl}}/tutorials/tutorial2), nous avons vu comment capter des **événements** (`LoginSuccessEvent`, `LoginFailureEvent` et `LogoutEvent`) afin d'exécuter du code lorsque ces événements surviennent. [D'autres événements](https://symfony.com/doc/7.4/event_dispatcher.html) peuvent vous permettre de facilement implémenter la fonctionnalité relative au **système de maintenance**.
 
 * Dans le [TD3]({{site.baseurl}}/tutorials/tutorial3), nous avons vu qu'il faut renvoyer un objet `JsonResponse` quand on veut renvoyer une réponse au format JSON plutôt qu'une page web complète (générée avec **Twig**). Vous trouverez plus d'informations [ici](https://symfony.com/doc/7.4/components/http_foundation.html#creating-a-json-response).
 
