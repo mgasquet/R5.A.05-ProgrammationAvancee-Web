@@ -15,43 +15,43 @@ De nos jours, les architectures qui séparent activement la partie `back-end` (s
 
 Dans ce fonctionnement, le serveur ne doit alors que renvoyer des données (généralement au format `JSON`, ou bien parfois `XML`) mais il ne se charge pas du rendu de la page. Ce sont alors les technologies clientes qui, une fois les données récupérées auprès du serveur, les utilisent pour mettre à jour leur interface. On appelle alors le programme côté back-end une `API` pour `Application Programming Interface`. Cela signifie en fait que ce programme est lui-même un `service` qui sert à exécuter des actions et récupérer de l'information, mais pas de document (pages web) à proprement parler.
 
-Dans le monde des **API**, il existe un **style architectural** nommé `REST` pour **representational state transfer**. Dans cette architecture on parle de **ressources** pour faire référence aux différentes entités de notre service (publications, utilisateurs, commentaires...). Ces ressources doivent être désignées à travers des routes formulées de manière précise, par exemple :
+Dans le monde des **API**, il existe un **style architectural** nommé `REST` pour **representational state transfer**. Dans cette architecture on parle de **ressources** pour faire référence aux différentes entités de notre service (publications, utilisateurs, commentaires...). Ces ressources doivent être désignées à travers des routes formulées de manière précise, par exemple :
 
-* `/utilisateurs` : désigne tous les utilisateurs
+* `/utilisateurs` : désigne tous les utilisateurs
 
-* `/utilisateurs/1` : désigne l'utilisateur 1
+* `/utilisateurs/1` : désigne l'utilisateur 1
 
-* `/publications` : désigne toutes les publications
+* `/publications` : désigne toutes les publications
 
-* `/publications/3` : désigne la troisième publication
+* `/publications/3` : désigne la troisième publication
 
-* `/utilisateurs/1/publications` : désigne toutes les publications de l'utilisateur numéro 1
+* `/utilisateurs/1/publications` : désigne toutes les publications de l'utilisateur numéro 1
 
-* `/utilisateurs/1/publications/5` : désigne la 5ème publication de l'utilisateur numéro 1
+* `/utilisateurs/1/publications/5` : désigne la 5ème publication de l'utilisateur numéro 1
 
 Grossièrement, on retrouve le schéma `/{ensemble}/{id}/...` etc...
 
-Pour manipuler ces ressources, on utilise les méthodes `HTTP` suivantes :
+Pour manipuler ces ressources, on utilise les méthodes `HTTP` suivantes :
 
-* `GET` : Récupère les données de la ressource désignée par la route. On utilise généralement cette méthode sous deux formes : soit pour récupérer un ensemble de ressources (liste) ou bien pour récupérer une ressource précise.
+* `GET` : Récupère les données de la ressource désignée par la route. On utilise généralement cette méthode sous deux formes : soit pour récupérer un ensemble de ressources (liste) ou bien pour récupérer une ressource précise.
 
-* `POST` : Crée une ressource dans l'ensemble désignée par la route avec les informations fournies dans le corps de la requête.
+* `POST` : Crée une ressource dans l'ensemble désignée par la route avec les informations fournies dans le corps de la requête.
 
-* `PUT` : Remplace complètement la ressource désignée par la route avec les informations fournies dans le corps de la requête (tous les attributs nécessaires doivent donc être spécifiés, comme pour `POST`). On écrase l'ancienne ressource avec la nouvelle.
+* `PUT` : Remplace complètement la ressource désignée par la route avec les informations fournies dans le corps de la requête (tous les attributs nécessaires doivent donc être spécifiés, comme pour `POST`). On écrase l'ancienne ressource avec la nouvelle.
 
-* `PATCH` : Met à jour partiellement les données de la ressource désignée par la route avec les informations fournies dans le corps de la requête (seuls les attributs qui ont besoin d'être mis à jour doivent être spécifiés).
+* `PATCH` : Met à jour partiellement les données de la ressource désignée par la route avec les informations fournies dans le corps de la requête (seuls les attributs qui ont besoin d'être mis à jour doivent être spécifiés).
 
-* `DELETE` : Supprime la ressource désignée par la route.
+* `DELETE` : Supprime la ressource désignée par la route.
 
-Donc, par exemple, on pourrait avoir :
+Donc, par exemple, on pourrait avoir :
 
-* `GET /publications` : Renvoie toutes les publications.
+* `GET /publications` : Renvoie toutes les publications.
 
-* `GET /publications/1` : Renvoie les informations de la publication ayant pour identifiant 1.
+* `GET /publications/1` : Renvoie les informations de la publication ayant pour identifiant 1.
 
-* `POST /publications` : Créé une nouvelle publication (et renvoie ses informations).
+* `POST /publications` : Créé une nouvelle publication (et renvoie ses informations).
 
-* `DELETE /utilisateurs/3` : Supprime l'utilisateur numéro 3.
+* `DELETE /utilisateurs/3` : Supprime l'utilisateur numéro 3.
 
 Bien entendu, pour une ressource donnée, le développeur n'est pas obligé d'implémenter toutes les méthodes. Parfois, il n'est pas souhaitable que toutes les opérations soient disponibles pour agir sur une ressource.
 
@@ -73,7 +73,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
 <div class="exercise">
 
-1. Depuis le terminal (dans le conteneur docker), assurez-vous d'être bien placé dans `/var/www/html` puis exécutez la commande suivante :
+1. Depuis le terminal (dans le conteneur docker), assurez-vous d'être bien placé dans `/var/www/html` puis exécutez la commande suivante :
 
     ```bash
     composer create-project symfony/skeleton:"6.4.*" the_feed_api
@@ -81,15 +81,15 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
     Le projet est accessible sur votre machine (hors conteneur) dans le dossier `shared/public_html/the_feed_api`.
 
-2. Toujours dans votre conteneur, installez maintenant la librairie spécifique à API Platform :
+2. Toujours dans votre conteneur, installez maintenant la librairie spécifique à API Platform :
 
-    * Dans le dossier du projet, exécutez la commande suivante :
+    * Dans le dossier du projet, exécutez la commande suivante :
 
         ```bash
         composer require doctrine/dbal:"^3"
         ```
 
-        Et ensuite :
+        Et ensuite :
 
         ```bash
         composer require api
@@ -97,7 +97,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
         Répondez `n` (no) à la question posée.
 
-        Puis (pour générer le fichier `.htaccess` dans `public`) :
+        Puis (pour générer le fichier `.htaccess` dans `public`) :
 
         ```bash
         composer require symfony/apache-pack
@@ -105,7 +105,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
         Répondez `y` (oui) à la question posée.
 
-3. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter depuis la racine du projet) :
+3. Donnez au serveur web les **permissions** pour créer et éditer des fichiers dans votre projet (à exécuter depuis la racine du projet) :
 
    ```bash
    chown -R 1000:www-data .
@@ -113,7 +113,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
    Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
 
-4. Ouvrez le fichier `config/packages/api_plaform.yaml` et éditez-le ainsi :
+4. Ouvrez le fichier `config/packages/api_plaform.yaml` et éditez-le ainsi :
 
    ```yaml
    api_platform:
@@ -127,35 +127,35 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
                json: ['application/json']
    ```
 
-    Les deux options dans `formats` vont nous permettre d'utiliser deux formats pour la lecture et l'écriture de données : `json` (que vous connaissez bien) mais aussi un format plus évolué, le `ld+json`.
+    Les deux options dans `formats` vont nous permettre d'utiliser deux formats pour la lecture et l'écriture de données : `json` (que vous connaissez bien) mais aussi un format plus évolué, le `ld+json`.
 
 5. Nous allons maintenant configurer la base de données dans le fichier `.env`. Configurez donc une nouvelle base (nouveau nom) et ne réutilisez pas la précédente (par exemple, nommez la base `the_feed_api`). Pour rappel, comme nous sommes dans le conteneur, l'adresse hôte à utiliser est `db`, le login `root` et le mot de passe `root`. Le port est `3306`.
 
-6. Exécutez la commande suivante afin de créer la base :
+6. Exécutez la commande suivante afin de créer la base :
 
     ```bash
     php bin/console doctrine:database:create
     ```
     
-7. En vous rendant dans le dossier du projet, videz le cache :
+7. En vous rendant dans le dossier du projet, videz le cache :
 
     ```bash
     php bin/console cache:clear
     ```
 
-8. Rendez-vous sur votre site à l'adresse : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
+8. Rendez-vous sur votre site à l'adresse : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/). Si cela fonctionne, tout est prêt. Vous devriez voir une page liée à **API Platform**.
 
 </div>
 
 Vous aurez peut-être remarqué que, même si nous nous trouvons dans l'environnement `dev`, il faut vider le cache. Cela est dû au fonctionnement interne d'API Platform et malheureusement, nous ne pouvons pas vraiment faire autrement. Après certaines modifications, il faudra donc vider le cache pour que les changements soient pris en compte.
 
-Retenez donc bien cette commande :
+Retenez donc bien cette commande :
 
 ```bash
 php bin/console cache:clear
 ```
 
-Ou bien, sa version abrégée :
+Ou bien, sa version abrégée :
 
 ```bash
 php bin/console c:c
@@ -175,7 +175,7 @@ Pour générer le code de base lié à l'entité publication, nous allons utilis
 
 <div class="exercise">
 
-1. Installez le bundle `maker-bundle` :
+1. Installez le bundle `maker-bundle` :
 
     ```bash
     composer require symfony/maker-bundle --dev
@@ -183,7 +183,7 @@ Pour générer le code de base lié à l'entité publication, nous allons utilis
 
 2. Créez une nouvelle entité `Publication` à l'aide de la commande `make:entity` en ajoutant l'option `--api-resource` qui permet d'indiquer à Symfony que nous créons une entité liée à **API Platform**.
 
-    Pour les propriétés à ajouter :
+    Pour les propriétés à ajouter :
 
     * `message` de type `text` (`null` non autorisé).
 
@@ -193,7 +193,7 @@ Pour générer le code de base lié à l'entité publication, nous allons utilis
 
 4. Videz le cache.
 
-5. Mettez à jour la structure de votre base de données. Pour rappel, les commandes à utiliser sont :
+5. Mettez à jour la structure de votre base de données. Pour rappel, les commandes à utiliser sont :
 
     ```bash
     php bin/console make:migration
@@ -212,7 +212,7 @@ Tout est en place pour faire nos premières requêtes ! Nous pouvons manipuler
 
 <div class="exercise">
 
-1. Rechargez la page web de présentation de l'API : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/).
+1. Rechargez la page web de présentation de l'API : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/).
 
 2. Explorez la documentation des différentes méthodes proposées. Vous pouvez même envoyer des requêtes avec le bouton `Try it out`.
 
@@ -228,15 +228,15 @@ Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de 
 
 1. Allumez **postman**. L'application vous propose de créer un compte, mais vous n'en avez pas besoin. Cliquez simplement sur "**Skip signing in and take me straight to the app**" tout en bas.
 
-2. Sur l'interface, créez un nouvel onglet et paramétrez-le ainsi :
+2. Sur l'interface, créez un nouvel onglet et paramétrez-le ainsi :
 
     * Dans la liste déroulante du choix des méthodes, sélectionnez `POST`.
 
-    * Juste à côté, le champ permet de rentrer l'URL de la ressource à viser. Par exemple : [https://localhost/the_feed_api/public/api/publications](https://localhost/the_feed_api/public/api/publications) (pour Linux/macOS, il faut descendre un peu plus bas sur la page)
+    * Juste à côté, le champ permet de rentrer l'URL de la ressource à viser. Par exemple : [https://localhost/the_feed_api/public/api/publications](https://localhost/the_feed_api/public/api/publications) (pour Linux/macOS, il faut descendre un peu plus bas sur la page)
 
     * Comme mentionné plus tôt, avec les requêtes de **création / modification**, nous avons besoin d'un `payload` au format `JSON`. Pour le configurer, rendez-vous dans `Body` puis sélectionnez l'option `raw` et enfin, à droite, sélectionnez `JSON` dans la liste déroulante (à la place de `Text`).
 
-    * Remplissez la zone de saisie des données avec le `payload` suivant :
+    * Remplissez la zone de saisie des données avec le `payload` suivant :
 
     ```json
     {
@@ -245,7 +245,7 @@ Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de 
     }
     ```
 
-3. Cliquez sur **Send**. L'application envoie une alerte, car nous utilisons un certificat auto-signé pour pouvoir proposer `https` sur notre serveur web. Acceptez d'utiliser ce certificat "non sécurisé" et poursuivez la requête. Observez le résultat : la publication devrait vous être renvoyée (avec son identifiant) ! Ajoutez-en quelques autres.
+3. Cliquez sur **Send**. L'application envoie une alerte, car nous utilisons un certificat auto-signé pour pouvoir proposer `https` sur notre serveur web. Acceptez d'utiliser ce certificat "non sécurisé" et poursuivez la requête. Observez le résultat : la publication devrait vous être renvoyée (avec son identifiant) ! Ajoutez-en quelques autres.
 
 4. Ouvrez un nouvel onglet et faites en sorte de récupérer la liste de toutes les publications (il n'y a pas de `payload` à mettre dans ce cas...).
 
@@ -258,15 +258,15 @@ Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de 
 
 À ce stade, vous avez pu tester diverses routes pour manipuler les publications, mais vous avez pu constater quelques soucis de logique. En effet, la **date** est un paramètre rentré par le client. Ce qui implique qu'il doit connaître précisément la date d'envoi, mais aussi qu'il peut la falsifier (par exemple, mettre 2050 pour être la publication la plus récente...). D'ailleurs, la date qui vous est donnée plus tôt dans le `payload` est antérieure à aujourd'hui ! 
 
-Dans le premier TD, nous avons vu comment générer cette date automatiquement, mais il faut aussi pouvoir **empêcher** l'utilisateur de pouvoir l'envoyer dans le `payload`. Pour cela, nous pouvons nous aider de l'attribut `#[ApiProperty]`. Cet attribut se place au-dessus d'une propriété de la classe. Ses paramètres permettent de configurer la présentation de la propriété et ajouter certaines règles. Par exemple :
+Dans le premier TD, nous avons vu comment générer cette date automatiquement, mais il faut aussi pouvoir **empêcher** l'utilisateur de pouvoir l'envoyer dans le `payload`. Pour cela, nous pouvons nous aider de l'attribut `#[ApiProperty]`. Cet attribut se place au-dessus d'une propriété de la classe. Ses paramètres permettent de configurer la présentation de la propriété et ajouter certaines règles. Par exemple :
 
-* `writable: true/false` : autorise ou interdit l'écriture de cette propriété lors de la création/modification (par défaut, autorisé si non précisé). Si la propriété est présente dans le payload, elle est ignorée.
+* `writable: true/false` : autorise ou interdit l'écriture de cette propriété lors de la création/modification (par défaut, autorisé si non précisé). Si la propriété est présente dans le payload, elle est ignorée.
 
-* `readable: true/false` : renvoie ou non la propriété lorsqu'on lit la ressource (par défaut, autorisé).
+* `readable: true/false` : renvoie ou non la propriété lorsqu'on lit la ressource (par défaut, autorisé).
 
-* `description : ...` : permet de décrire le rôle de la propriété plus en détail (pour la documentation destinée aux personnes souhaitant utiliser l'API).
+* `description : ...` : permet de décrire le rôle de la propriété plus en détail (pour la documentation destinée aux personnes souhaitant utiliser l'API).
 
-Si on prend l'exemple suivant :
+Si on prend l'exemple suivant :
 
 ```php
 use ApiPlatform\Metadata\ApiProperty;
@@ -285,7 +285,7 @@ Les attributs `write` et `read` sont utiles quand on souhaite appliquer la même
 
 Dans l'annotation `#[ApiResource]` au-dessus de la classe, il est possible de rajouter un paramètre `order` pour spécifier comment sont ordonnés les résultats d'une requête renvoyant une collection de cette ressource. 
 
-On le spécifie ainsi : `#[ApiResource(order : ["attribut1" => "ASC ou DESC", "attribut2" => "ASC OU DESC", ...])]`. 
+On le spécifie ainsi : `#[ApiResource(order : ["attribut1" => "ASC ou DESC", "attribut2" => "ASC OU DESC", ...])]`. 
 
 On trie les résultats par rapport au premier attribut spécifié puis, en cas d'égalité, par rapport au second, et ainsi de suite (similaire au `ORDER BY` en SQL). Les valeurs `ASC` ou `DESC` permettent de spécifier le sens du tri (croissant ou décroissant).
 
@@ -293,7 +293,7 @@ On trie les résultats par rapport au premier attribut spécifié puis, en cas d
 //Quand je récupère l'ensemble des entreprises, elles sont triées de celle possédant le plus gros CA à celle possédant le plus petit CA.
 #[ApiResource(
     ...,
-    order : ["chiffreAffaire" => "DESC"]
+    order: ["chiffreAffaire" => "DESC"]
 )]
 class Entreprise {
 
@@ -308,7 +308,7 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
 
 <div class="exercise">
 
-1. Faites les modifications nécessaires au niveau de l'entité `Publication` afin qu'une date entrée dans le `payload` soit ignorée (qu'on ne puisse pas l'écrire). Ensuite, pour que celle-ci soit plutôt générée automatiquement du côté du serveur, on pourra utiliser le code suivant qu'on avait déjà utilisé dans les TDs précédents :
+1. Faites les modifications nécessaires au niveau de l'entité `Publication` afin qu'une date entrée dans le `payload` soit ignorée (qu'on ne puisse pas l'écrire). Ensuite, pour que celle-ci soit plutôt générée automatiquement du côté du serveur, on pourra utiliser le code suivant qu'on avait déjà utilisé dans les TDs précédents :
 
     ```php
     #[ORM\HasLifecycleCallbacks]
@@ -352,16 +352,16 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
 
 Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En effet, nous ne voulons pas que les publications soient modifiables. Il faut donc interdire les méthodes `PUT` et `PATCH`, ou plutôt, autoriser seulement les autres méthodes. Pour cela, il suffit d'utiliser le paramètre `operations` au niveau de l'annotation `#[ApiResource]`. Ce paramètre est une **liste** des opérations permises, sous la forme d'objets (qu'on peut d'ailleurs configurer de manière ciblée).
 
-Les opérations possibles sont :
+Les opérations possibles sont :
 
-* `GetCollection` : récupération d'un ensemble de ressources.
-* `Get` : récupération d'une ressource ciblée.
-* `Post` : création d'une ressource.
-* `Put` : mise à jour complète d'une ressource ciblée.
-* `Patch` : mise à jour partielle d'une ressource ciblée.
-* `Delete` : suppression d'une ressource ciblée.
+* `GetCollection` : récupération d'un ensemble de ressources.
+* `Get` : récupération d'une ressource ciblée.
+* `Post` : création d'une ressource.
+* `Put` : mise à jour complète d'une ressource ciblée.
+* `Patch` : mise à jour partielle d'une ressource ciblée.
+* `Delete` : suppression d'une ressource ciblée.
 
-Ainsi, la configuration suivante permet seulement l'utilisation de la méthode `Get` ciblée et `Delete` :
+Ainsi, la configuration suivante permet seulement l'utilisation de la méthode `Get` ciblée et `Delete` :
 
 ```php
 #[ApiResource(
@@ -376,7 +376,7 @@ Petite note à part, par défaut, `GetCollection` utilise un système de paginat
 
 Ce système est nécessaire afin de limiter les données lues côté client et ainsi charger le contenu au fur et à mesure (imaginez si vous deviez charger tout **Twitter/X** à chaque accès !!!). Il est possible d'augmenter le nombre de ressources renvoyées par page ou bien simplement désactiver ce système (et donc tout renvoyer à chaque fois). Par convenance dans le cadre de ce TP, nous allons donc désactiver ce système, mais retenez bien que dans un contexte réel, il faudrait le conserver et charger le contenu petit à petit, au fil du parcours de l'utilisateur.
 
-Pour configurer tout cela, on édite le contenu du fichier `config/packages/api_platform.yaml` :
+Pour configurer tout cela, on édite le contenu du fichier `config/packages/api_platform.yaml` :
 
 ```yaml
 # Dans config/packages/api_platform.yaml
@@ -445,7 +445,7 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
 
 <div class="exercise">
 
-1. En utilisant la commande `make:entity`, mettez à jour votre entité `Publication` en ajoutant une propriété `auteur` qui sera un **Utilisateur** :
+1. En utilisant la commande `make:entity`, mettez à jour votre entité `Publication` en ajoutant une propriété `auteur` qui sera un **Utilisateur** :
 
     * La propriété ne peut pas être nulle.
 
@@ -483,13 +483,13 @@ Vous remarquerez que quand on affiche la liste des publications ou une publicati
 
 Il serait donc plutôt préférable d'afficher les détails de l'utilisateur à la place. Nous pouvons faire cela grâce aux **groupes de sérialisation**.
 
-Quand on manipule nos ressources, il peut exister **deux types de contextes** :
+Quand on manipule nos ressources, il peut exister **deux types de contextes** :
 
-* La **normalisation** : quand on transforme un objet de l'application en `JSON` et qu'on le renvoie au client (requête de lecture, type GET, mais aussi ce qui est renvoyé après avoir créé/mis à jour une entité).
+* La **normalisation** : quand on transforme un objet de l'application en `JSON` et qu'on le renvoie au client (requête de lecture, type GET, mais aussi ce qui est renvoyé après avoir créé/mis à jour une entité).
 
-* La **dénormalisation** : quand on charge un `payload` au format `JSON` et qu'on le transforme en objet de l'application (requêtes de création ou de mise à jour : POST/PUT/PATCH).
+* La **dénormalisation** : quand on charge un `payload` au format `JSON` et qu'on le transforme en objet de l'application (requêtes de création ou de mise à jour : POST/PUT/PATCH).
 
-Dans les deux cas, il peut être possible de définir des **groupes** pour contrôler la présence d'une propriété :
+Dans les deux cas, il peut être possible de définir des **groupes** pour contrôler la présence d'une propriété :
 
 * Dans le cas de la **normalisation**, il est donc possible de contrôler quelles propriétés sont **sérialisées**, c'est-à-dire, renvoyées au client sous le format `JSON`.
 
@@ -497,9 +497,9 @@ Dans les deux cas, il peut être possible de définir des **groupes** pour contr
 
 Présentement, nous allons d'abord nous intéresser à la **normalisation** pour qu'on puisse représenter quelques données de l'auteur d'une publication.
 
-Un paramètre de l'annotation `#[ApiResource(...)` nommé `normalizationContext : ["groups" => ['nom_groupe1', ...]]` permet d'activer certains groupes pendant la phase de **normalisation**. Au niveau des propriétés, l'annotation `#[Groups(['nom_groupe1', 'nom_groupe2', ...])]` permet de faire en sorte qu'une propriété soit affichée ou non dans le document `JSON` selon le groupe activé.
+Un paramètre de l'annotation `#[ApiResource(...)` nommé `normalizationContext : ["groups" => ['nom_groupe1', ...]]` permet d'activer certains groupes pendant la phase de **normalisation**. Au niveau des propriétés, l'annotation `#[Groups(['nom_groupe1', 'nom_groupe2', ...])]` permet de faire en sorte qu'une propriété soit affichée ou non dans le document `JSON` selon le groupe activé.
 
-Par exemple :
+Par exemple :
 
 ```php
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -545,7 +545,7 @@ Ici, quand on récupère les données d'un étudiant, on affiche seulement son i
 
 Pour les groupes, on affiche tout sauf la liste des étudiants (qui aurait été une liste d'IRI aussi).
 
-Pour qu'on obtienne aussi l'identifiant et le nom du groupe quand on lit les données d'un étudiant, il faut d'abord préciser le groupe `serialization:etudiant:read` au niveau de la propriété `groupe` et il faut ensuite ajouter le groupe `serialization:etudiant:read` sur chaque propriété de la classe `Groupe` qu'on souhaite afficher quand on rend le groupe d'un utilisateur : 
+Pour qu'on obtienne aussi l'identifiant et le nom du groupe quand on lit les données d'un étudiant, il faut d'abord préciser le groupe `serialization:etudiant:read` au niveau de la propriété `groupe` et il faut ensuite ajouter le groupe `serialization:etudiant:read` sur chaque propriété de la classe `Groupe` qu'on souhaite afficher quand on rend le groupe d'un utilisateur : 
 
 ```php
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -588,7 +588,7 @@ class Groupe {
 }
 ```
 
-On aurait aussi pu préciser directement le groupe `serialization:groupe:read` dans l'attribut `normalizationContext` de la classe `Etudiant` :
+On aurait aussi pu préciser directement le groupe `serialization:groupe:read` dans l'attribut `normalizationContext` de la classe `Etudiant` :
 
 ```php
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -631,7 +631,7 @@ class Groupe {
 }
 ```
 
-Si à l'inverse on avait voulu les détails de chaque étudiant d'un groupe (quand on lit le groupe) :
+Si à l'inverse on avait voulu les détails de chaque étudiant d'un groupe (quand on lit le groupe) :
 
 ```php
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -696,13 +696,13 @@ Nous avons défini `normalizationContext` de manière globale (pour toutes les o
 
 ### Publications d'un utilisateur
 
-Comme nous l'avons vu en introduction de ce TD, avec l'architecture `REST`, il doit être possible d'accéder à la liste des publications d'un utilisateur précis en utilisant cette route :
+Comme nous l'avons vu en introduction de ce TD, avec l'architecture `REST`, il doit être possible d'accéder à la liste des publications d'un utilisateur précis en utilisant cette route :
 
 `/utilisateurs/{id}/publications`
 
-Par exemple : `/utilisateurs/2/publications` : les publications de l'utilisateur 2.
+Par exemple : `/utilisateurs/2/publications` : les publications de l'utilisateur 2.
 
-Pour cela, rien de plus simple : il suffit de configurer une **nouvelle opération** `GetCollection` avec un chemin personnalisé (il est possible d'avoir plusieurs fois la même opération si les chemins sont différents). Il faut préciser un **template d'URL** et des **variables** afin d'aller chercher la ressource au bon endroit.
+Pour cela, rien de plus simple : il suffit de configurer une **nouvelle opération** `GetCollection` avec un chemin personnalisé (il est possible d'avoir plusieurs fois la même opération si les chemins sont différents). Il faut préciser un **template d'URL** et des **variables** afin d'aller chercher la ressource au bon endroit.
 
 ```php
 use ApiPlatform\Metadata\Link;
@@ -726,7 +726,7 @@ use ApiPlatform\Metadata\Link;
     ]
 )]
 ```
-Pour mieux illustrer cela, reprenons notre exemple d'étudiants et de groupe. On souhaite avoir une route `/groupe/{id}/etudiants` pour obtenir tous les étudiants d'un groupe précis :
+Pour mieux illustrer cela, reprenons notre exemple d'étudiants et de groupe. On souhaite avoir une route `/groupe/{id}/etudiants` pour obtenir tous les étudiants d'un groupe précis :
 
 ```php
 #[ApiResource(
@@ -768,7 +768,7 @@ class Etudiant {
 
 ## Authentification
 
-Nous avons enfin pu relier nos publications à nos utilisateurs efficacement, mais il reste plusieurs problèmes :
+Nous avons enfin pu relier nos publications à nos utilisateurs efficacement, mais il reste plusieurs problèmes :
 
 * Un utilisateur qui poste une publication doit connaître son `IRI`.
 
@@ -784,7 +784,7 @@ Pour régler cela, nous allons mettre en place un système d'authentification po
 
 Comme nous l'avons mentionné au début de ce TD, l'architecture **REST** implique la notion de **stateless**, c'est-à-dire que le serveur ne garde aucune information sur l'utilisateur en mémoire vive ou avec une session, etc... Mais alors, comment mettre en place un système d'authentification et faire comprendre au serveur que l'utilisateur est légitime ? Pour cela, nous allons utiliser le mécanisme des `JSON Web Tokens` souvent abrégé en `JWT`.
 
-Un `JWT` est une chaîne de caractères appelée `token` encodée en `base64` qui contient de l'information. Une fois décodée, ce jeton se décompose en trois parties :
+Un `JWT` est une chaîne de caractères appelée `token` encodée en `base64` qui contient de l'information. Une fois décodée, ce jeton se décompose en trois parties :
 
 * Le `header` (au format `JSON`) qui contient des informations sur la nature du jeton (le type de jeton, le type d'algorithme utilisé),
 
@@ -798,7 +798,7 @@ Tout le monde peut décoder un `JWT` et lire son contenu. Donc il **ne doit pas 
 
 Vous pouvez aller voir à quoi rassemble un `JWT` [à cette adresse](https://jwt.io/).
 
-De nos jours, les **API** utilisent un système d'authentification par `token` comme avec les `JWT`. La logique est la suivante :
+De nos jours, les **API** utilisent un système d'authentification par `token` comme avec les `JWT`. La logique est la suivante :
 
 * Le serveur possède une paire clé publique/clé privée.
 
@@ -825,7 +825,7 @@ La manière dont est stocké le token côté client est également très importa
 
 Tout abord, nous allons devoir intégrer nos utilisateurs au système d'authentification de `Symfony` pour que par la suite, ils puissent être vérifiés et récupérés automatiquement lors de l'envoi des identifiants au serveur.
 
-Il faut tout d'abord indiquer à Symfony que notre entité `Utilisateur` joue le rôle d'utilisateur dans notre application, en ajoutant cette section dans `config/packages/security.yaml` :
+Il faut tout d'abord indiquer à Symfony que notre entité `Utilisateur` joue le rôle d'utilisateur dans notre application, en ajoutant cette section dans `config/packages/security.yaml` :
 
 ```yaml
 #config/packages/security.yaml
@@ -843,11 +843,11 @@ Dans le projet précédent, cette section avait été générée automatiquement
 
 Si vous vous souvenez bien, dans le formulaire de création de l'utilisateur, il y avait un champ `plainPassword` qui ne faisait pas partie de l'entité et qui était **haché** puis placé dans la propriété `password`. Mais comment faire cela, alors que nous n'avons pas de formulaire ni de contrôleur pour gérer ce comportement ?
 
-Pour la question du champ `plainPassword`, c'est très simple : il suffit de la placer dans la classe `Utilisateur` (comme propriété de la classe) mais ne pas placer d'attribut `#[ORM\Column]` dessus. Ainsi, la propriété pourra être utilisée dans le payload mais ne sera pas enregistrée dans la base de données. On interdira l'écriture du champ `password` par l'utilisateur, car cela sera géré par l'application (pour rappel, `password` contient le mot de passe haché).
+Pour la question du champ `plainPassword`, c'est très simple : il suffit de la placer dans la classe `Utilisateur` (comme propriété de la classe) mais ne pas placer d'attribut `#[ORM\Column]` dessus. Ainsi, la propriété pourra être utilisée dans le payload mais ne sera pas enregistrée dans la base de données. On interdira l'écriture du champ `password` par l'utilisateur, car cela sera géré par l'application (pour rappel, `password` contient le mot de passe haché).
 
 Enfin, pour pouvoir transformer `plainPassword` en mot de passe haché, nous allons utiliser une classe particulière appelée `StateProcessor`.
 
-Sur API Platform, il existe deux types de classes importantes : Les `StateProcessor` et les `StateProvider`.
+Sur API Platform, il existe deux types de classes importantes : Les `StateProcessor` et les `StateProvider`.
 
 * Une classe de type `StateProcessor` est un **service** qui est appelé après avoir reçu et vérifié le `payload` lors d'une requête de création ou de mise à jour. Elle a pour but d'effectuer des traitements avant l'enregistrement en base de données.
 
@@ -857,13 +857,13 @@ Il est bien entendu possible d'injecter d'autres services (et paramètres) dans 
 
 Dans notre cas, il nous faut donc un `StateProcessor` afin de hacher le mot de passe avant de sauvegarder l'utilisateur dans la base de données.
 
-La commande suivante permet d'initialiser un `StateProcessor` :
+La commande suivante permet d'initialiser un `StateProcessor` :
 
 ```bash
 php bin/console make:state-processor MonStateProcessor
 ```
 
-Ce qui donne la classe suivante :
+Ce qui donne la classe suivante :
 
 ```php
 #src/State/MonStateProcessor.php
@@ -934,7 +934,7 @@ class Etudiant {
 }
 ```
 
-Pour les providers, l'interface à implémenter est `StateProvider` (la commande `make:state-provider`) et le paramètre à préciser dans l'opération : `provider`. Nous n'aurons malheureusement pas l'occasion de traiter un cas de **state provider** dans ce TD, mais c'est globalement la même chose (on utilise un service pour récupérer l'information puis on applique nos modifications). Les **state providers** sont plus amplement présentés dans [cette note complémentaire]({{site.baseurl}}/complements/state-provider) que vous pourrez aller consulter à la fin du TD.
+Pour les providers, l'interface à implémenter est `StateProvider` (la commande `make:state-provider`) et le paramètre à préciser dans l'opération : `provider`. Nous n'aurons malheureusement pas l'occasion de traiter un cas de **state provider** dans ce TD, mais c'est globalement la même chose (on utilise un service pour récupérer l'information puis on applique nos modifications). Les **state providers** sont plus amplement présentés dans [cette note complémentaire]({{site.baseurl}}/complements/state-provider) que vous pourrez aller consulter à la fin du TD.
 
 <div class="exercise">
 
@@ -961,7 +961,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
     * Vous pouvez réutiliser le bout de code (voir la méthode complète) définie dans la classe `UtilisateurManager` du projet précédent. Il vous faudra donc aussi injecter et utiliser le service `UserPasswordHasherInterface`.
 
-    * **Attention** : lorsque vous utilisez la commande `make:state-processor`, le type de retour de la fonction `process` est `void`. Changez plutôt cela en `mixed`.
+    * **Attention** : lorsque vous utilisez la commande `make:state-processor`, le type de retour de la fonction `process` est `void`. Changez plutôt cela en `mixed`.
 
 7. Utilisez votre `UtilisateurProcessor` comme processeur de l'opération `POST` sur l'entité `Utilisateur`.
 
@@ -1005,7 +1005,7 @@ Attention, ces groupes sont différents de ceux utilisés dans `normalizationCon
 
 <div class="exercise">
 
-1. En vous aidant de deux groupes de validation : `validation:utilisateur:create` et `validation:utilisateur:update`, faites en sorte qu'il soit obligatoire de préciser `plainPassword` seulement lors de la requête `POST`.
+1. En vous aidant de deux groupes de validation : `validation:utilisateur:create` et `validation:utilisateur:update`, faites en sorte qu'il soit obligatoire de préciser `plainPassword` seulement lors de la requête `POST`.
 
 2. Videz le cache puis vérifiez que vous pouvez mettre à jour l'utilisateur sans préciser le mot de passe.
 
@@ -1015,11 +1015,11 @@ Attention, ces groupes sont différents de ceux utilisés dans `normalizationCon
 
 ### Contexte de dénormalisation
 
-Maintenant, nous faisons face à un autre problème : on voudrait que certaines propriétés puissent être précisées lors de la création, mais pas lors de la mise à jour (qu'elles soient ignorées). Par exemple, on souhaite que le login d'un utilisateur ne puisse pas être mis à jour. Pour cela, on peut utiliser les groupes de **dénormalisation**.
+Maintenant, nous faisons face à un autre problème : on voudrait que certaines propriétés puissent être précisées lors de la création, mais pas lors de la mise à jour (qu'elles soient ignorées). Par exemple, on souhaite que le login d'un utilisateur ne puisse pas être mis à jour. Pour cela, on peut utiliser les groupes de **dénormalisation**.
 
 À l'inverse des groupes de **normalisation** où nous avions précisé quels attributs afficher ou non lors d'une opération type `GET`, les groupes de **dénormalisation** permettent d'ignorer certaines propriétés.
 
-Au niveau d'une propriété, il suffit de rajouter le `groupe` (dans l'annotation `#[Groups(...)]` que vous avez déjà utilisé pour la normalisation) pour lequel la propriété ne doit pas être ignoré. Par exemple : 
+Au niveau d'une propriété, il suffit de rajouter le `groupe` (dans l'annotation `#[Groups(...)]` que vous avez déjà utilisé pour la normalisation) pour lequel la propriété ne doit pas être ignoré. Par exemple : 
 
 ```php
 
@@ -1034,7 +1034,7 @@ private ?string $prop2 = null;
 
 Pour définir quel groupe activer sur telle ou telle méthode, on spécifie un paramètre `denormalizationContext` au niveau de l'opération souhaitée.
 
-Par exemple :
+Par exemple :
 ```php
 #[ApiResource(
     operations: [
@@ -1047,7 +1047,7 @@ Par exemple :
 
 <div class="exercise">
 
-1. En utilisant deux nouveaux groupes : `serialization:utilisateur:create` et `serialization:utilisateur:update`, faites en sorte que le **login** soit ignoré dans le cadre d'une requête `PATCH` s'il est envoyé dans le **payload** de la requête. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actives (`plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour, `login` seulement créé). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale.
+1. En utilisant deux nouveaux groupes : `serialization:utilisateur:create` et `serialization:utilisateur:update`, faites en sorte que le **login** soit ignoré dans le cadre d'une requête `PATCH` s'il est envoyé dans le **payload** de la requête. Attention, il faut préciser les groupes de **dénormalisation** où les autres propriétés sont actives (`plainPassword`, `adresseEmail` doivent pouvoir être créés et mis à jour, `login` seulement créé). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale.
 
 2. Videz le cache. Tentez de mettre à jour le login d'un utilisateur (avec `PATCH`). Vous devriez constater que le login n'a pas été mis à jour !
 
@@ -1065,7 +1065,7 @@ Maintenant, il ne nous reste plus qu'à mettre en place un système de connexion
 **Si vous êtes en local**, il faudra activer l'extension **sodium** dans votre fichier `php.ini`. Trouvez la ligne `;extension=sodium` dans votre fichier et enlevez `;` afin de décommenter l'extension.
 -->
 
-Afin d'activer l'authentification de nos utilisateurs, il nous faut une route dédiée. Pour la déclarer, nous pouvons utiliser le fichier `config/routes/api_platform.yaml` afin d'y ajouter une nouvelle route :
+Afin d'activer l'authentification de nos utilisateurs, il nous faut une route dédiée. Pour la déclarer, nous pouvons utiliser le fichier `config/routes/api_platform.yaml` afin d'y ajouter une nouvelle route :
 
 ```yml
 api_auth:
@@ -1075,7 +1075,7 @@ api_auth:
 
 Les utilisateurs enverront un `paylaod` contenant le login et le mot de passe sur cette route. L'application se chargera alors ensuite de nous envoyer notre **token** d'authentification que nous pourrons utiliser sur toutes les requêtes futures (qui ont besoin que l'utilisateur soit authentifié).
 
-Pour prendre en charge tout cela, il faut simplement éditer le fichier `security.yaml` :
+Pour prendre en charge tout cela, il faut simplement éditer le fichier `security.yaml` :
 
 ```yaml
 security:
@@ -1101,12 +1101,12 @@ security:
 
 Attention, même si on précise `password` ici (correspondant au mot de passe haché), dans notre payload, il faudra préciser le mot de passe en clair (le bundle se chargera ensuite de le vérifier).
 
-Pour se connecter, on devra donc envoyer un `payload` de la forme :
+Pour se connecter, on devra donc envoyer un `payload` de la forme :
 
 ```json
 {
     "login": "test",
-    "password" : "test_mdp"
+    "password": "test_mdp"
 }
 ```
 
@@ -1114,13 +1114,13 @@ Attention, ici, on utilise le nom d'attribut `password` et pas `plainPassword`.
 
 <div class="exercise">
 
-1. Installez le package suivant (système d'authentification par JWT) :
+1. Installez le package suivant (système d'authentification par JWT) :
 
     ```bash
     composer require "lexik/jwt-authentication-bundle"
     ```
 
-2. Comme nous l'avons vu, la création et la vérification de `JWT` nécessite une paire de clés (publique/privée). Utilisez la commande suivante pour générer ces clés :
+2. Comme nous l'avons vu, la création et la vérification de `JWT` nécessite une paire de clés (publique/privée). Utilisez la commande suivante pour générer ces clés :
 
     ```bash
     php bin/console lexik:jwt:generate-keypair
@@ -1139,11 +1139,11 @@ Attention, ici, on utilise le nom d'attribut `password` et pas `plainPassword`.
 7. Sur le site [https://jwt.io/](https://jwt.io/), tentez de décoder ce jeton et observez l'information qu'il contient.
 </div>
 
-Dorénavant, afin que l'API puisse autoriser certaines requêtes qui nécessitent certains droits (par exemple, être connecté pour créer une publication), il faut envoyer le `JWT` dans l'en-tête `Authorization` de la requête, avec le format suivant : `Bearer jwt` (où `jwt` est le jwt obtenu suite à la connexion). Sur une application cliente (par exemple en `Vue.js`, `Angular` ou `React`) ce token serait alors stocké par le client et intégré aux requêtes nécessaires au besoin.
+Dorénavant, afin que l'API puisse autoriser certaines requêtes qui nécessitent certains droits (par exemple, être connecté pour créer une publication), il faut envoyer le `JWT` dans l'en-tête `Authorization` de la requête, avec le format suivant : `Bearer jwt` (où `jwt` est le jwt obtenu suite à la connexion). Sur une application cliente (par exemple en `Vue.js`, `Angular` ou `React`) ce token serait alors stocké par le client et intégré aux requêtes nécessaires au besoin.
 
 Ce système est assez standard et est utilisé dans de nombreuses APIs. Cependant... Nous allons tout casser ! En effet, renvoyer directement le `JWT` dans le corps de la réponse n'est pas toujours une très bonne pratique selon le contexte, notamment si votre **API** est utilisée au travers d'une application cliente sur navigateur comme nous allons le faire bientôt (dans les TDs de Vue.js). Il faut bien comprendre que quelqu'un qui possède votre **token** peut usurper votre identité jusqu'à son expiration. Il faut donc limiter au maximum les risques que cela se produise.
 
-Cette fois, le problème vient du client, et plus précisément des applications qui tournent sur un navigateur web (avec un framework JavaScript par exemple, comme nous le ferons dans les prochains TDs). Le problème est de savoir où et comment stocker le JWT. Il y a plusieurs options :
+Cette fois, le problème vient du client, et plus précisément des applications qui tournent sur un navigateur web (avec un framework JavaScript par exemple, comme nous le ferons dans les prochains TDs). Le problème est de savoir où et comment stocker le JWT. Il y a plusieurs options :
 
 * Dans une **variable** simple. Mais celle-ci sera supprimée si la page est rechargée, ce n'est donc pas idéal du tout (l'utilisateur devra se reconnecter...)
 
@@ -1151,39 +1151,39 @@ Cette fois, le problème vient du client, et plus précisément des applications
 
 * Dans le `localStorage` qui est similaire, mais dont les données sont aussi conservées si le navigateur est redémarré.
 
-Jusqu'à il y a quelques années (et encore un peu aujourd'hui), beaucoup d'applications utilisaient la démarche suivante :
+Jusqu'à il y a quelques années (et encore un peu aujourd'hui), beaucoup d'applications utilisaient la démarche suivante :
 
 * L'API génère le `JWT` et l'envoi dans la réponse de la requête (ce que vous avez actuellement).
 
 * Le client (navigateur web) stocke le `JWT` dans le `localStorage` et l'envoi à chaque requête où cela est nécessaire. De plus, comme on peut décoder le `JWT` (qui ne contient aucune information sensible), on peut connaître la date d'expiration du token et agir en conséquence.
 
-Cependant, ce système était fortement vulnérable à un type d'attaque bien connue : l'attaque `XSS` (Cross-site Scripting). Cette attaque consiste à exploiter une vulnérabilité du site pour introduire un script malveillant qui sera exécuté par le navigateur d'une victime (ou pire, tous les utilisateurs). Cette attaque est par exemple possible si certaines informations fournies par l'utilisateur ne sont pas correctement échappées par l'application et traitées comme du code. 
+Cependant, ce système était fortement vulnérable à un type d'attaque bien connue : l'attaque `XSS` (Cross-site Scripting). Cette attaque consiste à exploiter une vulnérabilité du site pour introduire un script malveillant qui sera exécuté par le navigateur d'une victime (ou pire, tous les utilisateurs). Cette attaque est par exemple possible si certaines informations fournies par l'utilisateur ne sont pas correctement échappées par l'application et traitées comme du code. 
 
 Un attaquant pourrait par exemple envoyer des informations (par exemple, quand il rentre sa biographie sur son profil) contenant un bout de code JavaScript qui irait lire le `JWT` dans le `localStorage` et l'enverrait ailleurs, sur un espace accessible par l'attaquant. Toutes les personnes qui consulteraient la biographie en question exécuteraient alors (sans le savoir) ce script, et leur token serait donc envoyé à l'attaquant. Par la suite, ce dernier pourra donc usurper les identités des utilisateurs dont il a récupéré le token.
 
 Le danger vient donc du fait que n'importe quel script `javascript` puisse accéder et lire dans `localStorage`. Si le contenu du `JWT` n'est pas sensible en soi, le `JWT` en lui-même est utilisé pour vous identifier. Il faut donc absolument éviter de le stocker dans un endroit potentiellement vulnérable.
 
-Pour pallier ce problème, une alternative peut être choisie : utiliser des **cookies sécurisés**. Plus précisent des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stocker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
+Pour pallier ce problème, une alternative peut être choisie : utiliser des **cookies sécurisés**. Plus précisent des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stocker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
 
-* **secure** : le cookie n'est envoyé que si la requête est chiffrée (**https**).
-* **httpOnly** : le cookie n'est pas accessible dans le **javascript**. Il sera envoyé automatiquement à chaque requête vers le serveur, mais à aucun moment un script pourra lire ses données. Cela élimine le risque de se le faire voler en cas d'attaque XSS.
+* **secure** : le cookie n'est envoyé que si la requête est chiffrée (**https**).
+* **httpOnly** : le cookie n'est pas accessible dans le **javascript**. Il sera envoyé automatiquement à chaque requête vers le serveur, mais à aucun moment un script pourra lire ses données. Cela élimine le risque de se le faire voler en cas d'attaque XSS.
 * L'attribut **SameSite** permet de définir si le cookie doit être envoyé ou non selon le site où est émise la requête vers le serveur. Cela permet notamment d'éviter les attaques **CSRF** dont nous allons parler juste après.
 
 Une attaque **CSRF** (Cross-site Request Forgery) consiste à faire envoyer une requête vers un serveur (ici, une API) à l'utilisateur, mais depuis un autre site. L'idée est que le site en question contienne un script JavaScript qui émet la requête. Il faut ensuite faire en sorte que l'utilisateur que l'on souhaite piéger se rende sur ce site. La requête sera alors envoyée depuis le navigateur du client, comme si c'était lui qui était à l'initiative de la requête. Alors, même avec un cookie **secure** et en **httpOnly**, dans ce cas, l'attaquant pourra exécuter des actions sous notre identité. Notez cette fois que l'attaquant ne récupère pas notre `JWT`. Il utilise notre identité à travers notre navigateur.
 
-Pour contrer cela, on paramètre l'attribut `Same-Site` du cookie, avec une des deux valeurs suivantes :
+Pour contrer cela, on paramètre l'attribut `Same-Site` du cookie, avec une des deux valeurs suivantes :
 
-* `Same-Site: Strict` : le cookie n'est envoyé que si l'adresse du serveur de destination est la même que celle du site depuis lequel est émise la requête. Et cela pour toutes les opérations (**GET**, **POST**, etc...). Par exemple, si je me trouve sur le site `https://monsite.fr/home` que je possède un cookie lié au site `monsite.fr` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie sera envoyé. Par contre, si je me trouve sur le site `https://pas-un-site-suspect-du-tout.arnaque/home` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie ne sera pas envoyé.
+* `Same-Site: Strict` : le cookie n'est envoyé que si l'adresse du serveur de destination est la même que celle du site depuis lequel est émise la requête. Et cela pour toutes les opérations (**GET**, **POST**, etc...). Par exemple, si je me trouve sur le site `https://monsite.fr/home` que je possède un cookie lié au site `monsite.fr` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie sera envoyé. Par contre, si je me trouve sur le site `https://pas-un-site-suspect-du-tout.arnaque/home` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie ne sera pas envoyé.
 
-* `Same-Site: Lax` : même chose sauf pour les opérations type `GET` si la requête mène vers le même site que celui associé au cookie. Par exemple, si on clique sur un lien depuis un site externe. Imaginons le scénario suivant : vous êtes connecté sur le site `https://monsite.fr/`. Sur la page d'accueil, vous vous attendez donc à avoir un rendu en mode "connecté", avec un bouton "profil", "déconnexion", etc. Avec le mode `Strict`, si vous cliquez sur le lien `https://monsite.fr/` depuis un autre site (par exemple, depuis un mail), la page apparaîtra comme si vous étiez déconnecté. Avec le mode `Lax`, le cookie sera envoyé et vous verrez la page comme si vous étiez connecté. Le mode `Lax` est le mode choisi par défaut.
+* `Same-Site: Lax` : même chose sauf pour les opérations type `GET` si la requête mène vers le même site que celui associé au cookie. Par exemple, si on clique sur un lien depuis un site externe. Imaginons le scénario suivant : vous êtes connecté sur le site `https://monsite.fr/`. Sur la page d'accueil, vous vous attendez donc à avoir un rendu en mode "connecté", avec un bouton "profil", "déconnexion", etc. Avec le mode `Strict`, si vous cliquez sur le lien `https://monsite.fr/` depuis un autre site (par exemple, depuis un mail), la page apparaîtra comme si vous étiez déconnecté. Avec le mode `Lax`, le cookie sera envoyé et vous verrez la page comme si vous étiez connecté. Le mode `Lax` est le mode choisi par défaut.
 
-* Il existe une troisième valeur possible `Same-Site: None` : autorise tout (le cookie est envoyé même si la requête est émise depuis un site différent). Cela ne nous intéresse donc pas.
+* Il existe une troisième valeur possible `Same-Site: None` : autorise tout (le cookie est envoyé même si la requête est émise depuis un site différent). Cela ne nous intéresse donc pas.
 
-Il reste important de noter que, même avec tout cela, on est toujours exposé "en partie" aux attaques `XSS` : si un script malveillant est présent sur le site et exécuté par l'utilisateur, l'attaquant ne pourra plus récupérer le token de l'utilisateur, mais pourra tout de même exécuter des actions sous son identité. On ne règle donc que la moitié du problème. Pour le reste, c'est au développeur de s'assurer de ne pas introduire ce genre de faille et de mettre en place des mécanismes de sécurité supplémentaires.
+Il reste important de noter que, même avec tout cela, on est toujours exposé "en partie" aux attaques `XSS` : si un script malveillant est présent sur le site et exécuté par l'utilisateur, l'attaquant ne pourra plus récupérer le token de l'utilisateur, mais pourra tout de même exécuter des actions sous son identité. On ne règle donc que la moitié du problème. Pour le reste, c'est au développeur de s'assurer de ne pas introduire ce genre de faille et de mettre en place des mécanismes de sécurité supplémentaires.
 
 Tout cela semble compliqué et fastidieux à configurer ! Mais pas de panique, un simple paramétrage d'API Platform permet de générer et placer un cookie **secure**, **httpOnly** avec l'attribut **SameSite: Lax** dans la réponse de la requête d'authentification. Par défaut, le token sera alors supprimé du **corps** (`JSON`) de la réponse.
 
-Pour cela, il faut modifier le fichier `config/packages/lexik_jwt_authentication.yaml` en ajoutant les sections suivantes :
+Pour cela, il faut modifier le fichier `config/packages/lexik_jwt_authentication.yaml` en ajoutant les sections suivantes :
 
 ```yaml
 #config/packages/lexik_jwt_authentication.yaml
@@ -1213,13 +1213,13 @@ Naturellement, le **cookie** stockant le token a la même date d'expiration que 
 
 ### Ajouter des informations à la réponse après une connexion
 
-Lorsqu'on se connecte, l'application cliente aimerait potentiellement connaître certaines informations :
+Lorsqu'on se connecte, l'application cliente aimerait potentiellement connaître certaines informations :
 
 * Notre login/identifiant, pour l'afficher sur l'interface, ou afficher une page type "mon profil".
 
 * La date d'expiration du token, pour pouvoir mettre en place le rafraîchissement (section bonus du TD) et/ou déconnecter automatiquement l'utilisateur.
 
-Comme nous n'envoyons plus le `JWT`, l'application cliente n'a donc plus accès à ces informations (qu'elle aurait pu obtenir en décodant le `JWT`). On peut alors envisager plusieurs solutions :
+Comme nous n'envoyons plus le `JWT`, l'application cliente n'a donc plus accès à ces informations (qu'elle aurait pu obtenir en décodant le `JWT`). On peut alors envisager plusieurs solutions :
 
 * Avoir une route dédiée qui donne les informations de l'utilisateur courant. L'idée est que le serveur décode les informations contenues dans le JWT et les renvoient en réponse. Ensuite, le client peut stocker ces informations dans des variables temporaires et utiliser la route en question à chaque rechargement.
 
@@ -1227,7 +1227,7 @@ Comme nous n'envoyons plus le `JWT`, l'application cliente n'a donc plus accès 
 
 Nous allons donc choisir la deuxième option et faire en sorte d'ajouter des informations concernant l'utilisateur dans le corps de la réponse. On aimerait ajouter son **identifiant**, son **login**, son **adresse email**, son statut **premium** et la **date d'expiration** du `JWT`. Pour cela, on peut créer une classe qui permettra de détecter l'événement d’authentification et d'ajouter des informations dans le corps de la réponse.
 
-Voici cette classe :
+Voici cette classe :
 
 ```php
 namespace App\EventListener;
@@ -1265,11 +1265,11 @@ class AuthenticationSuccessListener
 }
 ```
 
-Le but de la méthode `onAuthenticationSuccessResponse` est de capter l'événement déclenché quand l'utilisateur s'est correctement authentifié (bon login/mot de passe). L'événement `$event` nous permet d'utiliser diverses méthodes :
+Le but de la méthode `onAuthenticationSuccessResponse` est de capter l'événement déclenché quand l'utilisateur s'est correctement authentifié (bon login/mot de passe). L'événement `$event` nous permet d'utiliser diverses méthodes :
 
-* `getData` : renvoie le tableau clé-valeur associatif qui sera converti en objet `JSON` dans le corps de la réponse. Il est donc possible d'y insérer des données comme dans un tableau associatif classique, en associant la donnée à un nom (une clé).
+* `getData` : renvoie le tableau clé-valeur associatif qui sera converti en objet `JSON` dans le corps de la réponse. Il est donc possible d'y insérer des données comme dans un tableau associatif classique, en associant la donnée à un nom (une clé).
 
-* `getUser` : renvoie l'objet `Utilisateur` correspondant au token. Il est donc possible de récupérer certaines valeurs de ses propriétés et de l'insérer dans `data`.
+* `getUser` : renvoie l'objet `Utilisateur` correspondant au token. Il est donc possible de récupérer certaines valeurs de ses propriétés et de l'insérer dans `data`.
 
 * `setData` permet de réaffecter le contenu du corps de la réponse.
 
@@ -1283,7 +1283,7 @@ Le but de la méthode `onAuthenticationSuccessResponse` est de capter l'événem
 
 ### Token de rafraîchissement
 
-Plus tôt, nous avions évoqué le **système de rafraîchissement** pour permettre une plus grande sécurité. La logique est la suivante :
+Plus tôt, nous avions évoqué le **système de rafraîchissement** pour permettre une plus grande sécurité. La logique est la suivante :
 
 * Les JWT émis par l'application suite à l'authentification ont une faible durée de vie (3600 secondes par défaut). C'est une bonne chose que ce `JWT` d’authentification qui est transmis dans **beaucoup de requêtes** ne soit valide que sur une courte durée. Ainsi, on limite les risques en cas de vol ou autre. Cependant, en l'état, cela n'est pas très pratique, car cela voudrait dire que l'utilisateur est déconnecté de force dès que le token expire (et doit donc se reconnecter après 3600 secondes).
 
@@ -1303,7 +1303,7 @@ Ici aussi, il semble donc être plus judicieux de s'orienter vers un stockage **
 
 Pour mettre en place tout cela, nous allons nous servir du bundle `JWTRefreshTokenBundle`. La configuration est assez simple.
 
-* Tout d'abord, le bundle va automatiquement créer l'entité suivante, qui correspond à l'entité gérant les tokens de rafraîchissement (car ils sont stockés dans notre BDD) :
+* Tout d'abord, le bundle va automatiquement créer l'entité suivante, qui correspond à l'entité gérant les tokens de rafraîchissement (car ils sont stockés dans notre BDD) :
 
 ```php
 namespace App\Entity;
@@ -1320,7 +1320,7 @@ class RefreshToken extends BaseRefreshToken
 }
 ```
 
-* Il va ensuite (automatiquement, encore une fois) mettre en place la route liée au rafraîchissement, dans le fichier `config/routes/gesdinet_jwt_refresh_token.yaml`. Par contre, on doit compléter cette route si on veut la limiter au verbe `POST`, par exemple :
+* Il va ensuite (automatiquement, encore une fois) mettre en place la route liée au rafraîchissement, dans le fichier `config/routes/gesdinet_jwt_refresh_token.yaml`. Par contre, on doit compléter cette route si on veut la limiter au verbe `POST`, par exemple :
 
 ```yaml
 # Dans config/routes/gesdinet_jwt_refresh_token.yaml
@@ -1331,7 +1331,7 @@ gesdinet_jwt_refresh_token:
     methods: ['POST']
 ```
 
-* Après, on édite le fichier `security.yaml` afin de paramétrer notre système de rafraîchissement et notre nouvelle route :
+* Après, on édite le fichier `security.yaml` afin de paramétrer notre système de rafraîchissement et notre nouvelle route :
 
 ```yaml
 # Dans config/packages/security.yaml
@@ -1347,7 +1347,7 @@ security:
             ...
 ```
 
-* Enfin, dans `config/packages`, on édite le fichier `gesdinet_jwt_refresh_token.yaml` pour configurer le bundle et indiquer quelle classe correspond au token de rafraîchissement et d'autres paramètres :
+* Enfin, dans `config/packages`, on édite le fichier `gesdinet_jwt_refresh_token.yaml` pour configurer le bundle et indiquer quelle classe correspond au token de rafraîchissement et d'autres paramètres :
 
 ```yaml
 # Dans config/packages/gesdinet_jwt_refresh_token.yaml
@@ -1363,11 +1363,11 @@ gesdinet_jwt_refresh_token:
         path: /the_feed_api/public/api/token
 ```
 
-Maintenant, quand vous vous authentifierez avec la route `/api/auth`, vous obtiendrez votre `token` (JWT) habituel ainsi qu'un token `refresh_token`. Celui-ci sera notamment utilisé lors de l'accès à la route suivante :
+Maintenant, quand vous vous authentifierez avec la route `/api/auth`, vous obtiendrez votre `token` (JWT) habituel ainsi qu'un token `refresh_token`. Celui-ci sera notamment utilisé lors de l'accès à la route suivante :
 
-* `/api/token/refresh` (en POST) : rafraîchit votre JWT et invalide (puis supprime) le token de rafraîchissement avant de vous en fournir un nouveau.
+* `/api/token/refresh` (en POST) : rafraîchit votre JWT et invalide (puis supprime) le token de rafraîchissement avant de vous en fournir un nouveau.
  
-On a aussi accès à cette commande qui permet de supprimer tous les tokens de rafraîchissement ayant expiré :
+On a aussi accès à cette commande qui permet de supprimer tous les tokens de rafraîchissement ayant expiré :
 
 ```bash
 php bin/console gesdinet:jwt:clear
@@ -1378,7 +1378,7 @@ Maintenant, à vous de jouer !
 
 <div class="exercise">
 
-1. Installez le bundle `JWTRefreshTokenBundle` :
+1. Installez le bundle `JWTRefreshTokenBundle` :
 
     ```bash
     composer require gesdinet/jwt-refresh-token-bundle
@@ -1386,13 +1386,13 @@ Maintenant, à vous de jouer !
 
     Quand on vous pose la question relative à l'utilisation d'une `recipe` répondez **yes**. Le mécanisme des `recipes` permet de configurer automatiquement certains aspects de l'application quand on ajoute une nouvelle librairie, un bundle... Par exemple, en créant de nouveaux fichiers ou en complétant certains fichiers de configuration. Cela est défini par le développeur du module installé.
 
-2. Complétez les différents fichiers de configurations : `config/routes/gesdinet_jwt_refresh_token.yaml` (pour limiter la route de rafraîchissement à `POST`), `config/packages/security.yaml` (pour paramétrer l'utilisation du système de rafraîchissement) et enfin `config/packages/gesdinet_jwt_refresh_token.yaml` (pour activer l'option `single_use` et utiliser les cookies).
+2. Complétez les différents fichiers de configurations : `config/routes/gesdinet_jwt_refresh_token.yaml` (pour limiter la route de rafraîchissement à `POST`), `config/packages/security.yaml` (pour paramétrer l'utilisation du système de rafraîchissement) et enfin `config/packages/gesdinet_jwt_refresh_token.yaml` (pour activer l'option `single_use` et utiliser les cookies).
 
 3. Videz le cache.
 
 4. Mettez à jour la structure de votre base de données en utilisant les commandes adéquates.
 
-5. Testez votre nouveau système :
+5. Testez votre nouveau système :
 
     * Authentifiez-vous et vérifiez que vous obtenez bien un `refresh_token` dans vos **cookies** en plus de votre token habituel.
 
@@ -1408,21 +1408,21 @@ Si toutefois on a vraiment besoin de donner certaines informations du JWT au cli
 
 ### Suppression du cookie et invalidation du token (déconnexion)
 
-Nous avons mis en place un système d'authentification grâce aux **JWT** et nous pouvons maintenant "connecter" un utilisateur en utilisant la route `/api/auth` et également obtenir un **token de rafraichissement** permettant de renouveler notre **JWT** grâce à la route `/api/token/refresh`. Cependant, il reste un problème à régler : comment "déconnecte" t-on un utilisateur quand on utilise ces tokens.
+Nous avons mis en place un système d'authentification grâce aux **JWT** et nous pouvons maintenant "connecter" un utilisateur en utilisant la route `/api/auth` et également obtenir un **token de rafraichissement** permettant de renouveler notre **JWT** grâce à la route `/api/token/refresh`. Cependant, il reste un problème à régler : comment "déconnecte" t-on un utilisateur quand on utilise ces tokens.
 
-Ici, le terme de "déconnexion" (comme le terme de "connexion") est un abus de langage. On ne connecte pas vraiment l'utilisateur : on lui délivre des **tokens** qui lui permettront de s'authentifier à chaque requête. Il n'y a pas de système de session qui débute ou est terminée comme dans un site web classique. La question est donc de savoir comment faire pour que l'utilisateur puisse décider d'invalider son **JWT d'authentification** et son **token de rafraichissement avant la durée d'expiration prévue** et aussi comment faire en sorte que le **client** (navigateur ou autre) n'utilise plus ces tokens invalides.
+Ici, le terme de "déconnexion" (comme le terme de "connexion") est un abus de langage. On ne connecte pas vraiment l'utilisateur : on lui délivre des **tokens** qui lui permettront de s'authentifier à chaque requête. Il n'y a pas de système de session qui débute ou est terminée comme dans un site web classique. La question est donc de savoir comment faire pour que l'utilisateur puisse décider d'invalider son **JWT d'authentification** et son **token de rafraichissement avant la durée d'expiration prévue** et aussi comment faire en sorte que le **client** (navigateur ou autre) n'utilise plus ces tokens invalides.
 
-On a donc deux étapes à gérer : **l'invalidation des tokens** (pour qu'il devienne inutilisable) et la suppression de ces derniers côté client, dans l'espace dans lequel ils sont stockés.
+On a donc deux étapes à gérer : **l'invalidation des tokens** (pour qu'il devienne inutilisable) et la suppression de ces derniers côté client, dans l'espace dans lequel ils sont stockés.
 
-Pour la **première étape** :
+Pour la **première étape** :
 
-* Concernant le **JWT d'authentification**, on peut utiliser un système de **liste de blocage** gérée en mémoire grâce au bundle `LexikJWTAuthenticationBundle`. Quand on décide **d'invalider le JWT**, il est alors répertorié dans un cache. Le token est supprimé de la liste quand il arrive à expiration. Ainsi, même si une requête est envoyée avec un `JWT` valide (signature correcte, non expiré), s'il est présent dans la liste de blocage, la requête échouera. Cela renforce également la sécurité globale de l'application : si le `JWT` est volé, si l'utilisateur décide de l'invalider (en se "déconnectant") alors le voleur ne pourra plus utiliser ce token.
+* Concernant le **JWT d'authentification**, on peut utiliser un système de **liste de blocage** gérée en mémoire grâce au bundle `LexikJWTAuthenticationBundle`. Quand on décide **d'invalider le JWT**, il est alors répertorié dans un cache. Le token est supprimé de la liste quand il arrive à expiration. Ainsi, même si une requête est envoyée avec un `JWT` valide (signature correcte, non expiré), s'il est présent dans la liste de blocage, la requête échouera. Cela renforce également la sécurité globale de l'application : si le `JWT` est volé, si l'utilisateur décide de l'invalider (en se "déconnectant") alors le voleur ne pourra plus utiliser ce token.
 
 Les données **mises en cache** n'ont généralement pas pour vocation d'êtres gardée pendant une longue durée (plusieurs jours, plusieurs mois, etc). C'est parfait, car nos `JWT` ont une durée de vie courte ! (généralement une heure). Ces tokens seront automatiquement détruits (et donc retiré de la liste de blocage) lors de leur expiration.
 
-* Concernant le **token de rafraichissement**, un système d'invalidation est prévu par le bundle `JWTRefreshTokenBundle`. On n'utilise donc pas de liste de blocage avec cache (comme pour les **JWT** d'authentification) : le système d'invalidation et de blocage est directement géré grâce aux données stockées dans la base. Les tokens de rafraîchissement seront automatiquement détruits et retirés de la base de données lors de l'invalidation.
+* Concernant le **token de rafraichissement**, un système d'invalidation est prévu par le bundle `JWTRefreshTokenBundle`. On n'utilise donc pas de liste de blocage avec cache (comme pour les **JWT** d'authentification) : le système d'invalidation et de blocage est directement géré grâce aux données stockées dans la base. Les tokens de rafraîchissement seront automatiquement détruits et retirés de la base de données lors de l'invalidation.
 
-On a aussi accès à cette commande qui permet de révoquer un token précis (par exemple, si le compte de l'utilisateur est compromis) :
+On a aussi accès à cette commande qui permet de révoquer un token précis (par exemple, si le compte de l'utilisateur est compromis) :
 
 ```bash
 php bin/console gesdinet:jwt:revoke TOKEN
@@ -1430,7 +1430,7 @@ php bin/console gesdinet:jwt:revoke TOKEN
 
 Dans tous les cas, il faut que la demande d'invalidation du token soit faite par le client auprès du serveur, via une **route**, par exemple.
 
-Pour la **deuxième étape**, cela dépend de la façon dont sont envoyés les **tokens** au client, et comment ils sont stockés :
+Pour la **deuxième étape**, cela dépend de la façon dont sont envoyés les **tokens** au client, et comment ils sont stockés :
 
 * S'ils sont envoyés dans le corps de la réponse d'authentification et stockés par le client (dans le `localStorage` par exemple), alors, quand l'utilisateur doit se déconnecter, après avoir demandé au serveur d'invalider les tokens, il suffit au code client de le supprimer de là où il est stocké. Nous avions vu que cette approche était plutôt **déconseillée**.
 
@@ -1440,9 +1440,9 @@ Nous sommes donc dans le second cas. La demande de suppression des cookies pourr
 
 L'objectif est donc de mettre en place une route `/api/token/invalidate` qui permettra de bloquer l'utilisation du **JWT d'authentification** et du **token de rafraichissement** et permettra au serveur par la même occasion de demander la suppression des cookies contenant les tokens au client.
 
-Voici les étapes pour mettre en place cette route :
+Voici les étapes pour mettre en place cette route :
 
-1. Tout d'abord, on déclare la route dans le fichier `config/routes/gesdinet_jwt_refresh_token.yaml` :
+1. Tout d'abord, on déclare la route dans le fichier `config/routes/gesdinet_jwt_refresh_token.yaml` :
 
    ```yaml
    # Dans config/routes/gesdinet_jwt_refresh_token.yaml
@@ -1453,7 +1453,7 @@ Voici les étapes pour mettre en place cette route :
 
    On n'utilise pas de contrôleur, car le code gérant le blocage du `JWT` (et la suppression du cookie correspondant) est automatiquement géré par Symfony (et les bundle `LexikJWTAuthenticationBundle` et `JWTRefreshTokenBundle` qui gèrent les différents **tokens**).
 
-2. On édite ensuite le fichier `config/packages/lexik_jwt_authentication.yaml` afin d'activer la liste de blocage des `JWT` :
+2. On édite ensuite le fichier `config/packages/lexik_jwt_authentication.yaml` afin d'activer la liste de blocage des `JWT` :
 
    ```yaml
    # Dans config/packages/lexik_jwt_authentication.yaml
@@ -1466,7 +1466,7 @@ Voici les étapes pour mettre en place cette route :
 
    Cette liste sera utilisée pour vérifier le **JWT d'authentification** lors de chaque requête nécessitant d'être authentifié et sera mise à jour dès qu'on provoquera une déconnexion au niveau de Symfony.
 
-3. Après, on édite le fichier `config/packages/gesdinet_jwt_refresh_token.yaml` :
+3. Après, on édite le fichier `config/packages/gesdinet_jwt_refresh_token.yaml` :
 
     ```yaml
     # Dans config/packages/gesdinet_jwt_refresh_token.yaml
@@ -1476,7 +1476,7 @@ Voici les étapes pour mettre en place cette route :
         logout_firewall: main
     ```
 
-4. Enfin, on édite le fichier `config/packages/security.yaml` afin d'indiquer à Symfony quelle est la route utilisée pour se déconnecter. On indique alors aussi de faire une demande de suppression du cookie `BEARER` (qui contient le **JWT d'authentification**) dès que la déconnexion se produit :
+4. Enfin, on édite le fichier `config/packages/security.yaml` afin d'indiquer à Symfony quelle est la route utilisée pour se déconnecter. On indique alors aussi de faire une demande de suppression du cookie `BEARER` (qui contient le **JWT d'authentification**) dès que la déconnexion se produit :
 
    ```yaml
    # Dans config/packages/security.yaml
@@ -1517,19 +1517,19 @@ Avec tout cela, le système de déconnexion est complet !
 
 Nous venons de voir que, dans notre cas, utiliser un cookie sécurisé pour transporter les différents `JWTs` permettant à l'utilisateur de s'authentifier ou de rafraîchir son token semble être plus raisonnable. Cependant, cette solution n'est pas toujours adaptée. En fait, cela dépend des **clients** qui vont consommer votre API, en fonction de leur nature (navigateur, application mobile, etc) et de leur nombre.
 
-Même si le fait d'utiliser un cookie présente de nombreux avantages au niveau de la sécurité, il peut poser des problèmes de gestion en fonction des clients qui souhaitent l'utiliser :
+Même si le fait d'utiliser un cookie présente de nombreux avantages au niveau de la sécurité, il peut poser des problèmes de gestion en fonction des clients qui souhaitent l'utiliser :
 
 * Concernant les navigateurs web, les cookies ne peuvent pas être envoyés par des clients dont le nom de domaine de l'adresse web se trouve en dehors du nom de domaine de l'adresse web de l'API. Par exemple, si mon API se trouve sur `www.exemple.com/api` et mon client sur `www.exemple.com/client`, dans les deux cas, le nom de domaine est `exemple.com`. Si on envoie une requête de connexion depuis `www.exemple.com/client`, le cookie écrit par l'API sera lié au nom de domaine `exemple.com` et sera bien envoyé à chaque requête nécessitant une authentification émise par `www.exemple.com/client`. De plus, on peut faire en sorte que le cookie fonctionne aussi dans les sous-domaines de `exemple.com` en configurant l'attribut `DOMAIN` du cookie (pour qu'il fonctionne sur `app.exemple.com`, par exemple...). Cependant, si une requête de connexion est émise depuis le site `coucou.com` le cookie créé sera toujours lié à `exemple.com` (car c'est là que se trouve l'API) et il ne sera jamais envoyé lors des requêtes émises depuis `coucou.com`. Bref, si l'API doit être utilisées par plusieurs sites externes qui ne sont pas sur le même nom domaine qu'elle, ça ne sera pas possible.
 
 * La gestion des cookies est essentiellement un mécanisme des clients de type **navigateur web**, et ne sont pas forcément gérés naturellement par les autres types de clients, comme les applications mobiles par exemple. Cependant, il existe des librairies pour gérer cela dans la plupart des cas. Et sinon, il suffit juste d'extraire les données de la réponse. De plus, ici, le paramétrage `HttpOnly`, `SameSite` et `Secure` n'ont pas vraiment d'importance, car ce sont des mécanismes liés au navigateur web. Une application mobile peut donc extraire les données des cookies envoyées par le serveur, les stocker et les envoyer au besoin à sa guise. De même, sur une application mobile, on ne retrouve pas les problèmes des failles XSS et CSRF (mais il peut y en avoir d'autres !). Bref, en dehors des navigateurs, la gestion des cookies n'est pas vraiment naturelle (mais pas impossible). On peut donc se dire que dans ce contexte, garder les tokens dans le corps de la réponse peut *éventuellement* être une meilleure solution (en tout cas, plus facile).
 
-Bref, le choix de la méthode à privilégier dépend du contexte de votre projet : 
+Bref, le choix de la méthode à privilégier dépend du contexte de votre projet : 
 
 * Si l'API et le client sont **sur le même nom de domaine** (ou sous-domaines) et que l'on souhaite éventuellement l'utiliser avec un client mobile (ou autre) et qu'il n'y a pas d'autres clients web situés sur un autre nom de domaine, il vaut mieux privilégier l'option **cookie** qui présente moins de risques de sécurité (même si un peu plus dur à gérer sur un client qui n'est pas un navigateur, comme une application mobile ou autre). 
 
-* Si l'API n'est **pas sur le même nom domaine que le client** (et que **plusieurs clients web** et éventuellement autres doivent utiliser l'API) : il faut plutôt choisir de renvoyer les tokens dans le corps de la réponse, le stocker, et, pour les sites web qui utilisent l'API, faire particulièrement attention à sécuriser le site contre les attaques `XSS`.
+* Si l'API n'est **pas sur le même nom domaine que le client** (et que **plusieurs clients web** et éventuellement autres doivent utiliser l'API) : il faut plutôt choisir de renvoyer les tokens dans le corps de la réponse, le stocker, et, pour les sites web qui utilisent l'API, faire particulièrement attention à sécuriser le site contre les attaques `XSS`.
 
-* On pourrait aussi éventuellement envisager d'avoir **les deux options en même temps** : lors de l'authentification, des cookies sont créés et les `JWTs` sont renvoyés dans le corps de la requête. Comme ça, on s'adapte en fonction du client. Les différents composants que nous venons de voir proposent de faire cela en activant une option pour conserver le `JWT` dans le corps de la réponse, même si les cookies sont utilisés :
+* On pourrait aussi éventuellement envisager d'avoir **les deux options en même temps** : lors de l'authentification, des cookies sont créés et les `JWTs` sont renvoyés dans le corps de la requête. Comme ça, on s'adapte en fonction du client. Les différents composants que nous venons de voir proposent de faire cela en activant une option pour conserver le `JWT` dans le corps de la réponse, même si les cookies sont utilisés :
 
 ```yaml
 # config/packages/lexik_jwt_authentication.yaml
@@ -1551,11 +1551,11 @@ Dans notre cas, il n'y aura (bientôt) qu'un client web sur le même nom de doma
 
 ### Sécurité du bundle gesdinet/jwt-refresh-token-bundle
 
-Bien que très utile, le bundle `gesdinet/jwt-refresh-token-bundle` que nous utilisons pour gérer nos tokens de rafraîchissement possède (actuellement) un défaut majeur : les tokens sont **stockés en base** (nécessaire pour pouvoir les invalider au besoin) mais ne sont pas **hachés** (chiffrés).
+Bien que très utile, le bundle `gesdinet/jwt-refresh-token-bundle` que nous utilisons pour gérer nos tokens de rafraîchissement possède (actuellement) un défaut majeur : les tokens sont **stockés en base** (nécessaire pour pouvoir les invalider au besoin) mais ne sont pas **hachés** (chiffrés).
 
 Cela veut donc dire que si la base de données fuite et est récupérée par un utilisateur malicieux, il pourra se connecter et obtenir des JWTs et de nouveaux tokens de rafraichissement de manière illimitée pour n'importe quel utilisateur correspondant à un token dérobé dans la base ! Ce n'est pas aussi grave que de stocker en clair un mot de passe (car on peut facilement invalider tous les tokens de rafraichissement en les supprimant) mais cela reste problématique.
 
-Globalement, on peut suivre les recommandations suivantes :
+Globalement, on peut suivre les recommandations suivantes :
 * Ne pas stocker le token de rafraîchissement **en clair** dans la base de données mais plutôt un **hash poivré** de ce token (chiffré avec l'algorithme `SHA-256` et poivré avec une **clé secrète** relative à l'application).
 * Lors de l'authentification ou du rafraichissement, on renvoie toujours le token en clair à l'utilisateur.
 * Lors du rafraichissement ou de l'invalidation du token, on récupère la valeur en clair donnée par l'utilisateur, on la hache et on la poivre avec la clé secrète et on peut ainsi récupérer les données du token en base. Ainsi, si un attaquant récupère la base, il ne pourra pas utiliser le token de rafraichissement (car chiffré).
@@ -1565,7 +1565,7 @@ Globalement, on peut suivre les recommandations suivantes :
 Bref, avec le bundle que nous utilisons actuellement, il n'est pas (*directement*) possible de chiffrer nos tokens, et il n'y a 
 pas vraiment de bundle alternatif que nous pourrions utiliser. 
 
-Cependant, nous pouvons mettre en place diverses solutions :
+Cependant, nous pouvons mettre en place diverses solutions :
 * Ne pas utiliser le bundle et coder le mécanisme de rafraichissement soi-même, spécifique à l'application. Cela demande un peu d'effort et quelques classes, mais n'est pas trop compliqué.
 * Utiliser la puissance de symfony pour **décorer** et **réécrire** dynamiquement certaines parties du bundle de rafraîchissement.
 * Faire son propre fork du bundle et rajouter la fonctionnalité de chiffrement.
@@ -1574,7 +1574,7 @@ Plusieurs solutions techniques pour sécuriser plus amplement ces tokens sont pr
 
 ## Sécurité
 
-Maintenant que nous pouvons nous authentifier, nous pouvons sécuriser l'accès à nos routes ! Nous allons donc voir comment :
+Maintenant que nous pouvons nous authentifier, nous pouvons sécuriser l'accès à nos routes ! Nous allons donc voir comment :
 
 * Autoriser l'accès à certaines routes seulement aux utilisateurs authentifiés.
 
@@ -1586,7 +1586,7 @@ Maintenant que nous pouvons nous authentifier, nous pouvons sécuriser l'accès 
 
 On peut limiter l'accès à une méthode sur une ressource donnée en utilisant le paramètre `security` au niveau de la méthode en question, qui permet de vérifier les droits **avant** le traitement de la requête. On peut alors spécifier du **code** pour vérifier le droit d'accès à la route, en utilisant notamment la fonction `is_granted` pour vérifier que l'utilisateur possède un certain **rôle** (ou une permission, si on utilise les **voters**).
 
-Par exemple :
+Par exemple :
 
 ```php
 #[ApiResource(
@@ -1601,15 +1601,15 @@ Ici, la route utilisant la méthode `POST` sur cette ressource est uniquement ac
 
 Il est également possible d'utiliser l'attribut `securityPostDenormalize` qui active la vérification **après** le traitement des données envoyées par la requête (après l'étape de dénormalisation) ce qui est notamment utile dans le cas d'opérations d'écritures. Dans le cas d'une mise à jour, on peut alors aussi accéder à "l'ancien" objet (avant modification).
 
-On a aussi accès à certaines variables :
+On a aussi accès à certaines variables :
 
-* `user` : représente l'instance de l'utilisateur connecté.
+* `user` : représente l'instance de l'utilisateur connecté.
 
-* `object` : représente l'instance de la ressource en cours d'accès ou de modification (on a donc accès à ses méthodes). Attention toutefois, si on utilise la méthode `POST`, l'objet n'existe pas encore ! Pour y avoir accès, il ne faut alors pas passer par `securty` (qui vérifie les droits avant), mais plutôt par `securityPostDenormalize`.
+* `object` : représente l'instance de la ressource en cours d'accès ou de modification (on a donc accès à ses méthodes). Attention toutefois, si on utilise la méthode `POST`, l'objet n'existe pas encore ! Pour y avoir accès, il ne faut alors pas passer par `securty` (qui vérifie les droits avant), mais plutôt par `securityPostDenormalize`.
 
-* `previous_object` : uniquement accessible quand on utilise `securityPostDenormalize`. Représente l'instance de la ressource avant d'être modifiée (dans le cas d'opération `PUT` ou `PATCH` par exemple).
+* `previous_object` : uniquement accessible quand on utilise `securityPostDenormalize`. Représente l'instance de la ressource avant d'être modifiée (dans le cas d'opération `PUT` ou `PATCH` par exemple).
 
-* `request` : contient les données de la requête.
+* `request` : contient les données de la requête.
 
 Si l'objet ciblé a un lien avec l'utilisateur, il est alors possible de comparer un attribut de l'objet avec l'utilisateur, par exemple.
 
@@ -1624,7 +1624,7 @@ Si l'objet ciblé a un lien avec l'utilisateur, il est alors possible de compare
 )]
 ```
 
-Dans cet exemple :
+Dans cet exemple :
 
 * L'utilisateur peut créer un objet avec `POST` s'il est connecté et a plus de 13 ans.
 
@@ -1660,7 +1660,7 @@ new Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user", se
 
 </div>
 
-Il est aussi possible d'utiliser les paramètres `security` et `securityPostDenormalize` dans un attribut `#[ApiProperty]` au niveau de chaque propriété de l'entité afin de contrôler les droits de lecture et d'écriture par propriété :
+Il est aussi possible d'utiliser les paramètres `security` et `securityPostDenormalize` dans un attribut `#[ApiProperty]` au niveau de chaque propriété de l'entité afin de contrôler les droits de lecture et d'écriture par propriété :
 
 ```php
 #[ApiResource(
@@ -1691,7 +1691,7 @@ class Article {
 }
 ```
 
-Dans cet exemple :
+Dans cet exemple :
 
 * Tout le monde peut récupérer la liste des publications ou les détails d'un article, mais seuls les utilisateurs connectés pourront en voir le contenu.
 * Seul un journaliste peut publier un article, mais seul un administrateur peut écrire la propriété "desactive".
@@ -1699,7 +1699,7 @@ Dans cet exemple :
 
 Attention, dans cet exemple, il faut que `$desactive` ait une valeur par défaut ou puisse être null en base de données, car un journaliste non-administrateur ne pourra pas l'écrire dans le payload d'une requête `POST`.
 
-Ici aussi, bien que pratique, cette fonctionnalité est limité, car elle ne permet pas de différencier l'opération (au niveau de la propriété). Pour gérer des conditions plus complexes, on préférera utiliser diverses techniques comme :
+Ici aussi, bien que pratique, cette fonctionnalité est limité, car elle ne permet pas de différencier l'opération (au niveau de la propriété). Pour gérer des conditions plus complexes, on préférera utiliser diverses techniques comme :
 
 * [Ajouter dynamiquement un groupe de sérialisation](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-dynamically) selon les permissions de l'utilisateur connecté.
 * Utiliser une classe pour [calculer dynamiquement les groupes de sérialisation activés](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony)
@@ -1729,7 +1729,7 @@ En plus du même `ProcessorInterface` que vous avez utilisé auparavant (pour sa
 
 Afin que les navigateurs acceptent d'envoyer des informations d'authentification pour les requêtes sécurisées (donc, votre `JWT`), il faut modifier la configuration de l'API afin qu'elle ajoute un en-tête `Access-Control-Allow-Credentials` à **true** (sinon, le navigateur refusera de traiter la requête).
 
-Pour cela, rien de plus simple : il suffit d'ajouter un paramètre dans le fichier `config/packages/nelmio_cors.yaml` :
+Pour cela, rien de plus simple : il suffit d'ajouter un paramètre dans le fichier `config/packages/nelmio_cors.yaml` :
 
 ```yaml
 #config/packages/nelmio_cors.yaml
@@ -1809,7 +1809,7 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
 
 Il est possible d'utiliser le système de **Voter** avec **API Platform** afin de gérer les permissions.
 
-Dans le paramètre `security` de chaque opération, il suffit de préciser la permission dans la fonction `is_granted` et l'objet `object` (si besoin de vérifier la permission par rapport à un objet précis, comme le propriétaire, etc.) :
+Dans le paramètre `security` de chaque opération, il suffit de préciser la permission dans la fonction `is_granted` et l'objet `object` (si besoin de vérifier la permission par rapport à un objet précis, comme le propriétaire, etc.) :
 
 ```php
 #[ApiResource(
@@ -1833,7 +1833,7 @@ Dans le paramètre `security` de chaque opération, il suffit de préciser la pe
 
 5. Videz le cache et vérifiez que les permissions fonctionnent bien (mêmes tests que dans l'exercice que nous avions effectué dans la partie "sécurité" de ce TD).
 
-6. Si vous voulez, vous pouvez également ajouter une permission `PUBLICATION_CREATE` dans votre `PublicationVoter`. La permission est accordée si l'utilisateur est connecté (donc possède `ROLE_USER`). Cela permet de centraliser cette permission et la changer si besoin, dans le futur. Attention toutefois : dans une opération de création, la publication n'existe pas encore! Donc en l'état, notre méthode `support` ne fonctionnerait pas. Dans ce cas, il faut utiliser le paramètre `securityPostDenormalize` au lieu de `security` au niveau de l'opération.
+6. Si vous voulez, vous pouvez également ajouter une permission `PUBLICATION_CREATE` dans votre `PublicationVoter`. La permission est accordée si l'utilisateur est connecté (donc possède `ROLE_USER`). Cela permet de centraliser cette permission et la changer si besoin, dans le futur. Attention toutefois : dans une opération de création, la publication n'existe pas encore! Donc en l'état, notre méthode `support` ne fonctionnerait pas. Dans ce cas, il faut utiliser le paramètre `securityPostDenormalize` au lieu de `security` au niveau de l'opération.
 
 </div>
 
@@ -1865,4 +1865,4 @@ Nous avons terminé de construire notre `API` ! Elle est complète et prête à 
 
 Vous avez pu constater la puissance de l'outil `API Platform`. Nous ne sommes pas beaucoup sortis des classes **entités** et la majeure partie de la logique métier de l'application est spécifiée grâce aux attributs dans ces classes. Pour les traitements particuliers, nous pouvons utiliser les **state processors** (et les **state provider**). S'il y a vraiment besoin, il y a toujours possibilité de définir des **controllers** avec des routes comme nous le faisions avant (par exemple, pour un **webhook**).
 
-Dans la suite des TDs de web, vous allez apprendre à utiliser un framework JS client : `Vue.js`. Gardez donc cette API de côté, vous serez amenés à la réutiliser...
+Dans la suite des TDs de web, vous allez apprendre à utiliser un framework JS client : `Vue.js`. Gardez donc cette API de côté, vous serez amenés à la réutiliser...

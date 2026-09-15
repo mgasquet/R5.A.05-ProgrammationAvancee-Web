@@ -11,20 +11,20 @@ Ce projet se fera en **trinôme** et s'intéressera au développement d'une appl
 
 L'objectif est de développer un site web classique en "server-side rendering" (qui gère à la fois la partie client et serveur) en utilisant Symfony et Twig ([TD1]({{site.baseurl}}/tutorials/tutorial1), [TD2]({{site.baseurl}}/tutorials/tutorial2) et [TD3]({{site.baseurl}}/tutorials/tutorial3) de Symfony).
 
-Voici les détails du service qui devra être développé :
+Voici les détails du service qui devra être développé :
 
 * Le site web est un annuaire en ligne qui permet à chaque utilisateur de créer et de compléter un profil avec un certain nombre de champs informatifs.
 
-* Le profil de l'utilisateur possède l'un des deux modes de visibilité suivants :
-    * **Publique** : le profil est accessible par tous et est listé dans l'annuaire. Il est donc listé dans l'annuaire.
-    * **Non répertorié** : le profil est toujours accessible par tous (via l'URL du profil) mais il n'est pas listé dans l'annuaire.
-    * **Privé** : le profil n'est accessible que par son propriétaire (même si quelqu'un d'autre dispose de l'URL), il n'est pas listé dans l'annuaire.
+* Le profil de l'utilisateur possède l'un des deux modes de visibilité suivants :
+    * **Publique** : le profil est accessible par tous et est listé dans l'annuaire. Il est donc listé dans l'annuaire.
+    * **Non répertorié** : le profil est toujours accessible par tous (via l'URL du profil) mais il n'est pas listé dans l'annuaire.
+    * **Privé** : le profil n'est accessible que par son propriétaire (même si quelqu'un d'autre dispose de l'URL), il n'est pas listé dans l'annuaire.
 
 * La page principale liste tous les profils **publics** enregistrés dans l'application. À partir de cette page, on doit aussi pouvoir accéder facilement aux pages de profils des profils listés.
 
 * Attention, comme expliqué juste avant, même si le profil est **non répertorié**, il peut toujours être consulté via l'adresse et le code du profil (contrairement aux profils privés). S'il est **non répertorié**, il n'est simplement pas listé sur la page principale de l'annuaire.
 
-* Lors de l'inscription (via un formulaire) l'utilisateur précise seulement un minimum d'informations : login, adresse email, mot de passe et la visibilité du profil (public/non répertorié/privé). Par mesure de sécurité, l'utilisateur doit saisir son mot de passe deux fois dans le formulaire d'inscription. Deux utilisateurs différents ne peuvent pas avoir le même login et la même adresse email.
+* Lors de l'inscription (via un formulaire) l'utilisateur précise seulement un minimum d'informations : login, adresse email, mot de passe et la visibilité du profil (public/non répertorié/privé). Par mesure de sécurité, l'utilisateur doit saisir son mot de passe deux fois dans le formulaire d'inscription. Deux utilisateurs différents ne peuvent pas avoir le même login et la même adresse email.
 
 * Chaque profil doit être associé à un **code unique**. Pendant l'inscription, l'utilisateur peut choisir de préciser lui-même ce code ou non (à condition qu'il ne soit pas déjà pris). S'il ne précise rien, un code aléatoire sera alors généré.
 
@@ -44,7 +44,7 @@ Voici les détails du service qui devra être développé :
 
 * En plus de la route qui permet de visualiser le profil de l'utilisateur sur une page dédiée, une autre route (qui inclue donc aussi le code secret du profil) doit renvoyer les informations de l'utilisateur au format `JSON` (donc, pas une page web complète, seulement les données). Cela vous servira plus tard, lors du 3ᵉ projet où vous utiliserez directement de ce service. Attention, comme pour le lien de la page de profil, ce lien ne fonctionne pas si le profil est en mode privé.
 
-* Sur le profil, l'application doit afficher **la dernière date où a été édité le profil**. **Attention**, vous devrez faire en sorte que cette date soit mise à jour dès que **l'objet** (entité) stockant l'utilisateur est mise à jour, peu importe l'endroit où cela est fait : dans un contrôleur, dans un service, dans une commande, etc. Il faut ainsi faire en sorte de ne pas avoir à dupliquer le code gérant cette logique si une nouvelle portion de code mettant à jour cette entité est implémentée. Par contre, **il ne faut pas que la date d'édition du profil** soit automatiquement mise à jour dès que l'utilisateur se connecte simplement.
+* Sur le profil, l'application doit afficher **la dernière date où a été édité le profil**. **Attention**, vous devrez faire en sorte que cette date soit mise à jour dès que **l'objet** (entité) stockant l'utilisateur est mise à jour, peu importe l'endroit où cela est fait : dans un contrôleur, dans un service, dans une commande, etc. Il faut ainsi faire en sorte de ne pas avoir à dupliquer le code gérant cette logique si une nouvelle portion de code mettant à jour cette entité est implémentée. Par contre, **il ne faut pas que la date d'édition du profil** soit automatiquement mise à jour dès que l'utilisateur se connecte simplement.
 
 * Le site doit pouvoir être passé en **mode maintenance** à l'aide d'un nouveau paramètre que vous pourrez définir et modifier dans le fichier `.env` (ou `services.yaml`). Quand le site est en mode maintenance, toutes les pages du site doivent rediriger sur une page qui affiche un message expliquant que le site est actuellement en maintenance.
 
@@ -54,7 +54,7 @@ Voici les détails du service qui devra être développé :
 
 * Un système permet aux utilisateurs de **signaler** un profil dont le contenu est inapproprié, avec un commentaire. Les administrateurs ont alors accès à une page spéciale qui liste les signalements, avec les différentes informations nécessaires (utilisateur à l'origine du signalement, commentaire, lien vers le profil signalé...). Il doit être possible de supprimer un signalement (afin qu'il ne reste pas listé une fois qu'il a été traité...).
 
-* Plusieurs commandes (**Symfony**) doivent être ajoutées :
+* Plusieurs commandes (**Symfony**) doivent être ajoutées :
     * Une commande qui permet de créer un utilisateur depuis le terminal en précisant ses informations et son rôle (normal/administrateur).
     * Une commande qui permet de supprimer un utilisateur à partir de son login.
     * Une commande qui permet d'élever un utilisateur au rôle d'administrateur (à partir de son login).
@@ -74,7 +74,7 @@ Voici les détails du service qui devra être développé :
 
 ## Aide et pistes
 
-Pour vous aider dans la réalisation du projet, voici quelques pistes :
+Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 * Pour **modifier** un objet (entité) déjà existant (par exemple, un utilisateur), on récupère simplement l'objet correspondant et on applique les modifications (par exemple, via un formulaire). Ensuite, on utilise là-aussi le service `EntityManager` afin de synchroniser les modifications avec la base de données en utilisant la méthode `flush`. Plus d'information à ce propos sur [la documentation officielle](https://symfony.com/doc/7.4/doctrine.html#updating-an-object).
 
@@ -104,13 +104,13 @@ Vous pouvez consulter [cette note complémentaire]({{site.baseurl}}/complements/
 
 La **deadline** du projet est le **dimanche 25 octobre 2026, 23h59**.
 
-Le projet sera à rendre sur **Moodle** (adresse communiquée prochainement). Un seul membre du groupe projet dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
+Le projet sera à rendre sur **Moodle** (adresse communiquée prochainement). Un seul membre du groupe projet dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
 
-Cette archive devra contenir :
+Cette archive devra contenir :
 
 * Les sources de votre projet. Attention à ne pas inclure les répertoires superflus comme **vendor** et **var**, **.idea**, **.git**, etc.
 
-* Un fichier **README** qui contient :
+* Un fichier **README** qui contient :
 
     * Le lien du dépôt git où le code source de l'application est stocké.
 
@@ -122,7 +122,7 @@ Cette archive devra contenir :
 
 * Un fichier **IDENTIFIANTS** qui donne les identifiants de **plusieurs** comptes utilisateurs (normaux et administrateurs) sur votre application hébergée sur `webinfo`.
 
-* Un fichier **TRAVAIL_GROUPE** qui détaille, **pour chaque membre du groupe** :
+* Un fichier **TRAVAIL_GROUPE** qui détaille, **pour chaque membre du groupe** :
     * Un **pourcentage** de son investissement sur le projet.
     * La liste **précise** du travail qu'il a réalisé (fonctionnalités, sécurité, etc). Il faut donc penser à bien noter tout cela au fur et à mesure du projet (utilisez des outils de gestion de projet adaptés).
 
