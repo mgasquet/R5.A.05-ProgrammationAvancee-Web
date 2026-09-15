@@ -9,19 +9,15 @@ lang: fr
 
 Dans ce nouveau TD, nous allons améliorer le site en ajoutant diverses fonctionnalités qui vont vous permettre d'affiner et de renforcer votre maîtrise de Symfony.
 
-Voici les nouveaux objectifs pour "The Feed" :
+Voici les nouveaux objectifs pour "The Feed" :
 
 * Ajout de fonctionnalités **dynamiques** avec **JavaScript** via **Symfony UX** (pour supprimer et ajouter des publications).
-
 * Ajout d'un système de **membres premium**.
-
 * Gestion avancée des **permissions**.
-
+* Ajout de **commandes Symfony** dans la console.
 * Ajout d'un nouveau **rôle** (administrateur).
 
-* Ajout de **commandes**.
-
-**On rappelle que les commandes doivent être exécutées à l'intérieur de votre conteneur Docker**.
+**On rappelle que les commandes dans le terminal doivent être exécutées à l'intérieur de votre conteneur Docker**.
 
 ## Fonctionnalités dynamiques
 
@@ -35,7 +31,7 @@ Aussi, actuellement, notre route `deconnexion` est accessible en `GET`. Nous avi
 
 ### Prise en charge du JavaScript avec Symfony UX
 
-Traditionnellement, l'ajout de **JavaScript** à une page s'effectue dans la partie `head` de la page, avec la balise suivante :
+Traditionnellement, l'ajout de **JavaScript** à une page s'effectue dans la partie `head` de la page, avec la balise suivante :
 
 ```html
 <script defer type="text/javascript" src="chemin/fichier.js"></script>
@@ -45,7 +41,7 @@ On pourrait donc tout à fait charger un fichier placé dans `assets` (comme pou
 
 Cependant, Symfony inclut un ensemble de bibliothèques et d'outils nommé **Symfony UX** qui permet de gérer le JavaScript d'une manière particulière, en s'appuyant sur le **framework** JavaScript nommé **Stimulus**. Cet outil facilite l'intégration de JavaScript sans avoir besoin d'importer manuellement de fichiers ou de définir de configuration particulière. C'est la méthode à privilégier dans la mesure du possible, notamment quand on utilise la bibliothèque `Turbo` (incluse dans Symfony UX) dont nous allons parler un peu plus tard.
 
-Pour utiliser du JavaScript avec **Stimulus** dans une page, il faut définir un (ou plusieurs) **controller** JavaScript. Ce controller doit être nommé `xxx_controller.js` (`xxx` étant un nom custom que l'on donne) et placé dans le dossier `assets/controllers`. Ce fichier à cette allure :
+Pour utiliser du JavaScript avec **Stimulus** dans une page, il faut définir un (ou plusieurs) **controller Stimulus** en JavaScript (à ne pas confondre avec un **controller** Symfony comme `PublicationController.php`). Ce controller doit être nommé `xxx_controller.js` (`xxx` étant un nom custom que l'on donne) et placé dans le dossier `assets/controllers`. Ce fichier a cette allure :
 
 ```js
 import { Controller } from '@hotwired/stimulus';
@@ -73,7 +69,7 @@ Comme vous pouvez le constater, à l'intérieur du **controller**, on peut défi
 
 Ensuite, nous pouvons attacher le **controller** à une **zone** d'une page. Cela peut être par exemple sur le `body` dans `base.html.twig` si l'on veut un controller général, actif sur toutes les pages. Ou bien sur le `main` d'un des templates, pour un controller actif seulement sur une page donnée. Ou bien sur une `div` pour activer le controller seulement sur une sous-zone de la page, etc. Ou bien même juste sur un input simple, etc. Une page peut accueillir autant de controllers que l'on souhaite.
 
-Le controller est défini comme attribut `data-controller` d'une balise html (simple, ou qui contient d'autres balises, comme `<div>`) du template twig (avec le nom `xxx` donné au fichier `js` contenant le controller). Par exemple :
+Le controller est défini comme attribut `data-controller` d'une balise html (simple, ou qui contient d'autres balises, comme `<div>`) du template twig (avec le nom `xxx` donné au fichier `js` contenant le controller). Par exemple :
 
 ```html
 <div data-controller="xxx">
@@ -87,7 +83,7 @@ Ou bien
 <input data-controller="xxx"/>
 ```
 
-Enfin, on peut attacher des **gestionnaires d'événements** sur la balise sur laquelle est attribué un **controller** ou sur les éléments qu'elle contient (dans le cas d'une balise "conteneur", comme `<div>`, `<form>`, etc) à l'aide de l'attribut `data-action`. Par exemple, imaginons le controller suivant nommé `exemple_controller.js` :
+Enfin, on peut attacher des **gestionnaires d'événements** sur la balise sur laquelle est attribué un **controller** ou sur les éléments qu'elle contient (dans le cas d'une balise "conteneur", comme `<div>`, `<form>`, etc) à l'aide de l'attribut `data-action`. Par exemple, imaginons le controller suivant nommé `exemple_controller.js` :
 
 ```js
 //assets/controllers/exemple_controller.js
@@ -99,12 +95,12 @@ export default class extends Controller {
     }
 
     monActionB(event) {
-        console.log("Changement de valeur : " + event.target.value);
+        console.log("Changement de valeur: " + event.target.value);
     }
 }
 ```
 
-Et, dans un template twig :
+Et, dans un template twig :
 
 ```html
 <div data-controller="exemple">
@@ -113,9 +109,9 @@ Et, dans un template twig :
 </div>
 ```
 
-À chaque clic sur le bouton, la console affichera « Clic ! » et à chaque saisie dans le champ textuel, elle affichera la nouvelle valeur dans la console. Il n'y a rien d'autre à faire : il suffit de marquer les zones et les événements, puis de définir le fichier controller.
+À chaque clic sur le bouton, la console affichera « Clic ! » et à chaque saisie dans le champ textuel, elle affichera la nouvelle valeur dans la console. Il n'y a rien d'autre à faire : il suffit de marquer les zones et les événements, puis de définir le fichier controller.
 
-Comme on le remarque, la valeur de `data-action` se décompose ainsi : `nomAction->nomController#nomFonction`. Il peut sembler étrange d'avoir à préciser le nom du controller, mais n'oubliez pas que ce fragment de code est potentiellement contenu dans un autre fragment de code pour lequel on a spécifié un controller, donc, on pourrait aussi préciser un autre controller dans nos balises.
+Comme on le remarque, la valeur de `data-action` se décompose ainsi : `nomAction->nomController#nomFonction`. Il peut sembler étrange d'avoir à préciser le nom du controller, mais n'oubliez pas que ce fragment de code est potentiellement contenu dans un autre fragment de code pour lequel on a spécifié un autre controller, donc, on pourrait aussi préciser un autre controller dans nos balises.
 
 Tous les événements que vous connaissez (click, change, focus, etc) sont disponibles.
 
@@ -127,25 +123,35 @@ Bref, nous allons commencer par mettre en place une fonctionnalité JavaScript s
 
 <div class="exercise">
 
-1. Dans le dossier `assets/controllers`, créez un fichier `publications_controller.js`, avec le contenu suivant :
+1. Dans le dossier `assets/controllers`, créez un fichier `publications_controller.js`, avec le contenu suivant :
 
-    ```js
-    import { Controller } from '@hotwired/stimulus';
+   ```js
+   import { Controller } from '@hotwired/stimulus';
+   
+   export default class extends Controller {
+       supprimerPublication(event) {
+           const button = event.target;
+           const publication = button.closest(".feedy");
+           publication.remove();
+       }
+   }
+   ```
 
-    export default class extends Controller {
-        supprimerPublication(event) {
-            const button = event.target;
-            const publication = button.closest(".feedy");
-            publication.remove();
-        }
-    }
-    ```
-
-2. Créez un template `publication/liste_publications.html.twig` qui contient une `div` contenant toutes les publications passées en paramètre du template. Ce template utilisera le template `publication/publication.html.twig` (créé lors du précédent TP). Mettez à jour `publication/feed/html.twig` et `utilisateur/page_perso.html.twig` afin d'utiliser votre nouveau template. Vérifiez que vos deux pages fonctionnent toujours.
+2. Créez un template `publication/liste_publications.html.twig` avec le contenu suivant que vous complèterez.
+   {% raw %}
+   ```twig
+   <div>
+   {# Boucle sur les publications #}
+     {# Inclusion de 'publication/publication.html.twig' sur la publication du tour de boucle #}
+   {# fin boucle #}
+   </div>
+   ```
+   {% endraw %}
+   Mettez à jour `publication/feed.html.twig` et `utilisateur/page_perso.html.twig` afin d'utiliser votre nouveau template. Vérifiez que vos deux pages fonctionnent toujours.
 
 3. Faites en sorte d'attacher le controller `publications` au `div` contenant les publications dans `liste_publications.html.twig`.
 
-4. Modifiez le template `publication.html.twig` afin de rajouter le bout de code HTML suivant, juste après l'élément `<p>...</p>` contenant le message de la publication : 
+4. Modifiez le template `publication.html.twig` afin de rajouter le bout de code HTML suivant, juste après l'élément `<p>...</p>` contenant le message de la publication : 
 
     ```html
     <button class="delete-feedy">Supprimer</button>
@@ -155,15 +161,15 @@ Bref, nous allons commencer par mettre en place une fonctionnalité JavaScript s
 
 5. Faites en sorte que la fonction `supprimerPublication` du controller se déclenche lors du **clic** sur le bouton.
 
-6. Allez sur la page principale de votre site et vérifiez que :
+6. Allez sur la page principale de votre site et vérifiez que :
 
     * Le bouton "Supprimer" apparaît seulement sur les publications dont vous êtes l'auteur.
-
     * Le bouton fonctionne, c'est-à-dire que la publication est retirée de la page (seulement visuellement pour le moment).
 
     Vérifiez également que tout fonctionne de même sur votre page personnelle.
 
-    Si cela ne fonctionne pas, vérifiez la console (`F12`) pour chercher d'éventuels messages d'erreur.
+    Si cela ne fonctionne pas, vérifiez la console (`F12`) pour chercher d'éventuels messages d'erreur. 
+    Vérifiez aussi que vous avez bien supprimé le dossier `public/assets` (*cf.* TD1) pour ne pas utiliser une version ancienne de vos `assets` qui ne contiendrait pas `publications_controller.js`.
 
 </div>
 
@@ -171,12 +177,12 @@ Bref, nous allons commencer par mettre en place une fonctionnalité JavaScript s
 
 Maintenant que nous avons de quoi supprimer visuellement une publication de manière dynamique, il faut confirmer cette suppression côté back-end. Il faut aussi pouvoir générer le lien de la route dans notre fichier JavaScript, comme nous le faisons avec `path` dans nos templates.
 
-Pour créer une route accessible par une requête HTTP exécutée en JavaScript (et qui ne renvoie pas de page, mais plutôt des données), quelques éléments diffèrent :
+Pour créer une route accessible par une requête HTTP exécutée en JavaScript (et qui ne renvoie pas de page, mais plutôt des données), quelques éléments diffèrent :
 
 ```php
 use Symfony\Component\HttpFoundation\JsonResponse;
 
- #[Route('/exemple', name: 'route_exemple', options: ["expose" => true], methods: ["POST"])]
+#[Route('/exemple', name: 'route_exemple', options: ["expose" => true], methods: ["POST"])]
 public function methodeExemple(Request $request): Response
 {
     //Récupération des données fournies dans le payload JSON
@@ -202,11 +208,11 @@ $entityManager->remove($entity);
 $entityManager->flush();
 ```
 
-Du côté de notre **controller**, nous n'avons pas accès à la fonction `path` comme dans nos templates twig! Pour remédier à cela, il suffit d'installer un `bundle` qui est un composant PHP prévu pour s'intégrer spécifiquement à Symfony.
+Du côté de notre **controller Stimulus**, nous n'avons pas accès à la fonction `path` comme dans nos templates twig! Pour remédier à cela, il suffit d'installer un `bundle` qui est un composant PHP prévu pour s'intégrer spécifiquement à Symfony.
 
 Le bundle que nous allons utiliser s'appelle [FOSJsRoutingBundle](https://github.com/FriendsOfSymfony/FOSJsRoutingBundle/tree/master) et permet d'accéder à une fonction similaire à `path`, mais directement en JavaScript.
 
-Comme pour tous les composants, il faut commencer par l'installer :
+Comme pour tous les composants, il faut commencer par l'installer :
 
 ```bash
 composer require friendsofsymfony/jsrouting-bundle
@@ -215,14 +221,14 @@ php bin/console importmap:require fos-router
 
 Lors de l'installation, il vous est demandé si vous souhaitez exécuter une "recette". Répondez **oui**.
 
-**Si jamais vous avez oublié de dire oui, exécutez les deux commandes suivantes :**
+**Si jamais vous avez oublié de dire oui, exécutez les deux commandes suivantes :**
 
 ```bash
 composer remove friendsofsymfony/jsrouting-bundle
 composer require friendsofsymfony/jsrouting-bundle
 ```
 
-<!-- Selon votre configuration, il se peut que le bundle ne soit pas activé par défaut. Si ce n'est pas le cas, il suffit de rajouter une petite ligne de code dans le fichier `config/bundles.php` :
+<!-- Selon votre configuration, il se peut que le bundle ne soit pas activé par défaut. Si ce n'est pas le cas, il suffit de rajouter une petite ligne de code dans le fichier `config/bundles.php` :
 
 ```php
 //config/bundles.php
@@ -234,19 +240,19 @@ return [
 
 Si la ligne est déjà présente, c'est que le bundle est déjà actif !
 
-Ensuite, comme le bundle défini certaines `routes` qui lui sont spécifiques, il faut les enregistrer dans notre application. Pour notre nouveau bundle, on édite le fichier `config/routes.yaml` en ajoutant la ligne suivante :
+Ensuite, comme le bundle défini certaines `routes` qui lui sont spécifiques, il faut les enregistrer dans notre application. Pour notre nouveau bundle, on édite le fichier `config/routes.yaml` en ajoutant la ligne suivante :
 
 ```yaml
 fos_js_routing:
     resource: "@FOSJsRoutingBundle/Resources/config/routing/routing-sf4.xml"
 ``` 
-Enfin, certains **bundles** contiennent des assets (fichiers css, js, images, etc...) qu'il faut importer dans notre propre dossier d'assets, afin de pouvoir les utiliser. Pour cela, Symfony a prévu une commande :
+Enfin, certains **bundles** contiennent des assets (fichiers css, js, images, etc...) qu'il faut importer dans notre propre dossier d'assets, afin de pouvoir les utiliser. Pour cela, Symfony a prévu une commande :
 
 ```bash
 php bin/console assets:install --symlink public
 ```
 
-Vous remarquerez alors de nouvelles ressources dans votre dossier `public`. Il ne reste plus qu'à importer les fichiers JavaScript de ce bundle dans nos templates afin de pouvoir utiliser la fonction de routing. Il y a deux fichiers à importer :
+Vous remarquerez alors de nouvelles ressources dans votre dossier `public`. Il ne reste plus qu'à importer les fichiers JavaScript de ce bundle dans nos templates afin de pouvoir utiliser la fonction de routing. Il y a deux fichiers à importer :
 
 ```twig
 {% raw %}
@@ -257,13 +263,13 @@ Vous remarquerez alors de nouvelles ressources dans votre dossier `public`. Il n
 
 Ensuite, nous devons **configurer l'URL de base du site**. Ce paramètre est utile, car nous allons devoir **exporter nos routes** exposées (pour pouvoir y accéder depuis JavaScript).
 
-Pour cela, il faut simplement éditer le paramètre `DEFAULT_URI` du fichier `.env`. Par exemple, dans notre cas (avec le site dans le conteneur Docker), cet URL est `http://localhost/the_feed/public` :
+Pour cela, il faut simplement éditer le paramètre `DEFAULT_URI` du fichier `.env`. Par exemple, dans notre cas (avec le site dans le conteneur Docker), cet URL est `http://localhost/the_feed/public` :
 
 ```yaml
 DEFAULT_URI=http://localhost/the_feed/public
 ```
 
-Après cela, il faut **générer** le fichier qui contiendra toutes nos routes exposées. Pour cela, on utilise la commande suivante :
+Après cela, il faut **générer** le fichier qui contiendra toutes nos routes exposées. Pour cela, on utilise la commande suivante :
 
 ```bash
 php bin/console fos:js-routing:dump --format=js --target=assets/routes/fos_routes.js --callback="export default  "
@@ -284,7 +290,7 @@ import routes from './routes/fos_routes.js';
 Routing.setRoutingData(routes);
 ```
 
-Une fois ces étapes complétées, nous avons alors accès (au niveau du controller JavaScript) à la fonction `Routing.generate`, sensiblement équivalente à `path` dans son utilisation :
+Une fois ces étapes complétées, nous avons alors accès (au niveau du controller JavaScript) à la fonction `Routing.generate`, sensiblement équivalente à `path` dans son utilisation :
 
 ```javascript
 //Au début du fichier
@@ -292,69 +298,63 @@ import Routing from 'fos-router';
 
 //Dans une fonction
 let URL = Routing.generate('maRoute');
-//Et si on a une route paramétrable :
+//Et si on a une route paramétrable:
 let URL = Routing.generate('maRoute', {"param": val, ...});
 ```
 
-Nous allons mettre en place une route : `/publications/{id}` qui sera accessible via la méthode `DELETE`.
+Nous allons mettre en place une route : `/publications/{id}` qui sera accessible via la méthode `DELETE`.
 
-Néanmoins, un problème subsiste : comment récupérer l'id de la publication associée au bouton "Supprimer" sur lequel on clique pour le passer en paramètre de la route ?
+Néanmoins, un problème subsiste : comment récupérer l'id de la publication associée au bouton "Supprimer" sur lequel on clique pour le passer en paramètre de la route ?
 
-Pour cela, nous pouvons utiliser un attribut `data-xxx` qui permet de créer des attributs "dynamiques" sur un élément HTML. **Attention**, le nom custom donné (`xxx`) suit des règles lexicographiques précises :
+Pour cela, nous pouvons utiliser un attribut `data-xxx` qui permet de créer des attributs "dynamiques" sur un élément HTML. **Attention**, le nom custom donné (`xxx`) suit des règles lexicographiques précises :
 
 * Les mots sont séparés par des tirets.
-
 * Pas de majuscules, ni de point virgules.
 
 On pourra ensuite récupérer la valeur de cet attribut en JavaScript.
 
-Par exemple :
+Par exemple :
 
 ```html
 <button data-exemple-machin="test">Coucou</button>
 ```
 
-Côté JavaScript, on utilise l'attribut `dataset` puis le nom `xxx` donné après le `data-` :
-
-**Attention**, le nom de l'attribut sera à préciser en **camel case** :
+Côté JavaScript, on utilise l'attribut `dataset` puis le nom `xxx` donné après le `data-` :
 
 ```javascript
 //On considère que la fonction "exemple" est attaché au bouton...
 function exemple(event) {
     const button = event.target;
 
-    //Contient "test"
+    //Attention, le nom de l'attribut est à préciser en *camel case*
     const exemple = button.dataset.exempleMachin;
+    //exemple contient "test"
 }
 ```
 
-Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en **camel case** : `exempleMachin`.
+Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en **camel case** : `exempleMachin`.
 
 <div class="exercise">
 
-1. Dans `PublicationController`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Concrètement, il n'y a aucune donnée à lire (pas de payload, c-à-d de corps de requête) mais vous devez :
+1. Dans `PublicationController.php`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Concrètement, il n'y a aucune donnée à lire (pas de payload, c-à-d de corps de requête) mais vous devez :
 
     * Récupérer la publication visée par l'identifiant donné dans la route.
-
     * Vérifier que la publication existe et que l'utilisateur courant en est bien l'auteur.
-
     * Supprimer la publication.
-
-    * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) et soit renvoyer le code :
-
+    * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) et soit renvoyer le code :
         * `Response::HTTP_NOT_FOUND` (404) si la publication n'existe pas (ressource non trouvée).
         * `Response::HTTP_FORBIDDEN` (403) si l'utilisateur n'est pas auteur de la publication (opération interdite).
         * `Response::HTTP_NO_CONTENT` (204) si tout se passe bien (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée)
 
-    Souvenez-vous : lors du TD2, nous avions vu une méthode très simple pour récupérer une entité préciser à partir d'une route paramétrée, sans utiliser explicitement son repository !
+    Souvenez-vous, lors du TD2, nous avions vu une méthode très simple pour récupérer une entité précisée à partir d'une route paramétrée, sans utiliser explicitement son repository !
 
 2. En utilisant l'attribut `IsGranted`, faites en sorte que cette route soit seulement accessible aux utilisateurs connectés (possédant le rôle `ROLE_USER`). Allez consulter le TD2 si vous ne savez plus comment faire.
 
-3. Installez `FOSJsRoutingBundle` et configurer tout ce qu'il faut pour pouvoir utiliser la fonction `Routing.generate` dans votre controller. Vous pouvez supprimer le dossier `public/bundles` qui ne nous servira pas.
+3. Installez `FOSJsRoutingBundle` et configurer tout ce qu'il faut pour pouvoir utiliser la fonction `Routing.generate` dans votre controller Stimulus. Vous pouvez supprimer le dossier `public/bundles` qui ne nous servira pas.
 
 4. Modifiez le template `publication.html.twig` afin d'inclure un attribut `data-publication-id` contenant l'identifiant de la publication dans les attributs du bouton de suppression.
 
-5. Dans le fichier `assets/controllers/publications_controller.js`, modifiez la fonction `supprimerPublication` afin d'ajouter une requête asynchrone vers la route `supprimerPublication`. Vous pouvez notamment utiliser la fonction `fetch` et l'instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels (et nouvelles précisions) :
+5. Dans le fichier `publications_controller.js`, modifiez la fonction `supprimerPublication` afin d'ajouter une requête asynchrone vers la route `supprimerPublication`. Vous pouvez notamment utiliser la fonction `fetch` et l'instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels (et nouvelles précisions) :
 
     ```javascript
     import { Controller } from '@hotwired/stimulus';
@@ -365,12 +365,12 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
         //Pour cela, on utilise le mot clé "async"
         async maFonction(event) {
 
-            //Les "headers" de la requête : on indique le type de données qu'on envoie
+            //Les "headers" de la requête: on indique le type de données qu'on envoie
             const headers = new Headers();
             headers.append("Content-Type", "application/json");
 
             //Le payload contient les données (sous la forme d'un objet clé-valeur) qu'on souhaite envoyer avec la requête
-            const payload = {donnee1 : ..., donnee2: ..., ...};
+            const payload = {donnee1: ..., donnee2: ..., ...};
 
             //On utilise le mot clé "await" pour "attendre" que la requête soit complètement exécutée avant d'exécuter les prochaines instructions.
             //Par conséquent, la fonction "maFonction" doit être asynchrone pour ne pas bloquer la page.
@@ -393,7 +393,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
         }
     }
     ```
-    Comme la requête que nous souhaitons exécuter (suppression simple) n'a pas besoin de `payload`, on peut se passer de `headers` et de `body` :
+    Comme la requête que nous souhaitons exécuter (suppression simple) n'a pas besoin de `payload`, on peut se passer de `headers` et de `body` :
 
     ```javascript
     const response = await fetch(URL, {method: "..."});
@@ -412,11 +412,11 @@ N'avez-vous pas remarqué quelque-chose d'étrange depuis le milieu du TD1 ? Nav
 
 **Turbo** est l'une des bibliothèques incluses dans **Symfony UX**, qui permet d'offrir une expérience `SPA` (Single-page application) à l'utilisateur. Par défaut, lors de l'envoi d'une requête "classique" qui ne passe pas par notre JavaScript (donc des liens, envoi de formulaire...), **Turbo** intercepte la demande et effectue la requête. Il récupère ensuite le résultat (code HTML) et met à jour le contenu de la page sans rechargement complet du `DOM`, tout cela via du JavaScript intégré à la bibliothèque.
 
-Ce système, activé par défaut, permet de fluidifier l'expérience utilisateur, car le navigateur "reste" sur la même page : le document html n'est chargé qu'une seule fois lors du premier accès au site et ensuite seul le contenu nécessaire est mis à jour, sans rechargement complet de la page. Ce système est utilisé dans beaucoup de frameworks Web modernes.
+Ce système, activé par défaut, permet de fluidifier l'expérience utilisateur, car le navigateur "reste" sur la même page : le document html n'est chargé qu'une seule fois lors du premier accès au site et ensuite seul le contenu nécessaire est mis à jour, sans rechargement complet de la page. Ce système est utilisé dans beaucoup de frameworks Web modernes.
 
 Par défaut, comme nous renvoyons du code complet de page à chaque requête, Turbo met à jour une grande partie de la page à chaque requête. Mais il est possible d'optimiser cela en ciblant les zones et les éléments de la page à mettre à jour selon la requête effectuée (comme nous l'avons fait juste avant avec la suppression d'une publication, par exemple, mais avec notre propre code JavaScript). À terme, cela permet même de se passer d'écrire du JavaScript pour certaines opérations `CRUD`.
 
-Nous allons explorer les deux mécanismes principaux de **Turbo** : **turbo frame** et **turbo stream**.
+Nous allons explorer les deux mécanismes principaux de **Turbo** : **turbo frame** et **turbo stream**.
 
 #### Turbo Frame
 
@@ -449,7 +449,7 @@ On imagine qu'après soumission du formulaire, on est redirigé sur la même pag
 
 Par défaut, si je soumets le formulaire, **Turbo** va recevoir en réponse à la requête une page HTML avec le `html`, le contenu du `head`, le `h1`, les films, le formulaire, etc... Et va mettre à jour la page grâce à JavaScript. Cependant, à priori, seul la liste des films change ! On pourrait donc faire en sorte que seulement cette partie soit mise à jour (et même que le serveur ne renvoie que ça).
 
-Dans ce cas, on pourrait mettre en place la logique suivante :
+Dans ce cas, on pourrait mettre en place la logique suivante :
 
 ```twig
 {% raw %}
@@ -469,7 +469,7 @@ Dans ce cas, on pourrait mettre en place la logique suivante :
 <!-- Template film/accueil.html.twig -->
 extends 'base.html.twig'
 <main>
-    {{ include('film/liste_films.html.twig', {'films' : films}) }}
+    {{ include('film/liste_films.html.twig', {'films': films}) }}
     <form action="/films" method="post" data-turbo-frame="films">
         <label for="nomFilm">Nom Film</label>
         <input id="nomFilm" type="text"/>
@@ -490,15 +490,15 @@ if($form->isSubmitted() && $form->isValid()) {
 }
 ```
 
-Et le tour est joué ! Dorénavant, seul la partie qui correspond à la liste de films sera mise à jour. Ce qui relie tout cela est l'id `films` utilisé :
+Et le tour est joué ! Dorénavant, seul la partie qui correspond à la liste de films sera mise à jour. Ce qui relie tout cela est l'id `films` utilisé :
 * Sur la balise **turbo-frame** (afin que Turbo sache "où" aller chercher et insérer les données de la réponse du serveur).
 * Sur le formulaire dans `data-turbo-frame` (pour informer Turbo que ce formulaire déclenche la mise à jour du frame). À noter que si le formulaire/lien est inclus dans le contenu du frame, on n'a pas besoin de préciser cet attribut.
 
-La puissance des frames va plus loin : si la page renvoyée vers le serveur contient plusieurs données (voir une page complète), il ira chercher juste le bout dont l'id correspond à l'id du `turbo-frame` pour ne mettre à jour que cette partie.
+La puissance des frames va plus loin : si la page renvoyée vers le serveur contient plusieurs données (voir une page complète), il ira chercher juste le bout dont l'id correspond à l'id du `turbo-frame` pour ne mettre à jour que cette partie.
 
-Bien que puissant, ce système n'est pas vraiment adapté au problème que nous venons de présenter : nous n'avons pas besoin de recharger toute la liste des films lors de l'ajout ! Seulement d'ajouter le nouveau film à la liste. C'est le même problème pour nos publications. Ici, ce système serait adapté s'il y avait de la pagination par exemple, et que nous cliquions sur un bouton pour aller à la page suivante. Il y a aussi d'autres problématiques que ce système permet de gérer (par exemple, remplacé une zone de la page par le formulaire présent sur une autre page...)
+Bien que puissant, ce système n'est pas vraiment adapté au problème que nous venons de présenter : nous n'avons pas besoin de recharger toute la liste des films lors de l'ajout ! Seulement d'ajouter le nouveau film à la liste. C'est le même problème pour nos publications. Ici, ce système serait adapté s'il y avait de la pagination par exemple, et que nous cliquions sur un bouton pour aller à la page suivante. Il y a aussi d'autres problématiques que ce système permet de gérer (par exemple, remplacé une zone de la page par le formulaire présent sur une autre page...)
 
-Pour gérer notre problème d'ajout "simple", nous allons plutôt utiliser le second mécanisme : Turbo Stream.
+Pour gérer notre problème d'ajout "simple", nous allons plutôt utiliser le second mécanisme : Turbo Stream.
 
 #### Turbo Stream
 
@@ -527,7 +527,7 @@ extends 'base.html.twig'
 {% endraw %}
 ```
 
-On peut créer un template "d'instructions" contenant des balises `<turbo-stream>` :
+On peut créer un template "d'instructions" contenant des balises `<turbo-stream>` :
 
 ```twig
 {% raw %}
@@ -542,9 +542,9 @@ On peut créer un template "d'instructions" contenant des balises `<turbo-stream
 
 Ce template twig contient une instruction qui dit "ajoute à la fin de l'élément qui a pour id **films** le html suivant (code avec le `<li>`, utilisant les données d'un nouveau film soumis par le formulaire).
 
-Tout cela se configure via les deux paramètres :
-* `target` : dans quel conteneur effectuer l'opération (son id).
-* `action` : l'action à réaliser : `append` signifie un ajout à la fin du conteneur. `prepend`, au début. D'autres instructions spéciales (remove, update, etc) existent.
+Tout cela se configure via les deux paramètres :
+* `target` : dans quel conteneur effectuer l'opération (son id).
+* `action` : l'action à réaliser : `append` signifie un ajout à la fin du conteneur. `prepend`, au début. D'autres instructions spéciales (remove, update, etc) existent.
 
 L'id de `target` et du conteneur (ici `ul`) doivent correspondre.
 
@@ -562,7 +562,7 @@ Il est tout à fait possible de combiner plusieurs instructions !
 {% endraw %}
 ```
 
-Côté back-end, il suffit de configurer la requête puis de renvoyer le template lors du traitement de l'opération :
+Côté back-end, il suffit de configurer la requête puis de renvoyer le template lors du traitement de l'opération :
 
 ```php
 use Symfony\UX\Turbo\TurboBundle;
@@ -578,15 +578,15 @@ if($form->isSubmitted() && $form->isValid()) {
 
 <div class="exercise">
 
-1. Mettez en place un système d'ajout de publications en utilisant le système **turbo stream**. Comme nous souhaitons ajouter la publication au début de la liste, il faut utiliser l'action `prepend`. Contrairement à l'exemple, l'affichage d'une publication est complexe. Heureusement, nous avons déjà isolé ce code dans un template dédié : il suffira de l'importer (avec `include`) dans votre `<turbo-stream>`...
+1. Mettez en place un système d'ajout de publications en utilisant le système **turbo stream**. Comme nous souhaitons ajouter la publication au début de la liste, il faut utiliser l'action `prepend`. Contrairement à l'exemple, l'affichage d'une publication est complexe. Heureusement, nous avons déjà isolé ce code dans un template dédié : il suffira de l'importer (avec `include`) dans votre `<turbo-stream>`...
 
 2. Vérifiez que tout fonctionne. Vous pouvez notamment visualiser le contenu de la réponse du serveur (`F12` → `Réseau`) pour vérifier le contenu de la réponse renvoyée par le serveur.
 
 </div>
 
-Bien que ce système fonctionne, un détail gênant apparaît : le formulaire n'est plus vidé après l'envoi. Il y a plusieurs moyens de gérer cela. Par exemple, en écoutant l'événement `turbo:submit-end` sur le formulaire d'envoi d'un message (dans la balise `form`, avec `data-action`) en reliant cela à un nouveau controller stimulus attaché au formulaire qui appelle la fonction `reset` sur la cible de l'événement. Si le temps le permet, vous pouvez explorer cette piste.
+Bien que ce système fonctionne, un détail gênant apparaît : le formulaire n'est plus vidé après l'envoi. Il y a plusieurs moyens de gérer cela. Par exemple, en écoutant l'événement `turbo:submit-end` sur le formulaire d'envoi d'un message (dans la balise `form`, avec `data-action`) en reliant cela à un nouveau controller stimulus attaché au formulaire qui appelle la fonction `reset` sur la cible de l'événement. Si le temps le permet, vous pouvez explorer cette piste.
 
-Bref, comme vous venez de le voir, **Turbo** nous permet de réaliser des modifications chirurgicales sur notre page, tout en interagissant avec le back-end, sans avoir besoin d'écrire de JavaScript. Le mécanisme de suppression aurait aussi pu être réalisé d'une manière similaire :
+Bref, comme vous venez de le voir, **Turbo** nous permet de réaliser des modifications chirurgicales sur notre page, tout en interagissant avec le back-end, sans avoir besoin d'écrire de JavaScript. Le mécanisme de suppression aurait aussi pu être réalisé d'une manière similaire :
 
 ```twig
 {% raw %}
@@ -604,7 +604,7 @@ Bref, comme vous venez de le voir, **Turbo** nous permet de réaliser des modifi
         <div class="feedy-info">
             ...
             {% if app.user and publication.auteur.id == app.user.id %}
-                <form method="post" action="{{ path('supprimerPublication', {'id' : publication.id}) }}">
+                <form method="post" action="{{ path('supprimerPublication', {'id': publication.id}) }}">
                     <input type="submit" class="delete-feedy" value="Supprimer">
                 </form>
             {% endif %}
@@ -636,7 +636,7 @@ Bref, dans vos futures applications, vous pouvez choisir d'utiliser l'un ou l'au
 
 ## The Feed Premium
 
-Nous allons maintenant mettre en place un système de membre "premium" qui donne accès à des avantages sur le site, comme :
+Nous allons maintenant mettre en place un système de membre "premium" qui donne accès à des avantages sur le site, comme :
 
 * Une couleur dorée au niveau du pseudonyme (sur les publications)
 
@@ -646,7 +646,7 @@ Nous allons tout d'abord commencer par inclure toutes les fonctionnalités "prem
 
 ### Accès premium et pseudonyme doré
 
-Il faut maintenant choisir la stratégie pour gérer le système "premium". Il y a deux possibilités :
+Il faut maintenant choisir la stratégie pour gérer le système "premium". Il y a deux possibilités :
 
 * Définir et utiliser un nouveau rôle (par exemple, `ROLE_PREMIUM`).
 
@@ -662,7 +662,7 @@ Ne pas avoir de rôle ne signifie pas que nous ne pourrons pas utiliser l'attrib
 
 <div class="exercise">
 
-1. Utilisez la commande `make:entity`, afin de rajouter un attribut de type `boolean` nommé `premium` à la classe `Utilisateur` qui ne doit pas pouvoir être **null** dans la base de données. Avant de mettre à jour la base de données, il faut penser à faire deux choses :
+1. Utilisez la commande `make:entity`, afin de rajouter un attribut de type `boolean` nommé `premium` à la classe `Utilisateur` qui ne doit pas pouvoir être **null** dans la base de données. Avant de mettre à jour la base de données, il faut penser à faire deux choses :
 
     * Donner la valeur `false` (au lieu de **null**) à votre propriété. Cela constitue sa valeur par défaut. Comme pour la date de publication, cette donnée doit être générée automatiquement par l'application quand un utilisateur s'inscrit. Pour la date, nous avions dû utiliser une méthode spéciale, car nous avions besoin d'utiliser un objet `DateTime`. Ici, comme c'est un booléen simple, on peut le faire directement lors de la définition de la propriété dans la classe.
 
@@ -686,7 +686,7 @@ Par défaut, le groupe `Default` est activé. Il n'y a pas besoin de le précise
 
 Cependant, il est tout à fait possible d'activer d'autres groupes de validation selon la situation, notamment dans la classe permettant de construire un formulaire, au niveau de la méthode `configureOptions`.
 
-Prenons l'exemple suivant : on possède une entité "Message" qui possède une image. Au début, seuls les fichiers `.png` et `.jpg` sont autorisés. Je possède donc les classes suivantes
+Prenons l'exemple suivant : on possède une entité "Message" qui possède une image. Au début, seuls les fichiers `.png` et `.jpg` sont autorisés. Je possède donc les classes suivantes
 
 ```php
 class Message {
@@ -789,7 +789,7 @@ $form = $this->createForm(MonType::class, $entity, [
 
 1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `publication:write:normal`.
 
-2. Modifiez la classe `PublierType` pour activer le bon groupe selon la situation de l'utilisateur (premium ou non). Vous aurez besoin du service `Security`. Ce service vous permet de récupérer l'utilisateur courant. Attention, il faudra vérifier s'il n'est pas `null`, car le formulaire peut être généré (mais pas forcément montré) via la route `feed`, même pour un utilisateur déconnecté (si l'utilisateur n'est pas connecté ou non premium, on utilisera le groupe `publication:write:normal`) :
+2. Modifiez la classe `PublierType` pour activer le bon groupe selon la situation de l'utilisateur (premium ou non). Vous aurez besoin du service `Security`. Ce service vous permet de récupérer l'utilisateur courant. Attention, il faudra vérifier s'il n'est pas `null`, car le formulaire peut être généré (mais pas forcément montré) via la route `feed`, même pour un utilisateur déconnecté (si l'utilisateur n'est pas connecté ou non premium, on utilisera le groupe `publication:write:normal`) :
 
     ```php
     use Symfony\Bundle\SecurityBundle\Security;
@@ -813,16 +813,16 @@ Nous allons ajouter une simple page de présentation des fonctionnalités premiu
 
 Sur cette page, nous afficherons également le **prix** de vente. Comme ce prix est susceptible de changer (et pourra potentiellement être utilisé autre part), il serait judicieux de l'enregistrer comme paramètre (comme vous l'avez fait dans `services.yaml` pour le dossier d'upload des photos de profil) mais aussi de l'utiliser dans vos templates.
 
-Vous savez déjà comment définir un paramètre :
+Vous savez déjà comment définir un paramètre :
 ```yaml
 #config/services.yaml
 parameters:
     serviceParameter: valeur
 ```
 Pour pouvoir l'utiliser dans un template twig, il faudra l'injecter dans le template, depuis l'action utilisant le template dans le contrôleur.
-Pour cela, il existe deux solutions :
+Pour cela, il existe deux solutions :
 
-* Utiliser l'attribut `#[Autowire(...)]` que nous avons déjà utilisé lors du précédent TP (mais cette fois, dans un contrôleur au lieu d'un service) :
+* Utiliser l'attribut `#[Autowire(...)]` que nous avons déjà utilisé lors du précédent TP (mais cette fois, dans un contrôleur au lieu d'un service) :
 
     ```php
     #[Route('/maRoute', name: 'routeName', methods: ['GET'])]
@@ -834,7 +834,7 @@ Pour cela, il existe deux solutions :
     }
     ```
 
-* Ou bien en utilisant la fonction `getParameter` dans le corps de la fonction :
+* Ou bien en utilisant la fonction `getParameter` dans le corps de la fonction :
 
     ```php
     #[Route('/maRoute', name: 'routeName', methods: ['GET'])]
@@ -853,12 +853,12 @@ Pour cela, il existe deux solutions :
 
 2. Créez un contrôleur `PremiumController` contenant le code d'une route `premiumInfos` qui possède pour chemin `/premium` et est seulement accessible avec la méthode `GET`. Cette route doit simplement générer et renvoyer une réponse en utilisant le template `premium/premium-infos.html.twig` (que nous allons créer juste après) en lui injectant le paramètre `premium_price`.
 
-3. Dans `templates`, créez un dossier `premium` et à l'intérieur, un template `premium-infos.html.twig` qui devra reprendre la structure habituelle de notre site (donc qui étend un certain template...). La page aura pour titre `Premium` et aura pour contenu principal la structure suivante :
+3. Dans `templates`, créez un dossier `premium` et à l'intérieur, un template `premium-infos.html.twig` qui devra reprendre la structure habituelle de notre site (donc qui étend un certain template...). La page aura pour titre `Premium` et aura pour contenu principal la structure suivante :
 
     ```html
     <main>
         <div id="premium-infos" class="center">
-            <h3>Devenez membre premium et accédez aux avantages suivants :</h3>
+            <h3>Devenez membre premium et accédez aux avantages suivants:</h3>
             <p>Messages jusqu'à 200 caractères.</p>
             <p>Un superbe pseudonyme doré !</p>
             <a href=""><button id="btn-buy-premium">ACHETER MAINTENANT (prix €)</button></a>
@@ -876,7 +876,7 @@ Pour cela, il existe deux solutions :
 
 Actuellement, même si nous masquons le lien dans le menu de navigation, un utilisateur qui possède le statut premium peut quand même accéder à la page des informations et d'achat du premium. Ce qui ne devrait pas être le cas, un utilisateur étant déjà premium n'a pas à voir cette page. Mais comme nous n'avons pas de rôle "premium" (au sens des rôles de Symfony) nous ne pouvons pas utiliser l'attribut `IsGranted` comme auparavant... Ou peut-être que si ?
 
-Rappelez-vous, sur les routes `connexion` et `inscription`, nous avions évoqué la possibilité d'utiliser `IsGranted` en formulant une condition complexe :
+Rappelez-vous, sur les routes `connexion` et `inscription`, nous avions évoqué la possibilité d'utiliser `IsGranted` en formulant une condition complexe :
 
 ```php
 #[IsGranted(new Expression("!is_granted('ROLE_USER')"))]
@@ -888,7 +888,7 @@ public function connexion(AuthenticationUtils $authenticationUtils) : Response {
 
 Mais nous avions choisi de plutôt rediriger l'utilisateur. Cette fois-ci, nous allons utiliser `IsGranted` avec cette méthode afin de gérer l'accès aux pages relatives à l'achat du mode premium.
 
-Dans cet exemple, on utilise un objet `Expression` pour construire notre condition. En fait, dans cette expression, il est même possible d'utiliser une variable `user` et d'accéder aux méthodes publiques de notre utilisateur ! Par exemple :
+Dans cet exemple, on utilise un objet `Expression` pour construire notre condition. En fait, dans cette expression, il est même possible d'utiliser une variable `user` et d'accéder aux méthodes publiques de notre utilisateur ! Par exemple :
 
 ```php
 #[IsGranted(new Expression("is_granted('ROLE_USER') and user.getAge() >= 12 and user.getAge() < 18"))]
@@ -904,7 +904,7 @@ Dans l'exemple ci-dessus, l'âge est stocké dans l'entité représentant nos ut
 
 1. Faites en sorte que votre route `premiumInfos` soit accessible aux utilisateurs possédant le rôle `ROLE_USER`, mais pas ceux qui sont déjà premium.
 
-    Classes à importer :
+    Classes à importer :
 
     ```php
     use Symfony\Component\ExpressionLanguage\Expression;
@@ -921,7 +921,7 @@ Dans cette section, nous allons voir comment affiner la gestion des permissions 
 
 ### Utilisation d'expressions dans l'attribut IsGranted
 
-Actuellement, votre route `supprimerPublication` doit à peu près ressembler à ça :
+Actuellement, votre route `supprimerPublication` doit à peu près ressembler à ça :
 
 ```php
 #[IsGranted('ROLE_USER')]
@@ -941,7 +941,7 @@ public function supprimerPublication(?Publication $publication, EntityManagerInt
 
 Ici, nous avons notamment besoin de vérifier que l'utilisateur est bien l'auteur de la publication... Mais saviez-vous que nous pouvons aussi faire tout cela dans l'attribut `IsGranted` ? En effet, nous avons vu précédemment que nous pouvions accéder au paramètre `user` représentant l'utilisateur courant en utilisant un objet `Expression` dans l'attribut `IsGranted`. Il est aussi possible d'accéder à un des paramètres de la méthode et de l'utiliser dans notre condition. Pour cela, on ajoute un second paramètre (le `subject`) à notre attribut `IsGranted` en précisant le nom d'un de nos paramètres.
 
-Par exemple :
+Par exemple :
 
 ```php
 #[IsGranted(attribute: new Expression("is_granted('ROLE_USER') and subject.method() == user.method()"), subject: "monObjet")]
@@ -951,7 +951,7 @@ public function supprimerPublication(Exemple $monObjet) : Response {
 }
 ```
 
-Deux notes importantes :
+Deux notes importantes :
 
 * Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode. Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
 
@@ -969,15 +969,15 @@ Normalement, vous devriez maintenant être en mesure de retravailler la logique 
 
 ### Les voters
 
-L'utilisation de `IsGranted` fonctionne bien, mais on reste encore dans des cas assez simples. Si la condition grandit (de nouveaux rôles, comme un administrateur, ayant tous les droits...) ou bien que la vérification devient plus compliquée (appel à des services, plusieurs lignes de code...), que doit-on faire ? Tout mettre dans le contrôleur ? Non ! Comme évoqué précédemment, Symfony possède un système avancé pour gérer les permissions : les **voters**.
+L'utilisation de `IsGranted` fonctionne bien, mais on reste encore dans des cas assez simples. Si la condition grandit (de nouveaux rôles, comme un administrateur, ayant tous les droits...) ou bien que la vérification devient plus compliquée (appel à des services, plusieurs lignes de code...), que doit-on faire ? Tout mettre dans le contrôleur ? Non ! Comme évoqué précédemment, Symfony possède un système avancé pour gérer les permissions : les **voters**.
 
-Un **voter** est une classe listant des **permissions** (généralement liées à une entité, mais pas obligatoirement.). Lorsque le système vérifie une permission avec `isGranted` (avec une fonction ou un attribut), les **voters** sont sollicités au travers de deux méthodes :
+Un **voter** est une classe listant des **permissions** (généralement liées à une entité, mais pas obligatoirement.). Lorsque le système vérifie une permission avec `isGranted` (avec une fonction ou un attribut), les **voters** sont sollicités au travers de deux méthodes :
 
 * Une méthode qui détermine si la classe du **voter** peut traiter cette vérification (est-ce que c'est une permission qui lui est liée ou non...).
 
 * Une méthode qui effectue la vérification et renvoie `true` ou `false` selon sa décision (accepte / refuse).
 
-Comme plusieurs **voters** peuvent "voter" sur la décision à prendre pour une même permission, on peut configurer une stratégie au niveau de l'application :
+Comme plusieurs **voters** peuvent "voter" sur la décision à prendre pour une même permission, on peut configurer une stratégie au niveau de l'application :
 
 * Si un seul des voters répond "oui", on accepte.
 
@@ -1037,9 +1037,9 @@ class ExempleVoter extends Voter
 }
 ```
 
-Prenons l'exemple suivant : une application web permet à ses utilisateurs d'uploader et de partager des vidéos. Les données de la vidéo ne peuvent être modifiées que par l'utilisateur ayant uploadé la vidéo, pareil pour la suppression. Les vidéos peuvent être vues par tous les utilisateurs, sauf si la vidéo est privée. Certaines vidéos peuvent être inadaptées aux mineurs (contenu sensible, langage grossier...). Dans ce cas la vidéo ne peut pas être visionnée par un utilisateur ayant moins de 18 ans. Enfin, la vidéo peut éventuellement ne pas être visionnable dans certains pays.
+Prenons l'exemple suivant : une application web permet à ses utilisateurs d'uploader et de partager des vidéos. Les données de la vidéo ne peuvent être modifiées que par l'utilisateur ayant uploadé la vidéo, pareil pour la suppression. Les vidéos peuvent être vues par tous les utilisateurs, sauf si la vidéo est privée. Certaines vidéos peuvent être inadaptées aux mineurs (contenu sensible, langage grossier...). Dans ce cas la vidéo ne peut pas être visionnée par un utilisateur ayant moins de 18 ans. Enfin, la vidéo peut éventuellement ne pas être visionnable dans certains pays.
 
-Pour gérer ces permissions, je vais construire un voter `VoterVideo` qui contiendra deux permissions : `VIDEO_VIEW` (permission pour regarder une vidéo donnée) et une autre `VIDEO_EDIT` (pour avoir le droit d'éditer ou de supprimer une vidéo).
+Pour gérer ces permissions, je vais construire un voter `VoterVideo` qui contiendra deux permissions : `VIDEO_VIEW` (permission pour regarder une vidéo donnée) et une autre `VIDEO_EDIT` (pour avoir le droit d'éditer ou de supprimer une vidéo).
 
 ```php
 //src/Security/Voter/VideoVoter.php
@@ -1093,7 +1093,7 @@ L'appel à la méthode `addReason` sur `$vote` est tout à fait optionnel. Cela 
 
 Avez-vous remarqué la syntaxe `$objet?->methode(...)` ? Ici, on peut un opérateur dit **Null-safe** qui permet de faire en sorte que la méthode ne s'exécute que si `$objet` n'est **pas null** (autrement, cela provoquerait une erreur). C'est ce qu'on fait ici avec `$vote?->addReason(...)` car `$vote` peut être null.
 
-Si toutes les permissions relatives à l'objet sont refusées automatiquement dans le cas où l'utilisateur n'est pas connecté, on peut ajouter ce bout de code au début de la fonction `voteOnAttribute` :
+Si toutes les permissions relatives à l'objet sont refusées automatiquement dans le cas où l'utilisateur n'est pas connecté, on peut ajouter ce bout de code au début de la fonction `voteOnAttribute` :
 
 ```php
 if (!$user instanceof UserInterface) {
@@ -1104,7 +1104,7 @@ if (!$user instanceof UserInterface) {
 
 Ce qui n'est pas pertinent dans notre exemple, parce qu'une vidéo publique peut être vue par tout le monde.
 
-Enfin, dans mon contrôleur (ou ailleurs) dès que je veux contrôler l'autorisation, par exemple, quand un utilisateur accède à une vidéo, j'utilise la permission `VIDEO_VIEW` :
+Enfin, dans mon contrôleur (ou ailleurs) dès que je veux contrôler l'autorisation, par exemple, quand un utilisateur accède à une vidéo, j'utilise la permission `VIDEO_VIEW` :
 
 ```php
 #[IsGranted(attribute: 'VIDEO_VIEW', subject: 'video')]
@@ -1115,7 +1115,7 @@ public function watchVideo(Video $video): Response
 }
 ```
 
-On voit bien qu'il aurait été difficile de mettre toute la logique de la permission `VIDEO_VIEW` dans l'attribut `IsGranted` ! On peut aussi utiliser, à la place, la méthode `denyAccessUnlessGranted` :
+On voit bien qu'il aurait été difficile de mettre toute la logique de la permission `VIDEO_VIEW` dans l'attribut `IsGranted` ! On peut aussi utiliser, à la place, la méthode `denyAccessUnlessGranted` :
 
 ```php
 #[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
@@ -1127,7 +1127,7 @@ public function watchVideo($id, VideoRepository $videoRepository): Response
 }
 ```
 
-Ou bien :
+Ou bien :
 
 ```php
 #[Route('/watch/{id}', name: 'videoWatch', methods: ["GET"])]
@@ -1151,7 +1151,7 @@ Il est aussi tout à fait possible d'utiliser cette permission avec la méthode 
 {% endraw %}
 ```
 
-Si on a ajouté des messages personnalisés (en cas de permission refusée) et que l'on souhaite les afficher sur l'interface, on peut les récupérer ainsi :
+Si on a ajouté des messages personnalisés (en cas de permission refusée) et que l'on souhaite les afficher sur l'interface, on peut les récupérer ainsi :
 
 ```twig
 {% raw %}
@@ -1166,7 +1166,7 @@ Si on a ajouté des messages personnalisés (en cas de permission refusée) et q
 
 Cependant, comme nous l'avons expliqué plus tôt, on utilisera plutôt rarement ces messages sur l'interface, donc, la première méthode avec `is_granted` sera largement suffisante pour la majorité des cas.
 
-La commande suivante permet de générer une classe `NomEntiteVoter` contenant du code basique pour un **Voter**, lié à l'entité `NomEntite` :
+La commande suivante permet de générer une classe `NomEntiteVoter` contenant du code basique pour un **Voter**, lié à l'entité `NomEntite` :
 
 ```php 
 php bin/console make:voter NomEntiteVoter
@@ -1175,7 +1175,7 @@ Cependant, encore une fois, il n'est pas obligatoire d'avoir des permissions li�
 
 <div class="exercise">
 
-1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication` (facilitez-vous la vie, utilisez la commande !). Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il est connecté et qu'il en est l'auteur.
+1. Créez un voter `PublicationVoter`, pour les permissions relatives aux objets de type `Publication` (facilitez-vous la vie, utilisez la commande !). Ce **voter** ne gérera qu'une permission (pour le moment) nommée `PUBLICATION_DELETE` (pour vérifier si l'utilisateur a le droit de supprimer une publication ou non, s'il en est bien l'auteur). Complétez la classe de manière adéquate : l'utilisateur a le droit de supprimer la publication seulement s'il est connecté et qu'il en est l'auteur.
 
 2. Utilisez votre nouvelle permission au niveau de la route `supprimerPublication`.
 
@@ -1193,7 +1193,7 @@ Il n'y a pas vraiment de procédure pour créer un nouveau rôle sur Symfony. En
 
 Néanmoins, il faut penser à **hiérarchiser** les rôles. Cela consiste à dire que tel ou tel rôle est une version dérivée d'un rôle existant. Ainsi, un utilisateur possédant un rôle particulier aura ses propres privilèges en plus de ceux de tous les sous-rôles duquel le rôle est dérivé.
 
-Tout cela se configure dans le fichier `config/packages/security.yaml` :
+Tout cela se configure dans le fichier `config/packages/security.yaml` :
 
 ```yaml
 #config/packages/security.yaml
@@ -1203,16 +1203,16 @@ security:
 
     role_hierarchy:
         ROLE_CUSTOM: ROLE_USER
-        ROLE_SUPER_CUSTOM : ROLE_CUSTOM, ROLE_CUSTOM_2
+        ROLE_SUPER_CUSTOM: ROLE_CUSTOM, ROLE_CUSTOM_2
 ```
 
 Dans l'exemple ci-dessus, un utilisateur possédant le rôle `ROLE_CUSTOM` possède automatiquement tous les privilèges de `ROLE_USER` (en plus des siens). Enfin, `ROLE_SUPER_CUSTOM` possède les privilèges de `ROLE_CUSTOM`, `ROLE_CUSTOM_2` et aussi `ROLE_USER` (car `ROLE_CUSTOM` a les privilèges de `ROLE_USER`...).
 
 <div class="exercise">
 
-1. Dans le fichier `security.yaml`, définissez une hiérarchie pour le rôle `ROLE_ADMIN` (nouveau rôle) en faisant en sorte que celui-ci hérite de tous les privilèges du rôle de base : `ROLE_USER`.
+1. Dans le fichier `security.yaml`, définissez une hiérarchie pour le rôle `ROLE_ADMIN` (nouveau rôle) en faisant en sorte que celui-ci hérite de tous les privilèges du rôle de base : `ROLE_USER`.
 
-2. Modifiez le voter `PublicationVoter` afin de voter favorablement si l'utilisateur possède le privilège `ROLE_ADMIN`. Pour cela, il vous faudra injecter et utiliser le service `AccessDecisionManagerInterface` afin d'utiliser la méthode `decide` sur l'objet `$token` donné dans `voteOnAttribute` :
+2. Modifiez le voter `PublicationVoter` afin de voter favorablement si l'utilisateur possède le privilège `ROLE_ADMIN`. Pour cela, il vous faudra injecter et utiliser le service `AccessDecisionManagerInterface` afin d'utiliser la méthode `decide` sur l'objet `$token` donné dans `voteOnAttribute` :
 
     ```php
     use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
@@ -1220,9 +1220,9 @@ Dans l'exemple ci-dessus, un utilisateur possédant le rôle `ROLE_CUSTOM` poss�
     $this->accessDecisionManager->decide($token, ["ROLE", "..."]);
     ```
 
-    La fonction `decide` a le même objectif que `isGranted` : déterminer si l'utilisateur à une (ou plusieurs) permission(s) (ou certains rôles). La documentation de Symfony précise que si l'on souhaite vérifier des permissions à l'intérieur d'un voter, il faut impérativement utiliser cette méthode, et ne surtout pas appeler la méthode `isGranted` sur l'utilisateur récupéré via `getUser` dans le service **Security** (comme montré dans certains tutoriels, ou la documentation de versions antérieures de Symfony). De plus, la méthode `decide` permet aussi de vérifier les permissions d'autres utilisateurs.
+    La fonction `decide` a le même objectif que `isGranted` : déterminer si l'utilisateur à une (ou plusieurs) permission(s) (ou certains rôles). La documentation de Symfony précise que si l'on souhaite vérifier des permissions à l'intérieur d'un voter, il faut impérativement utiliser cette méthode, et ne surtout pas appeler la méthode `isGranted` sur l'utilisateur récupéré via `getUser` dans le service **Security** (comme montré dans certains tutoriels, ou la documentation de versions antérieures de Symfony). De plus, la méthode `decide` permet aussi de vérifier les permissions d'autres utilisateurs.
 
-3. Dans votre base de données, ajoutez le rôle `ROLE_ADMIN` à un utilisateur : affectez la valeur `["ROLE_ADMIN"]` dans le champ `roles`. Si vous êtes connecté avec ce compte, vous serez déconnecté après le changement de rôle, par mesure de sécurité.
+3. Dans votre base de données, ajoutez le rôle `ROLE_ADMIN` à un utilisateur : affectez la valeur `["ROLE_ADMIN"]` dans le champ `roles`. Si vous êtes connecté avec ce compte, vous serez déconnecté après le changement de rôle, par mesure de sécurité.
 
 4. Connectez-vous avec le compte admin. Si vous avez bien configuré votre voter, le bouton de suppression devrait alors apparaître sur toutes les publications !
 
@@ -1232,7 +1232,7 @@ Comme vous le constatez, les voters sont assez puissants ! L'intérêt est encor
 
 ## Créer ses propres commandes
 
-Dans cette section, nous allons voir comment créer nos propres commandes qui seront utilisables comme les autres commandes de Symfony, dans le terminal :
+Dans cette section, nous allons voir comment créer nos propres commandes qui seront utilisables comme les autres commandes de Symfony, dans le terminal :
 
 ```php
 php bin/console macommande ...
@@ -1242,7 +1242,7 @@ Il peut être très utile de créer des commandes pour assurer certaines opérat
 
 Pour créer une commande, on va d'abord ajouter un dossier `src/Command` afin de placer nos commandes à l'intérieur.
 
-Ensuite, on peut créer une classe dédiée pour chaque commande :
+Ensuite, on peut créer une classe dédiée pour chaque commande :
 
 ```php
 namespace App\Command;
@@ -1276,13 +1276,13 @@ class MaCommande
         //Premier argument (obligatoire)
         #[Argument(description: "...")] string $arg1,
 
-        //Deuxième argument (obligatoire) : pose une question en console à l'utilisateur
+        //Deuxième argument (obligatoire): pose une question en console à l'utilisateur
         #[Ask("Question...")] int $arg2,
 
-        //Troisième argument (obligatoire) : pose une question en console à l'utilisateur, et cache la valeur saisie (par exemple, pour un mon de passe...)
+        //Troisième argument (obligatoire): pose une question en console à l'utilisateur, et cache la valeur saisie (par exemple, pour un mon de passe...)
         #[Ask("Question...", hidden: true)] int $arg3,
                             
-        //Quatrième argument (optionnel) : à mettre après les arguments obligatoires.
+        //Quatrième argument (optionnel): à mettre après les arguments obligatoires.
         //Il est optionnel car on donne une valeur par défaut
         #[Argument(description: "...")] string $arg4 = "Valeur par défaut...",
                            
@@ -1311,10 +1311,10 @@ class MaCommande
         //On peut aussi utiliser $io->ask pour poser une question et récupérer des arguments de manière interactive... $io contient plein de méthodes utiles!
 
         /* 
-        On retourne une des trois valeurs possibles :
-        * Command::SUCCESS : la commande s'est bien exécutée (de bout en bout)
-        * Command::INVALID : il y a un problème par rapport aux arguments passés.
-        * Command::FAILURE : il y a eu un problème lors de l'exécution.
+        On retourne une des trois valeurs possibles:
+        * Command::SUCCESS: la commande s'est bien exécutée (de bout en bout)
+        * Command::INVALID: il y a un problème par rapport aux arguments passés.
+        * Command::FAILURE: il y a eu un problème lors de l'exécution.
         */
         return Command::SUCCESS;
 
@@ -1322,7 +1322,7 @@ class MaCommande
 }
 ```
 
-Bien sûr, dans l'exemple, on utilise `$arg1`, `$option1`, etc, mais vous pouvez nommer les arguments et options comme vous voulez ! La description d'une commande (et de ses paramètres) peut être affichée avec :
+Bien sûr, dans l'exemple, on utilise `$arg1`, `$option1`, etc, mais vous pouvez nommer les arguments et options comme vous voulez ! La description d'une commande (et de ses paramètres) peut être affichée avec :
 
 ```bash
 php bin/console macommande --help
@@ -1331,7 +1331,7 @@ php bin/console macommande --help
 Dans `#[Argument]`, `#[Option]`, etc, il est aussi possible de changer le nom du paramètre affiché en console avec la propriété `name`, et de suggérer des valeurs avec `suggestedValues`. Il est aussi possible de créer une classe externe pour regrouper plusieurs arguments puis les utiliser dans la commande grâce à [l'attribut `#[MapInput]`](https://symfony.com/doc/7.4/console/input.html#mapping-input-to-objects).
 
 {% comment %}
-Pour initialiser la classe d'une commande, on exécute :
+Pour initialiser la classe d'une commande, on exécute :
 
 ```bash
 php bin/console make:command MaCommande
@@ -1376,7 +1376,7 @@ class DeleteVideoCommand
 
 2. Créez et testez la commande `RevokePremiumCommand` nommée `revoke:premium` qui prend en paramètre le login d'un utilisateur et le lui enlève le statut premium.
 
-3. Créez et testez la commande `PromoteAdminCommand` nommée `promote:admin` qui prend en paramètre le login d'un utilisateur et lui donne le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour ajouter un rôle) à la classe `Utilisateur` :
+3. Créez et testez la commande `PromoteAdminCommand` nommée `promote:admin` qui prend en paramètre le login d'un utilisateur et lui donne le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour ajouter un rôle) à la classe `Utilisateur` :
 
     ```php
     public function addRole($role) : void {
@@ -1386,7 +1386,7 @@ class DeleteVideoCommand
     }
     ```
 
-4. Créez et testez la commande `RevokeAdminCommand` nommée `revoke:admin` qui prend en paramètre le login d'un utilisateur et lui enlève le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour retirer un rôle) à la classe `Utilisateur` :
+4. Créez et testez la commande `RevokeAdminCommand` nommée `revoke:admin` qui prend en paramètre le login d'un utilisateur et lui enlève le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour retirer un rôle) à la classe `Utilisateur` :
 
     ```php
     public function removeRole($role) : void {
@@ -1408,4 +1408,4 @@ Si vous avez un peu de temps, vous pouvez effectuer ce [TP bonus]({{site.baseurl
 
 Vous pouvez également consulter [cette note complémentaire]({{site.baseurl}}/complements/deploiement) et vous entraîner en déployant **The Feed** sur le serveur de l'IUT (pour avoir une première expérience à ce niveau, avant le premier projet).
 
-Dans le prochain TD (le dernier consacré à Symfony), nous allons voir comment créer une **API REST** pour notre application "The Feed" avec un outil dédié : **API Platform.** Nous allons transposer tout ce que nous avons fait jusqu'ici sous la forme d'une API (donc, sans rendu HTML) qui pourra être utilisée par n'importe quel application : une application mobile, un autre service, ou bien une application **Vue.js**, ce qui sera l'objet des futurs TDs !
+Dans le prochain TD (le dernier consacré à Symfony), nous allons voir comment créer une **API REST** pour notre application "The Feed" avec un outil dédié : **API Platform.** Nous allons transposer tout ce que nous avons fait jusqu'ici sous la forme d'une API (donc, sans rendu HTML) qui pourra être utilisée par n'importe quel application : une application mobile, un autre service, ou bien une application **Vue.js**, ce qui sera l'objet des futurs TDs !
