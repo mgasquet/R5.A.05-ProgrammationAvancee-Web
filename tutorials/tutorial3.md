@@ -177,12 +177,16 @@ Bref, nous allons commencer par mettre en place une fonctionnalité JavaScript s
 
 Maintenant que nous avons de quoi supprimer visuellement une publication de manière dynamique, il faut confirmer cette suppression côté back-end. Il faut aussi pouvoir générer le lien de la route dans notre fichier JavaScript, comme nous le faisons avec `path` dans nos templates.
 
+Nous allons procéder par étapes : d'abord une route de suppression toute simple (sans gestion des cas d'erreur), puis l'outillage nécessaire pour l'appeler depuis JavaScript, puis la requête `fetch` elle-même, et enfin la sécurisation de la route.
+
+#### Une première route de suppression
+
 Pour créer une route accessible par une requête HTTP exécutée en JavaScript (et qui ne renvoie pas de page, mais plutôt des données), quelques éléments diffèrent :
 
 ```php
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-#[Route('/exemple', name: 'route_exemple', options: ["expose" => true], methods: ["POST"])]
+#[Route('/exemple', name: 'route_exemple', methods: ["POST"])]
 public function methodeExemple(Request $request): Response
 {
     //Récupération des données fournies dans le payload JSON
@@ -195,8 +199,6 @@ public function methodeExemple(Request $request): Response
 }
 ```
 
-* Afin que le chemin de la route puisse être généré à partir de son nom (côté JavaScript), il faut **exposer la route** en ajoutant `options: ["expose" => true]` dans l'attribut contenant les métadonnées de la route.
-
 * Si des données `JSON` (ou autre) sont envoyées et doivent être lues, on peut les récupérer avec l'objet `Request`. En fait, cela marche de la même façon que pour récupérer des données depuis query string, ou bien même d'un formulaire...
 
 * On renvoie un objet `JsonResponse` contenant éventuellement des données au format `JSON` (qui peuvent être `null`) et un code de réponse HTTP (200, 400, etc.).
@@ -207,6 +209,26 @@ Dans les premiers TD, nous n'avons fait que lire ou créer des entités ! Pour e
 $entityManager->remove($entity);
 $entityManager->flush();
 ```
+
+<div class="exercise">
+
+1. Dans `PublicationController.php`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Pour l'instant, on reste simple : pas besoin de vérifier si la publication existe ou si l'utilisateur courant en est l'auteur (nous ajouterons ces vérifications plus tard). Concrètement, la route doit :
+
+    * Récupérer la publication visée par l'identifiant donné dans la route (souvenez-vous, lors du TD2, nous avions vu une méthode très simple pour récupérer une entité précisée à partir d'une route paramétrée, sans utiliser explicitement son repository !).
+    * Supprimer la publication.
+    * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) avec le code `Response::HTTP_NO_CONTENT` (204) (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée).
+
+2. Avant de brancher quoi que ce soit côté JavaScript, testez directement votre route avec la commande `curl` suivante dans le terminal qui affiche uniquement les en-têtes de réponse (adaptez l'identifiant à une publication existante dans votre base) :
+
+   ```bash
+   curl --url 'http://localhost/the_feed/public/publications/1' -X 'DELETE' --head
+   ```
+
+   Vérifiez que la réponse a bien le code `204` et que la publication a disparu de votre base de données. Vous pouvez répéter la commande sur le même id : la seconde fois devrait échouer (puisque la publication n'existe plus), mais comme nous ne gérons pas encore ce cas, l'erreur obtenue ne sera pas très explicite pour l'instant.
+
+</div>
+
+#### Génération des routes en JavaScript avec FOSJsRoutingBundle
 
 Du côté de notre **controller Stimulus**, nous n'avons pas accès à la fonction `path` comme dans nos templates twig! Pour remédier à cela, il suffit d'installer un `bundle` qui est un composant PHP prévu pour s'intégrer spécifiquement à Symfony.
 
@@ -221,45 +243,12 @@ php bin/console importmap:require fos-router
 
 Lors de l'installation, il vous est demandé si vous souhaitez exécuter une "recette". Répondez **oui**.
 
-**Si jamais vous avez oublié de dire oui, exécutez les deux commandes suivantes :**
-
-```bash
-composer remove friendsofsymfony/jsrouting-bundle
-composer require friendsofsymfony/jsrouting-bundle
-```
-
-<!-- Selon votre configuration, il se peut que le bundle ne soit pas activé par défaut. Si ce n'est pas le cas, il suffit de rajouter une petite ligne de code dans le fichier `config/bundles.php` :
-
-```php
-//config/bundles.php
-return [
-    ...
-    FOS\JsRoutingBundle\FOSJsRoutingBundle::class => ['all' => true],
-];
-```
-
-Si la ligne est déjà présente, c'est que le bundle est déjà actif !
-
-Ensuite, comme le bundle défini certaines `routes` qui lui sont spécifiques, il faut les enregistrer dans notre application. Pour notre nouveau bundle, on édite le fichier `config/routes.yaml` en ajoutant la ligne suivante :
-
-```yaml
-fos_js_routing:
-    resource: "@FOSJsRoutingBundle/Resources/config/routing/routing-sf4.xml"
-``` 
-Enfin, certains **bundles** contiennent des assets (fichiers css, js, images, etc...) qu'il faut importer dans notre propre dossier d'assets, afin de pouvoir les utiliser. Pour cela, Symfony a prévu une commande :
-
-```bash
-php bin/console assets:install --symlink public
-```
-
-Vous remarquerez alors de nouvelles ressources dans votre dossier `public`. Il ne reste plus qu'à importer les fichiers JavaScript de ce bundle dans nos templates afin de pouvoir utiliser la fonction de routing. Il y a deux fichiers à importer :
-
-```twig
-{% raw %}
-<script defer src="{{ asset('bundles/fosjsrouting/js/router.min.js') }}"></script>
-<script defer src="{{ path('fos_js_routing_js', { callback: 'fos.Router.setData' }) }}"></script>
-{% endraw %}
-```-->
+> **Remarque :** Si jamais vous avez oublié de dire oui, exécutez les deux commandes suivantes
+> 
+> ```bash
+> composer remove friendsofsymfony/jsrouting-bundle
+> composer require friendsofsymfony/jsrouting-bundle
+> ```
 
 Ensuite, nous devons **configurer l'URL de base du site**. Ce paramètre est utile, car nous allons devoir **exporter nos routes** exposées (pour pouvoir y accéder depuis JavaScript).
 
@@ -269,10 +258,20 @@ Pour cela, il faut simplement éditer le paramètre `DEFAULT_URI` du fichier `.e
 DEFAULT_URI=http://localhost/the_feed/public
 ```
 
+Afin que le chemin d'une route puisse être généré à partir de son nom (côté JavaScript), il faut **exposer la route** en ajoutant `options: ["expose" => true]` dans l'attribut contenant les métadonnées de la route, comme nous l'avons fait un peu plus tôt sur la route `supprimerPublication`. En effet, seules les routes exposées peuvent être générées de cette manière.
+
+```php
+#[Route('/publications/{id:publication}', name: 'supprimerPublication', options: ["expose" => true], methods: ["DELETE"])]
+public function supprimerPublication(Publication $publication, EntityManagerInterface $entityManager): Response
+{
+    //...
+}
+```
+
 Après cela, il faut **générer** le fichier qui contiendra toutes nos routes exposées. Pour cela, on utilise la commande suivante :
 
 ```bash
-php bin/console fos:js-routing:dump --format=js --target=assets/routes/fos_routes.js --callback="export default  "
+php bin/console fos:js-routing:dump --format=js --target=assets/routes/fos_routes.js --callback="export default"
 ```
 
 Ce qui génère un fichier dans le dossier `assets/routes`. Lors de l'ajout ou la modification d'une route exposée, **il faudra appeler cette commande de nouveau** pour maintenir ce fichier à jour.
@@ -302,9 +301,19 @@ let URL = Routing.generate('maRoute');
 let URL = Routing.generate('maRoute', {"param": val, ...});
 ```
 
-Nous allons mettre en place une route : `/publications/{id}` qui sera accessible via la méthode `DELETE`.
+<div class="exercise">
 
-Néanmoins, un problème subsiste : comment récupérer l'id de la publication associée au bouton "Supprimer" sur lequel on clique pour le passer en paramètre de la route ?
+1. Installez `FOSJsRoutingBundle` et configurez tout ce qu'il faut (URL par défaut, export des routes, import dans `app.js`) pour pouvoir utiliser la fonction `Routing.generate` dans votre controller Stimulus. Vous pouvez supprimer le dossier `public/bundles` qui ne nous servira pas.
+
+2. Pour vérifier que tout fonctionne, modifiez temporairement la fonction `supprimerPublication` de `publications_controller.js` afin qu'elle affiche dans la console le résultat de `Routing.generate('supprimerPublication', {"id": 123})`.  
+   
+   Rechargez la page, cliquez sur un bouton "Supprimer" et vérifiez dans la console (`F12`) que l'URL générée correspond bien à celle de votre route (par exemple `http://localhost/the_feed/public/publications/123`).
+
+</div>
+
+#### Récupérer l'id de la publication à supprimer
+
+Lors de l'appel de la route `/publications/{id}` depuis `supprimerPublication` de `publications_controller.js`, un problème subsiste : comment récupérer l'id de la publication associée au bouton "Supprimer" sur lequel on clique pour le passer en paramètre de la route ?
 
 Pour cela, nous pouvons utiliser un attribut `data-xxx` qui permet de créer des attributs "dynamiques" sur un élément HTML. **Attention**, le nom custom donné (`xxx`) suit des règles lexicographiques précises :
 
@@ -336,74 +345,95 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 <div class="exercise">
 
-1. Dans `PublicationController.php`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Concrètement, il n'y a aucune donnée à lire (pas de payload, c-à-d de corps de requête) mais vous devez :
+1. Modifiez le template `publication.html.twig` afin d'inclure un attribut `data-publication-id` contenant l'identifiant de la publication dans les attributs du bouton de suppression.
 
-    * Récupérer la publication visée par l'identifiant donné dans la route.
+2. Dans `publications_controller.js`, remplacez l'identifiant codé en dur (`123`) utilisé dans l'exercice précédent par la valeur récupérée via `dataset` sur le bouton cliqué. Vérifiez, toujours dans la console, que l'URL générée contient bien l'id de la publication sur laquelle vous avez cliqué (et pas toujours la même).
+
+</div>
+
+#### Envoyer la requête de suppression
+
+Notre prochain objectif est de modifier la fonction `supprimerPublication` de `publications_controller.js` afin qu'elle effecturune requête asynchrone vers la route nommée `supprimerPublication` de méthode `DELETE`.
+Vous pouvez notamment utiliser la fonction `fetch` et l’instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l’année dernière ! Quelques petits rappels (et nouvelles précisions) dans le contexte d'une requête simple sans corps de requête :
+
+```javascript
+import { Controller } from '@hotwired/stimulus';
+import Routing from 'fos-router';
+
+export default class extends Controller {
+    //Comme on utilise le mot clé "await" dans le corps de la fonction, on doit rendre la fonction asynchrone.
+    //Pour cela, on utilise le mot clé "async"
+    async maFonction(event) {
+
+        //On précise l'URL de la requête.
+        const URL = Routing.generate('...');
+
+        //On utilise le mot clé "await" pour "attendre" que la requête soit complètement exécutée avant d'exécuter les prochaines instructions.
+        //Par conséquent, la fonction "maFonction" doit être asynchrone pour ne pas bloquer la page.
+        const response = await fetch(URL, {
+            //La méthode utilisée (GET, POST, PUT, PATCH ou DELETE)
+            method: "...",
+        });
+
+        //Ici, on a la garantie que la requête a fini de s'exécuter (on a un code de réponse, et éventuellement un résultat)
+        if(response.status === ...) {
+            //response.status permet d'accéder au code de réponse HTTP (200, 204, 403, 404, etc.).
+        }
+    }
+}
+```
+
+<div class="exercise">
+
+1. Dans `publications_controller.js`, modifiez la fonction `supprimerPublication` afin de remplacer le `console.log` par une véritable requête asynchrone `DELETE` vers la route `supprimerPublication`, en utilisant `fetch` et `await` comme rappelé ci-dessus.
+
+2. Au chargement de la réponse, déclenchez la suppression (visuelle) de la publication sur la page (vous avez déjà le code pour cela dans le fichier) **si et seulement si le serveur a bien supprimé la publication** (code `204`).
+
+3. Testez que la suppression des publications fonctionne bien (elles ne réapparaissent pas après avoir rechargé la page). Si rien ne se passe, jetez un œil à la console (`F12`) pour lire les éventuels messages d'erreurs.
+
+</div>
+
+
+Si un jour vous avez besoin d'envoyer des données (un `payload`) avec votre requête, vous pourrez utiliser en plus les `headers` et le `body` :
+
+```javascript
+//Les "headers" de la requête: on indique le type de données qu'on envoie
+const headers = new Headers();
+headers.append("Content-Type", "application/json");
+
+//Le payload contient les données (sous la forme d'un objet clé-valeur) qu'on souhaite envoyer avec la requête
+const payload = {donnee1: ..., donnee2: ..., ...};
+
+const response = await fetch(URL, {
+    method: "...",
+    //On transforme le "payload" en chaîne de caractères.
+    body: JSON.stringify(payload),
+    headers: headers,
+});
+```
+
+#### Sécuriser la route de suppression
+
+Notre route est fonctionnelle, mais actuellement, n'importe qui (même déconnecté) peut supprimer n'importe quelle publication en devinant simplement son identifiant et en exécutant une requête `DELETE` (par exemple avec `curl`, comme nous l'avons fait plus tôt) ! Il est temps de corriger cela.
+
+<div class="exercise">
+
+1. Complétez la route `supprimerPublication` de `PublicationController.php` afin de :
+
     * Vérifier que la publication existe et que l'utilisateur courant en est bien l'auteur.
-    * Supprimer la publication.
     * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) et soit renvoyer le code :
         * `Response::HTTP_NOT_FOUND` (404) si la publication n'existe pas (ressource non trouvée).
         * `Response::HTTP_FORBIDDEN` (403) si l'utilisateur n'est pas auteur de la publication (opération interdite).
-        * `Response::HTTP_NO_CONTENT` (204) si tout se passe bien (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée)
-
-    Souvenez-vous, lors du TD2, nous avions vu une méthode très simple pour récupérer une entité précisée à partir d'une route paramétrée, sans utiliser explicitement son repository !
+        * `Response::HTTP_NO_CONTENT` (204) si tout se passe bien, comme avant.
 
 2. En utilisant l'attribut `IsGranted`, faites en sorte que cette route soit seulement accessible aux utilisateurs connectés (possédant le rôle `ROLE_USER`). Allez consulter le TD2 si vous ne savez plus comment faire.
 
-3. Installez `FOSJsRoutingBundle` et configurer tout ce qu'il faut pour pouvoir utiliser la fonction `Routing.generate` dans votre controller Stimulus. Vous pouvez supprimer le dossier `public/bundles` qui ne nous servira pas.
+3. Vérifiez avec `curl` qu'un identifiant inexistant renvoie bien un code `404`.
 
-4. Modifiez le template `publication.html.twig` afin d'inclure un attribut `data-publication-id` contenant l'identifiant de la publication dans les attributs du bouton de suppression.
+   Désactiver temporairement dans `publication.html.twig` la condition `if` afin d'afficher le bouton *Supprimer* sur toutes les publications. Testez sur le site Web la suppression d'une publication dont vous n'êtes pas l'auteur alors que vous êtes connecté. Observez la réponse `403 (Forbidden)` dans l'onglet `Console` des outils de développement. Réactivez le `if`.
 
-5. Dans le fichier `publications_controller.js`, modifiez la fonction `supprimerPublication` afin d'ajouter une requête asynchrone vers la route `supprimerPublication`. Vous pouvez notamment utiliser la fonction `fetch` et l'instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l'année dernière ! Quelques petits rappels (et nouvelles précisions) :
+   Vérifiez que la suppression fonctionne toujours normalement depuis le site pour l'auteur d'une publication. 
 
-    ```javascript
-    import { Controller } from '@hotwired/stimulus';
-    import Routing from 'fos-router';
-
-    export default class extends Controller {
-        //Comme on utilise le mot clé "await" dans le corps de la fonction, on doit rendre la fonction asynchrone.
-        //Pour cela, on utilise le mot clé "async"
-        async maFonction(event) {
-
-            //Les "headers" de la requête: on indique le type de données qu'on envoie
-            const headers = new Headers();
-            headers.append("Content-Type", "application/json");
-
-            //Le payload contient les données (sous la forme d'un objet clé-valeur) qu'on souhaite envoyer avec la requête
-            const payload = {donnee1: ..., donnee2: ..., ...};
-
-            //On utilise le mot clé "await" pour "attendre" que la requête soit complètement exécutée avant d'exécuter les prochaines instructions.
-            //Par conséquent, la fonction "maFonction" doit être asynchrone pour ne pas bloquer la page.
-            //On précise l'URL de la requête.
-            const URL = Routing.generate('...');
-            const response = await fetch(URL, {
-                //La méthode utilisée (GET, POST, PUT, PATCH ou DELETE)
-                method: "...",
-                //On transforme le "payload" en chaîne de caractères.
-                body: JSON.stringify(payload),
-                headers: headers,
-            });
-
-            //Ici, on a la garantie que la requête a fini de s'exécuter (on a un code de réponse, et éventuellement un résultat)
-            if(response.status === ...) {
-                //response.status permet d'accéder au code de réponse HTTP (200, 204, 403, 404, etc.).
-            }
-
-
-        }
-    }
-    ```
-    Comme la requête que nous souhaitons exécuter (suppression simple) n'a pas besoin de `payload`, on peut se passer de `headers` et de `body` :
-
-    ```javascript
-    const response = await fetch(URL, {method: "..."});
-    if(response.status === ...) {/*...*/}
-    ```
-
-    Au chargement de la réponse, il faudra déclencher la suppression (visuelle) de la publication sur la page (vous avez déjà le code pour cela dans le fichier) **si et seulement si le serveur a bien supprimé la publication**.
-
-
-6. Testez que la suppression des publications fonctionne bien (elles ne réapparaissent pas après avoir rechargé la page). Si rien ne se passe, jetez un œil à la console (`F12`) pour lire les éventuels messages d'erreurs.
 </div>
 
 ### Ajout d'une publication avec Turbo
