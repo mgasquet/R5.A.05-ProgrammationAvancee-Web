@@ -572,7 +572,7 @@ Il peut être intéressant de créer une **interface** pour son service, même s
 
 3. Rechargez votre page et vérifiez que l'affichage des erreurs fonctionne toujours.
 
-4. Pour bien vérifier que vous avez compris les explications précédentes, ajoutez une classe `TestService.php` dans le dossier `Service` qui implémente aussi `UtilisateurManagerInterface`. Laissez le corps de la méthode `processNewUtilisateur` vide. Essayez de recharger la page d'accueil. Symfony renvoie alors une erreur qui explique qu'il n'a pas pu trouver le service en question. Comme dans l'exemple, éditez le fichier `services.yaml` afin de faire pointer le service `UtilisateurManagerInterface` vers `UtilisateurManager`. Testez que tout fonctionne à nouveau, puis supprimez les modifications apportées dans `services.yaml` lors de cet exercice et supprimez également `TestService.php`.
+4. Pour bien vérifier que vous avez compris les explications précédentes, ajoutez une classe `TestService.php` dans le dossier `Service` qui implémente aussi `UtilisateurManagerInterface`. Laissez le corps de la méthode `processNewUtilisateur` vide. Essayez de recharger la page d'inscription. Symfony renvoie alors une erreur qui explique qu'il n'a pas pu trouver le service en question. Comme dans l'exemple, éditez le fichier `services.yaml` afin de faire pointer le service `UtilisateurManagerInterface` vers `UtilisateurManager`. Testez que tout fonctionne à nouveau, puis supprimez les modifications apportées dans `services.yaml` lors de cet exercice et supprimez également `TestService.php`.
 
 </div>
 
