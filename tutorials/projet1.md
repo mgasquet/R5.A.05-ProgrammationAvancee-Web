@@ -15,8 +15,8 @@ Voici les détails du service qui devra être développé :
 
 * Le site web est un annuaire en ligne qui permet à chaque utilisateur de créer et de compléter un profil avec un certain nombre de champs informatifs.
 
-* Le profil de l'utilisateur possède l'un des deux modes de visibilité suivants :
-    * **Publique** : le profil est accessible par tous et est listé dans l'annuaire. Il est donc listé dans l'annuaire.
+* Le profil de l'utilisateur possède l'un des trois modes de visibilité suivants :
+    * **Public** : le profil est accessible par tous et est listé dans l'annuaire. Il est donc listé dans l'annuaire.
     * **Non répertorié** : le profil est toujours accessible par tous (via l'URL du profil) mais il n'est pas listé dans l'annuaire.
     * **Privé** : le profil n'est accessible que par son propriétaire (même si quelqu'un d'autre dispose de l'URL), il n'est pas listé dans l'annuaire.
 
@@ -24,7 +24,7 @@ Voici les détails du service qui devra être développé :
 
 * Attention, comme expliqué juste avant, même si le profil est **non répertorié**, il peut toujours être consulté via l'adresse et le code du profil (contrairement aux profils privés). S'il est **non répertorié**, il n'est simplement pas listé sur la page principale de l'annuaire.
 
-* Lors de l'inscription (via un formulaire) l'utilisateur précise seulement un minimum d'informations : login, adresse email, mot de passe et la visibilité du profil (public/non répertorié/privé). Par mesure de sécurité, l'utilisateur doit saisir son mot de passe deux fois dans le formulaire d'inscription. Deux utilisateurs différents ne peuvent pas avoir le même login et la même adresse email.
+* Lors de l'inscription (via un formulaire) l'utilisateur précise seulement un minimum d'informations : login, adresse email, mot de passe et la visibilité du profil (public/non répertorié/privé). Par mesure de sécurité, l'utilisateur doit saisir son mot de passe deux fois dans le formulaire d'inscription. Le login et l’adresse e-mail doivent chacun être uniques.
 
 * Chaque profil doit être associé à un **code unique**. Pendant l'inscription, l'utilisateur peut choisir de préciser lui-même ce code ou non (à condition qu'il ne soit pas déjà pris). S'il ne précise rien, un code aléatoire sera alors généré.
 
@@ -42,13 +42,13 @@ Voici les détails du service qui devra être développé :
 
 * L'utilisateur peut **changer la visibilité de son profil** à tout moment.
 
-* En plus de la route qui permet de visualiser le profil de l'utilisateur sur une page dédiée, une autre route (qui inclue donc aussi le code secret du profil) doit renvoyer les informations de l'utilisateur au format `JSON` (donc, pas une page web complète, seulement les données). Cela vous servira plus tard, lors du 3ᵉ projet où vous utiliserez directement de ce service. Attention, comme pour le lien de la page de profil, ce lien ne fonctionne pas si le profil est en mode privé.
+* En plus de la route qui permet de visualiser le profil de l'utilisateur sur une page dédiée, une autre route (qui inclut donc aussi le code secret du profil) doit renvoyer les informations de l'utilisateur au format `JSON` (donc, pas une page web complète, seulement les données). Cela vous servira plus tard, lors du 3ᵉ projet où vous utiliserez directement de ce service. Attention, comme pour le lien de la page de profil, ce lien ne fonctionne pas si le profil est en mode privé.
 
-* Sur le profil, l'application doit afficher **la dernière date où a été édité le profil**. **Attention**, vous devrez faire en sorte que cette date soit mise à jour dès que **l'objet** (entité) stockant l'utilisateur est mise à jour, peu importe l'endroit où cela est fait : dans un contrôleur, dans un service, dans une commande, etc. Il faut ainsi faire en sorte de ne pas avoir à dupliquer le code gérant cette logique si une nouvelle portion de code mettant à jour cette entité est implémentée. Par contre, **il ne faut pas que la date d'édition du profil** soit automatiquement mise à jour dès que l'utilisateur se connecte simplement.
+* Sur le profil, l'application doit afficher **la date de dernière modification du profil**. **Attention**, vous devrez faire en sorte que cette date soit mise à jour dès que **l'objet** (entité) stockant l'utilisateur est mis à jour, peu importe l'endroit où cela est fait : dans un contrôleur, dans un service, dans une commande, etc. Il faut ainsi faire en sorte de ne pas avoir à dupliquer le code gérant cette logique si une nouvelle portion de code mettant à jour cette entité est implémentée. Par contre, **il ne faut pas que la date d'édition du profil** soit automatiquement mise à jour dès que l'utilisateur se connecte simplement.
 
 * Le site doit pouvoir être passé en **mode maintenance** à l'aide d'un nouveau paramètre que vous pourrez définir et modifier dans le fichier `.env` (ou `services.yaml`). Quand le site est en mode maintenance, toutes les pages du site doivent rediriger sur une page qui affiche un message expliquant que le site est actuellement en maintenance.
 
-* Certains utilisateurs peuvent posséder le rôle d'**administrateur**. Sur la page principale, en plus des profils **visibles**, un les profils **non répertoriés** et **privés** sont également listés, et il peut y accéder. De même, il **peut tout à fait accéder aux à la page de détails d'un profil privé**. Aussi, à partir d'un profil, un administrateur peut **supprimer le compte** de l'utilisateur qui possède ce profil, sauf si cet utilisateur est aussi un administrateur.
+* Certains utilisateurs peuvent posséder le rôle d'**administrateur**. Sur la page principale, en plus des profils **publics**, les profils **non répertoriés** et **privés** sont également listés, et il peut y accéder. De même, il **peut tout à fait accéder à la page de détails d'un profil privé**. Aussi, à partir d'un profil, un administrateur peut **supprimer le compte** de l'utilisateur qui possède ce profil, sauf si cet utilisateur est aussi un administrateur.
 
 * Sur la page de profil d'un utilisateur, un administrateur peut voir la **dernière date de connexion** de l'utilisateur à qui appartient le profil.
 
@@ -66,17 +66,17 @@ Voici les détails du service qui devra être développé :
 
 * Pour le style du site, faites ce que vous voulez, tant que ce n'est pas trop laid ! Cependant, **il est interdit de reprendre le style de The Feed**. Par contre, vous pouvez utiliser n'importe quel Framework CSS (par exemple [bootstrap](https://getbootstrap.com/docs/5.3/getting-started/download/), [tailwind css](https://tailwindcss.com/) ou bien quelque chose d'encore plus simple comme [bulma](https://bulma.io/)). De plus, **Symfony** vous permet d'intégrer facilement [bootstrap](https://symfony.com/doc/7.4/form/bootstrap5.html) pour générer facilement des formulaires stylisés. Le site de [tailwind css](https://tailwindcss.com/docs/guides/symfony) possède aussi un guide d'installation pour Symfony.
 
-* Faites en sorte de vérifier les données saisies, côté serveur (via les assertions) et côté client également (via les attributs HTML relatifs aux champs). Le mot de passe doit bien sûr être chiffré et suffisamment fort.
+* Faites en sorte de vérifier les données saisies, côté serveur (via les assertions) et côté client également (via les attributs HTML relatifs aux champs). Le mot de passe doit bien sûr être haché et suffisamment fort.
 
 * Faites en sorte de ne pas avoir d'actions (dans les contrôleurs) trop grosses, de séparer les responsabilités, de créer et utiliser des **services**, d'éviter la duplication de code le plus possible, etc.
 
-* Vous pouvez utiliser les fonctionnalités **Turbo** au besoin (frame, stream) abordés dans le TD3, mais aucune obligation. Vous pouvez remplacer les fonctionnalités dynamiques proposées par ce système par du JavaScript.
+* Vous pouvez utiliser les fonctionnalités **Turbo** au besoin (frame, stream) abordées dans le TD3, mais aucune obligation. Vous pouvez remplacer les fonctionnalités dynamiques proposées par ce système par du JavaScript.
 
 ## Aide et pistes
 
 Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
-* Pour **modifier** un objet (entité) déjà existant (par exemple, un utilisateur), on récupère simplement l'objet correspondant et on applique les modifications (par exemple, via un formulaire). Ensuite, on utilise là-aussi le service `EntityManager` afin de synchroniser les modifications avec la base de données en utilisant la méthode `flush`. Plus d'information à ce propos sur [la documentation officielle](https://symfony.com/doc/7.4/doctrine.html#updating-an-object).
+* Pour **modifier** un objet (entité) déjà existant (par exemple, un utilisateur), on récupère simplement l'objet correspondant et on applique les modifications (par exemple, via un formulaire). Ensuite, on utilise là aussi le service `EntityManager` afin de synchroniser les modifications avec la base de données en utilisant la méthode `flush`. Plus d'information à ce propos sur [la documentation officielle](https://symfony.com/doc/7.4/doctrine.html#updating-an-object).
 
 * Dans le [TD1]({{site.baseurl}}/tutorials/tutorial1), nous avons utilisé l'attribut `#[ORM\PrePersist]` afin de créer la date de publication d'un message automatiquement juste avant l'enregistrement en base de données. [D'autres attributs similaires](https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/events.html) peuvent vous permettre d'implémenter la fonctionnalité relative à la **date de dernière édition du profil**. En utilisant certains de ces attributs, vous avez accès à un objet lié à l'événement qui permet de récupérer certaines informations (par exemple, connaître **les propriétés qui ont été modifiées**).
 
@@ -86,7 +86,7 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 * Nous avons vu comment générer une chaîne aléatoire lors de la sauvegarde de la photo de profil de l'utilisateur dans le [TD2]({{site.baseurl}}/tutorials/tutorial2).
 
-* Dans les [TD2]({{site.baseurl}}/tutorials/tutorial2), nous avons vu comment capter des **événements** (`LoginSuccessEvent`, `LoginFailureEvent` et `LogoutEvent`) afin d'exécuter du code lorsque ces événements surviennent. [D'autres événements](https://symfony.com/doc/7.4/event_dispatcher.html) peuvent vous permettre de facilement implémenter la fonctionnalité relative à **la date de dernière connexion** d'un utilisateur ainsi que le **système de maintenance**.
+* Dans le [TD2]({{site.baseurl}}/tutorials/tutorial2), nous avons vu comment capter des **événements** (`LoginSuccessEvent`, `LoginFailureEvent` et `LogoutEvent`) afin d'exécuter du code lorsque ces événements surviennent. [D'autres événements](https://symfony.com/doc/7.4/event_dispatcher.html) peuvent vous permettre de facilement implémenter la fonctionnalité relative à **la date de dernière connexion** d'un utilisateur ainsi que le **système de maintenance**.
 
 * Dans le [TD3]({{site.baseurl}}/tutorials/tutorial3), nous avons vu qu'il faut renvoyer un objet `JsonResponse` quand on veut renvoyer une réponse au format JSON plutôt qu'une page web complète (générée avec **Twig**). Vous trouverez plus d'informations [ici](https://symfony.com/doc/7.4/components/http_foundation.html#creating-a-json-response).
 
@@ -104,7 +104,7 @@ Vous pouvez consulter [cette note complémentaire]({{site.baseurl}}/complements/
 
 La **deadline** du projet est le **dimanche 25 octobre 2026, 23h59**.
 
-Le projet sera à rendre sur **Moodle** (adresse communiquée prochainement). Un seul membre du groupe projet dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3-NomPrenomMembre4.zip`.
+Le projet sera à rendre sur **Moodle** (adresse communiquée prochainement). Un seul membre du groupe projet dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3.zip`.
 
 Cette archive devra contenir :
 
@@ -128,7 +128,7 @@ Cette archive devra contenir :
 
 ## Soutenances et notation
 
-Des soutenances (oraux) auront lieu quelque temps après la remise du projet. Le document **TRAVAIL_GROUPE** que vous aurez remis servira comme base à cette soutenance. Diverses questions techniques seront posées à chaque membre du groupe selon le travail qu'il a réalisé. Il faudra alors bien maîtriser le code de votre projet pour pouvoir y répondre. Lors de cette soutenance, vous devrez venir avec le code source chargé dans votre IDE, afin de pouvoir vous appuyer dessus pour répondre aux questions. Votre application devra aussi être disponible afin d'effectuer d'éventuels tests en direct. Le but de ces oraux est d'évaluer à quel point vous comprenez et vous maîtrisez le projet que vous avez produit et les notions abordées en cours.
+Des oraux de soutenance auront lieu quelque temps après la remise du projet. Le document **TRAVAIL_GROUPE** que vous aurez remis servira comme base à cette soutenance. Diverses questions techniques seront posées à chaque membre du groupe selon le travail qu'il a réalisé. Il faudra alors bien maîtriser le code de votre projet pour pouvoir y répondre. Lors de cette soutenance, vous devrez venir avec le code source chargé dans votre IDE, afin de pouvoir vous appuyer dessus pour répondre aux questions. Votre application devra aussi être disponible afin d'effectuer d'éventuels tests en direct. Le but de ces oraux est d'évaluer à quel point vous comprenez et vous maîtrisez le projet que vous avez produit et les notions abordées en cours.
 
 La note du projet sera à la fois composée du résultat (est-ce que l'application fonctionne, remplit le cahier des charges, est ergonomique, ne présente pas de bugs, etc) qui sera évalué en amont, puis de la note de la soutenance, qui aura un poids bien plus important et permettra d'individualiser la note de chaque membre du groupe.
 
