@@ -728,7 +728,7 @@ Nous n'avons pas beaucoup évoqué la notion de `firewall` jusqu'ici. Un `firewa
 
 2. Modifiez le fichier `config/routes.yaml` afin d'autoriser seulement la méthode `POST` lorsque la route de déconnexion est utilisée.
 
-3. Dans votre template `base.html.twig`, ajoutez le formulaire suivant dans le menu de navigation en complétant `action` de manière adéquate pour pointer sur votre route de déconnexion (toujours en utilisant la fonction `path`, jamais directement le chemin) :
+3. Dans votre template `base.html.twig`, ajoutez le formulaire suivant dans le menu de navigation en complétant `action` de manière adéquate pour pointer sur votre route de déconnexion (en utilisant la fonction `logout_path`) :
 
     ```html
     <form method="post" action="A compléter">
