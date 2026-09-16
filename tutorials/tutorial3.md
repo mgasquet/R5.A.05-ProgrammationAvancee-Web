@@ -153,23 +153,23 @@ Bref, nous allons commencer par mettre en place une fonctionnalité JavaScript s
 
 4. Modifiez le template `publication.html.twig` afin de rajouter le bout de code HTML suivant, juste après l'élément `<p>...</p>` contenant le message de la publication : 
 
-    ```html
-    <button class="delete-feedy">Supprimer</button>
-    ```
+   ```html
+   <button class="delete-feedy">Supprimer</button>
+   ```
 
-    Ce bouton ne doit apparaître que si l'utilisateur connecté est l'auteur de la publication ! Pour rappel, vous avez accès à la variable `app.user` dans vos templates `twig`... Attention, avant d'y accéder, il faut d'abord bien vérifier que l'utilisateur est bien connecté !
+   Ce bouton ne doit apparaître que si l'utilisateur connecté est l'auteur de la publication ! Pour rappel, vous avez accès à la variable `app.user` dans vos templates `twig`... Attention, avant d'y accéder, il faut d'abord bien vérifier que l'utilisateur est bien connecté !
 
 5. Faites en sorte que la fonction `supprimerPublication` du controller se déclenche lors du **clic** sur le bouton.
 
 6. Allez sur la page principale de votre site et vérifiez que :
 
-    * Le bouton "Supprimer" apparaît seulement sur les publications dont vous êtes l'auteur.
-    * Le bouton fonctionne, c'est-à-dire que la publication est retirée de la page (seulement visuellement pour le moment).
+   * Le bouton "Supprimer" apparaît seulement sur les publications dont vous êtes l'auteur.
+   * Le bouton fonctionne, c'est-à-dire que la publication est retirée de la page (seulement visuellement pour le moment).
 
-    Vérifiez également que tout fonctionne de même sur votre page personnelle.
+   Vérifiez également que tout fonctionne de même sur votre page personnelle.
 
-    Si cela ne fonctionne pas, vérifiez la console (`F12`) pour chercher d'éventuels messages d'erreur. 
-    Vérifiez aussi que vous avez bien supprimé le dossier `public/assets` (*cf.* TD1) pour ne pas utiliser une version ancienne de vos `assets` qui ne contiendrait pas `publications_controller.js`.
+   Si cela ne fonctionne pas, vérifiez la console (`F12`) pour chercher d'éventuels messages d'erreur. 
+   Vérifiez aussi que vous avez bien supprimé le dossier `public/assets` (*cf.* TD1) pour ne pas utiliser une version ancienne de vos `assets` qui ne contiendrait pas `publications_controller.js`.
 
 </div>
 
@@ -214,9 +214,9 @@ $entityManager->flush();
 
 1. Dans `PublicationController.php`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Pour l'instant, on reste simple : pas besoin de vérifier si la publication existe ou si l'utilisateur courant en est l'auteur (nous ajouterons ces vérifications plus tard). Concrètement, la route doit :
 
-    * Récupérer la publication visée par l'identifiant donné dans la route (souvenez-vous, lors du TD2, nous avions vu une méthode très simple pour récupérer une entité précisée à partir d'une route paramétrée, sans utiliser explicitement son repository !).
-    * Supprimer la publication.
-    * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) avec le code `Response::HTTP_NO_CONTENT` (204) (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée).
+   * Récupérer la publication visée par l'identifiant donné dans la route (souvenez-vous, lors du TD2, nous avions vu une méthode très simple pour récupérer une entité précisée à partir d'une route paramétrée, sans utiliser explicitement son repository !).
+   * Supprimer la publication.
+   * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) avec le code `Response::HTTP_NO_CONTENT` (204) (ce code signifie simplement que l'opération s'est bien passée, mais que la réponse ne contient aucune donnée).
 
 2. Avant de brancher quoi que ce soit côté JavaScript, testez directement votre route avec la commande `curl` suivante dans le terminal qui affiche uniquement les en-têtes de réponse (adaptez l'identifiant à une publication existante dans votre base) :
 
@@ -420,11 +420,11 @@ Notre route est fonctionnelle, mais actuellement, n'importe qui (même déconnec
 
 1. Complétez la route `supprimerPublication` de `PublicationController.php` afin de :
 
-    * Vérifier que la publication existe et que l'utilisateur courant en est bien l'auteur.
-    * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) et soit renvoyer le code :
-        * `Response::HTTP_NOT_FOUND` (404) si la publication n'existe pas (ressource non trouvée).
-        * `Response::HTTP_FORBIDDEN` (403) si l'utilisateur n'est pas auteur de la publication (opération interdite).
-        * `Response::HTTP_NO_CONTENT` (204) si tout se passe bien, comme avant.
+   * Vérifier que la publication existe et que l'utilisateur courant en est bien l'auteur.
+   * Renvoyer une réponse au format `JSON` ne contenant rien (**null**) et soit renvoyer le code :
+       * `Response::HTTP_NOT_FOUND` (404) si la publication n'existe pas (ressource non trouvée).
+       * `Response::HTTP_FORBIDDEN` (403) si l'utilisateur n'est pas auteur de la publication (opération interdite).
+       * `Response::HTTP_NO_CONTENT` (204) si tout se passe bien, comme avant.
 
 2. En utilisant l'attribut `IsGranted`, faites en sorte que cette route soit seulement accessible aux utilisateurs connectés (possédant le rôle `ROLE_USER`). Allez consulter le TD2 si vous ne savez plus comment faire.
 
@@ -468,7 +468,7 @@ Par exemple, prenons l'exemple d'une page `HTML` renvoyée par le serveur.
         </ul>
         <form action="/films" method="post">
             <label for="nomFilm">Nom Film</label>
-            <input id="nomFilm" type="text"/>
+            <input id="nomFilm" name="nomFilm" type="text"/>
             <input type="submit" value="Ajouter film">
         </form>
     </main>
@@ -481,8 +481,8 @@ Par défaut, si je soumets le formulaire, **Turbo** va recevoir en réponse à l
 
 Dans ce cas, on pourrait mettre en place la logique suivante :
 
-```twig
 {% raw %}
+```twig
 <!-- Template film/liste_films.html.twig, n'étend pas de template de base -->
 <turbo-frame id="films">
     <ul id="films">
@@ -491,23 +491,23 @@ Dans ce cas, on pourrait mettre en place la logique suivante :
         {% endfor %}
     </ul>
 </turbo-frame>
-{% endraw %}
 ```
+{% endraw %}
 
-```twig
 {% raw %}
+```twig
 <!-- Template film/accueil.html.twig -->
-extends 'base.html.twig'
+{% extends 'base.html.twig' %}
 <main>
     {{ include('film/liste_films.html.twig', {'films': films}) }}
     <form action="/films" method="post" data-turbo-frame="films">
         <label for="nomFilm">Nom Film</label>
-        <input id="nomFilm" type="text"/>
+        <input id="nomFilm" name="nomFilm" type="text"/>
         <input type="submit" value="Ajouter film">
     </form>
 </main>
-{% endraw %}
 ```
+{% endraw %}
 
 Et du côté back-end, dans l'action qui gère le traitement de la requête **POST**, on renvoie une page générée avec `film/liste_films.html.twig` et pas la page entière (`film/accueil.html.twig`) !
 
@@ -526,7 +526,7 @@ Et le tour est joué ! Dorénavant, seul la partie qui correspond à la liste de
 
 La puissance des frames va plus loin : si la page renvoyée vers le serveur contient plusieurs données (voir une page complète), il ira chercher juste le bout dont l'id correspond à l'id du `turbo-frame` pour ne mettre à jour que cette partie.
 
-Bien que puissant, ce système n'est pas vraiment adapté au problème que nous venons de présenter : nous n'avons pas besoin de recharger toute la liste des films lors de l'ajout ! Seulement d'ajouter le nouveau film à la liste. C'est le même problème pour nos publications. Ici, ce système serait adapté s'il y avait de la pagination par exemple, et que nous cliquions sur un bouton pour aller à la page suivante. Il y a aussi d'autres problématiques que ce système permet de gérer (par exemple, remplacé une zone de la page par le formulaire présent sur une autre page...)
+Bien que puissant, ce système n'est pas vraiment adapté au problème que nous venons de présenter : nous n'avons pas besoin de recharger toute la liste des films lors de l'ajout ! Seulement d'ajouter le nouveau film à la liste. C'est le même problème pour nos publications. Ici, ce système serait adapté s'il y avait de la pagination par exemple, et que nous cliquions sur un bouton pour aller à la page suivante. Il y a aussi d'autres problématiques que ce système permet de gérer (par exemple, remplacer une zone de la page par le formulaire présent sur une autre page...)
 
 Pour gérer notre problème d'ajout "simple", nous allons plutôt utiliser le second mécanisme : Turbo Stream.
 
@@ -538,10 +538,10 @@ Ici aussi, le back-end va seulement générer le bout de code HTML désiré et t
 
 Par exemple, reprenons notre exemple d'avant. On souhaite toujours insérer un film dans la page.
 
-```twig
 {% raw %}
+```twig
 <!-- Template film/accueil.html.twig -->
-extends 'base.html.twig'
+{% extends 'base.html.twig' %}
 <main>
     <ul id="films">
         {% for film in films %}
@@ -550,25 +550,25 @@ extends 'base.html.twig'
     </ul>
     <form action="/films" method="post">
         <label for="nomFilm">Nom Film</label>
-        <input id="nomFilm" type="text"/>
+        <input id="nomFilm" name="nomFilm" type="text"/>
         <input type="submit" value="Ajouter film">
     </form>
 </main>
-{% endraw %}
 ```
+{% endraw %}
 
 On peut créer un template "d'instructions" contenant des balises `<turbo-stream>` :
 
-```twig
 {% raw %}
-<!-- Template film/stream/film_create_stream.html.twig -->
+```twig
+<!-- Template film/stream/film_append_stream.html.twig -->
 <turbo-stream action="append" target="films">
     <template>
         <li>{{ film.nom }}</li>
     </template>
 </turbo-stream>
-{% endraw %}
 ```
+{% endraw %}
 
 Ce template twig contient une instruction qui dit "ajoute à la fin de l'élément qui a pour id **films** le html suivant (code avec le `<li>`, utilisant les données d'un nouveau film soumis par le formulaire).
 
@@ -581,7 +581,6 @@ L'id de `target` et du conteneur (ici `ul`) doivent correspondre.
 Il est tout à fait possible de combiner plusieurs instructions !
 
 ```twig
-{% raw %}
 <!-- Ajoute le film et un message flash... -->
 <turbo-stream action="append" target="films">
     ...
@@ -589,7 +588,6 @@ Il est tout à fait possible de combiner plusieurs instructions !
 <turbo-stream action="prepend" target="flashes">
     <p>Film ajouté!</p>
 </turbo-stream>
-{% endraw %}
 ```
 
 Côté back-end, il suffit de configurer la requête puis de renvoyer le template lors du traitement de l'opération :
@@ -602,7 +600,7 @@ if($form->isSubmitted() && $form->isValid()) {
     $entityManager->persist($film);
     $entityManager->flush();
     $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
-    return $this->render('film/stream/film_create_stream.html.twig', ["film" => $film]);
+    return $this->render('film/stream/film_append_stream.html.twig', ["film" => $film]);
 }
 ```
 
@@ -610,7 +608,7 @@ if($form->isSubmitted() && $form->isValid()) {
 
 1. Mettez en place un système d'ajout de publications en utilisant le système **turbo stream**. Comme nous souhaitons ajouter la publication au début de la liste, il faut utiliser l'action `prepend`. Contrairement à l'exemple, l'affichage d'une publication est complexe. Heureusement, nous avons déjà isolé ce code dans un template dédié : il suffira de l'importer (avec `include`) dans votre `<turbo-stream>`...
 
-2. Vérifiez que tout fonctionne. Vous pouvez notamment visualiser le contenu de la réponse du serveur (`F12` → `Réseau`) pour vérifier le contenu de la réponse renvoyée par le serveur.
+2. Vérifiez que tout fonctionne. Vous pouvez notamment visualiser le contenu de la réponse du serveur (`F12` → `Réseau`) pour vérifier le contenu de la réponse renvoyée par le serveur ne contient que le **template turbo stream**.
 
 </div>
 
@@ -618,15 +616,15 @@ Bien que ce système fonctionne, un détail gênant apparaît : le formulaire 
 
 Bref, comme vous venez de le voir, **Turbo** nous permet de réaliser des modifications chirurgicales sur notre page, tout en interagissant avec le back-end, sans avoir besoin d'écrire de JavaScript. Le mécanisme de suppression aurait aussi pu être réalisé d'une manière similaire :
 
-```twig
 {% raw %}
+```twig
 <!-- Template publication/stream/publication_remove_stream.html.twig -->
 <turbo-stream action="remove" target="publication_{{ idPublication }}"></turbo-stream>
-{% endraw %}
 ```
+{% endraw %}
 
-```twig
 {% raw %}
+```twig
 <!-- Template publication/publication.html.twig -->
 <div class="feedy" id="publication_{{ publication.id }}">
     <div class="feedy-header">
@@ -641,8 +639,8 @@ Bref, comme vous venez de le voir, **Turbo** nous permet de réaliser des modifi
         </div>
     </div>
 </div>
-{% endraw %}
 ```
+{% endraw %}
 
 ```php
 #[IsGranted('ROLE_USER')]
@@ -692,7 +690,7 @@ Ne pas avoir de rôle ne signifie pas que nous ne pourrons pas utiliser l'attrib
 
 <div class="exercise">
 
-1. Utilisez la commande `make:entity`, afin de rajouter un attribut de type `boolean` nommé `premium` à la classe `Utilisateur` qui ne doit pas pouvoir être **null** dans la base de données. Avant de mettre à jour la base de données, il faut penser à faire deux choses :
+1. Utilisez la commande `make:entity`, afin de rajouter un attribut de type `boolean` nommé `premium` à la classe `Utilisateur` qui ne doit pas pouvoir être **null** dans la base de données. Avant de mettre à jour la base de données, il faut penser à faire deux choses dans l'entité `Utilisateur.php` :
 
     * Donner la valeur `false` (au lieu de **null**) à votre propriété. Cela constitue sa valeur par défaut. Comme pour la date de publication, cette donnée doit être générée automatiquement par l'application quand un utilisateur s'inscrit. Pour la date, nous avions dû utiliser une méthode spéciale, car nous avions besoin d'utiliser un objet `DateTime`. Ici, comme c'est un booléen simple, on peut le faire directement lors de la définition de la propriété dans la classe.
 
@@ -821,15 +819,15 @@ $form = $this->createForm(MonType::class, $entity, [
 
 2. Modifiez la classe `PublierType` pour activer le bon groupe selon la situation de l'utilisateur (premium ou non). Vous aurez besoin du service `Security`. Ce service vous permet de récupérer l'utilisateur courant. Attention, il faudra vérifier s'il n'est pas `null`, car le formulaire peut être généré (mais pas forcément montré) via la route `feed`, même pour un utilisateur déconnecté (si l'utilisateur n'est pas connecté ou non premium, on utilisera le groupe `publication:write:normal`) :
 
-    ```php
-    use Symfony\Bundle\SecurityBundle\Security;
-    
-    $user = $this->security->getUser();
-    ```
+   ```php
+   use Symfony\Bundle\SecurityBundle\Security;
+   
+   $user = $this->security->getUser();
+   ```
 
-    L'autocomplétion ne vous montrera pas forcément les attributs/méthodes de la classe `Utilisateur`, car on nous renvoie un objet de type `UserInterface`. Ce n'est pas grave, car en réalité, c'est bien notre entité `Utilisateur` qui est utilisée (et qui implémente justement cette interface).
+   L'autocomplétion ne vous montrera pas forcément les attributs/méthodes de la classe `Utilisateur`, car on nous renvoie un objet de type `UserInterface`. Ce n'est pas grave, car en réalité, c'est bien notre entité `Utilisateur` qui est utilisée (et qui implémente justement cette interface).
 
-    Comme d'habitude, il faudra penser à ajouter un constructeur dans `PublierType` afin de réaliser l'injection de dépendance nécessaire.
+   Comme d'habitude, il faudra penser à ajouter un constructeur dans `PublierType` afin de réaliser l'injection de dépendance nécessaire.
 
 3. Utilisez un compte non premium et vérifiez que l'erreur apparaît bien si vous faites un message dépassant 50 caractères. Vérifiez également que l'erreur n’apparaît pas si vous faites la même chose sur un compte premium (mais que dans ce cas, la limite à 200 est toujours présente) !
 
@@ -854,28 +852,28 @@ Pour cela, il existe deux solutions :
 
 * Utiliser l'attribut `#[Autowire(...)]` que nous avons déjà utilisé lors du précédent TP (mais cette fois, dans un contrôleur au lieu d'un service) :
 
-    ```php
-    #[Route('/maRoute', name: 'routeName', methods: ['GET'])]
-    public function routeExemple(#[Autowire('%nom_parametre%')] $parametre): Response
-    {
-        return $this->render('chemin/vue.html.twig', [
-            'parametre' => $parametre,
-        ]);
-    }
-    ```
+  ```php
+  #[Route('/maRoute', name: 'routeName', methods: ['GET'])]
+  public function routeExemple(#[Autowire('%nom_parametre%')] $parametre): Response
+  {
+      return $this->render('chemin/vue.html.twig', [
+          'parametre' => $parametre,
+      ]);
+  }
+  ```
 
 * Ou bien en utilisant la fonction `getParameter` dans le corps de la fonction :
 
-    ```php
-    #[Route('/maRoute', name: 'routeName', methods: ['GET'])]
-    public function routeExemple(): Response
-    {
-        $parametre = $this->getParameter('nom_parametre');
-        return $this->render('chemin/vue.html.twig', [
-            'parametre' => $parametre,
-        ]);
-    }
-    ```
+  ```php
+  #[Route('/maRoute', name: 'routeName', methods: ['GET'])]
+  public function routeExemple(): Response
+  {
+      $parametre = $this->getParameter('nom_parametre');
+      return $this->render('chemin/vue.html.twig', [
+          'parametre' => $parametre,
+      ]);
+  }
+  ```
 
 <div class="exercise">
 
@@ -885,18 +883,18 @@ Pour cela, il existe deux solutions :
 
 3. Dans `templates`, créez un dossier `premium` et à l'intérieur, un template `premium-infos.html.twig` qui devra reprendre la structure habituelle de notre site (donc qui étend un certain template...). La page aura pour titre `Premium` et aura pour contenu principal la structure suivante :
 
-    ```html
-    <main>
-        <div id="premium-infos" class="center">
-            <h3>Devenez membre premium et accédez aux avantages suivants:</h3>
-            <p>Messages jusqu'à 200 caractères.</p>
-            <p>Un superbe pseudonyme doré !</p>
-            <a href=""><button id="btn-buy-premium">ACHETER MAINTENANT (prix €)</button></a>
-        </div>
-    </main>
-    ```
+   ```html
+   <main>
+       <div id="premium-infos" class="center">
+           <h3>Devenez membre premium et accédez aux avantages suivants:</h3>
+           <p>Messages jusqu'à 200 caractères.</p>
+           <p>Un superbe pseudonyme doré !</p>
+           <a href=""><button id="btn-buy-premium">ACHETER MAINTENANT (prix €)</button></a>
+       </div>
+   </main>
+   ```
 
-    Dans le contenu du bouton, remplacez le **prix** par le prix (actuel) du premium en utilisant le paramètre injecté dans le template.
+   Dans le contenu du bouton, remplacez le **prix** par le prix (actuel) du premium en utilisant le paramètre injecté dans le template.
 
 4. Dans votre template `base.html.twig`, ajoutez un lien vers la page d'infos sur le statut premium visible uniquement par les utilisateurs connectés, mais qui ne sont pas premium.
 
@@ -934,12 +932,12 @@ Dans l'exemple ci-dessus, l'âge est stocké dans l'entité représentant nos ut
 
 1. Faites en sorte que votre route `premiumInfos` soit accessible aux utilisateurs possédant le rôle `ROLE_USER`, mais pas ceux qui sont déjà premium.
 
-    Classes à importer :
+   Classes à importer :
 
-    ```php
-    use Symfony\Component\ExpressionLanguage\Expression;
-    use Symfony\Component\Security\Http\Attribute\IsGranted;
-    ```
+   ```php
+   use Symfony\Component\ExpressionLanguage\Expression;
+   use Symfony\Component\Security\Http\Attribute\IsGranted;
+   ```
 
 2. Connectez-vous à un compte premium et vérifiez que la page n'est plus accessible (cela génère un message d'erreur détaillé en mode développement, mais en mode production, la page d'erreur que vous avez configuré lors du dernier TD sera affichée à la place). Connectez-vous ensuite à un compte non-premium et vérifiez que la page est accessible.
 
@@ -983,7 +981,7 @@ public function supprimerPublication(Exemple $monObjet) : Response {
 
 Deux notes importantes :
 
-* Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode. Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `monObjet.method()`.
+* Le second paramètre de `IsGranted` est nommé `subject` et fait référence à un des paramètres de la méthode. Dans notre exemple, il s'agit donc dans `monObjet`. Ensuite, dans l'objet `Expression`, on fait référence à cet objet en utilisant le mot clé `subject`. Ici, `subject` représente donc `monObjet`. Et donc, quand on appelle `subject.method()` dans l'expression, c'est comme si on appelait `$monObjet->method()`.
 
 * Il faut enlever le `?` du type de l'objet (`Exemple` et pas `?Exemple`) Pour rappel, `?` autorise une valeur nulle. Ici, le fait de ne pas autoriser cela générera automatiquement une réponse **404** (not found) si l'utilisateur essaye d'accéder à un objet qui n'existe pas (identifiant invalide).
 
@@ -994,6 +992,8 @@ Normalement, vous devriez maintenant être en mesure de retravailler la logique 
 1. Au niveau de la route `supprimerPublication`, utilisez vos nouvelles connaissances pour déplacer la logique vérifiant que l'utilisateur courant est bien le propriétaire de la publication vers votre attribut `IsGranted`.
 
 2. Vérifiez que tout fonctionne comme attendu (supprimez des publications sur votre compte).
+
+   En cas de problèmes, vous pouvez inspecter le réseau avec les outils de développement, puis repérer la requête `DELETE`. Vous trouverez la réponse dans le sous-onglet `Response`, et sa visualisation HTML dans `Preview`.
 
 </div>
 
@@ -1173,26 +1173,26 @@ public function watchVideo($id, VideoRepository $videoRepository): Response
 
 Il est aussi tout à fait possible d'utiliser cette permission avec la méthode `is_granted` dans nos templates twig.
 
-```twig
 {% raw %}
+```twig
 {% if is_granted('VIDEO_VIEW', video) %}
 
 {% endif %}
-{% endraw %}
 ```
+{% endraw %}
 
 Si on a ajouté des messages personnalisés (en cas de permission refusée) et que l'on souhaite les afficher sur l'interface, on peut les récupérer ainsi :
 
-```twig
 {% raw %}
+```twig
 {% set voter_decision = access_decision('VIDEO_VIEW', video) %}
 {% if voter_decision.isGranted %}
     {# ... #}
 {% else %}
     <p>{{ voter_decision.message }}</p>
 {% endif %}
-{% endraw %}
 ```
+{% endraw %}
 
 Cependant, comme nous l'avons expliqué plus tôt, on utilisera plutôt rarement ces messages sur l'interface, donc, la première méthode avec `is_granted` sera largement suffisante pour la majorité des cas.
 
@@ -1244,13 +1244,13 @@ Dans l'exemple ci-dessus, un utilisateur possédant le rôle `ROLE_CUSTOM` poss�
 
 2. Modifiez le voter `PublicationVoter` afin de voter favorablement si l'utilisateur possède le privilège `ROLE_ADMIN`. Pour cela, il vous faudra injecter et utiliser le service `AccessDecisionManagerInterface` afin d'utiliser la méthode `decide` sur l'objet `$token` donné dans `voteOnAttribute` :
 
-    ```php
-    use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
+   ```php
+   use Symfony\Component\Security\Core\Authorization\AccessDecisionManagerInterface;
 
-    $this->accessDecisionManager->decide($token, ["ROLE", "..."]);
-    ```
+   $this->accessDecisionManager->decide($token, ["ROLE", "..."]);
+   ```
 
-    La fonction `decide` a le même objectif que `isGranted` : déterminer si l'utilisateur à une (ou plusieurs) permission(s) (ou certains rôles). La documentation de Symfony précise que si l'on souhaite vérifier des permissions à l'intérieur d'un voter, il faut impérativement utiliser cette méthode, et ne surtout pas appeler la méthode `isGranted` sur l'utilisateur récupéré via `getUser` dans le service **Security** (comme montré dans certains tutoriels, ou la documentation de versions antérieures de Symfony). De plus, la méthode `decide` permet aussi de vérifier les permissions d'autres utilisateurs.
+   La fonction `decide` a le même objectif que `isGranted` : déterminer si l'utilisateur à une (ou plusieurs) permission(s) (ou certains rôles). La documentation de Symfony précise que si l'on souhaite vérifier des permissions à l'intérieur d'un voter, il faut impérativement utiliser cette méthode, et ne surtout pas appeler la méthode `isGranted` sur l'utilisateur récupéré via `getUser` dans le service **Security** (comme montré dans certains tutoriels, ou la documentation de versions antérieures de Symfony). De plus, la méthode `decide` permet aussi de vérifier les permissions d'autres utilisateurs.
 
 3. Dans votre base de données, ajoutez le rôle `ROLE_ADMIN` à un utilisateur : affectez la valeur `["ROLE_ADMIN"]` dans le champ `roles`. Si vous êtes connecté avec ce compte, vous serez déconnecté après le changement de rôle, par mesure de sécurité.
 
@@ -1408,26 +1408,26 @@ class DeleteVideoCommand
 
 3. Créez et testez la commande `PromoteAdminCommand` nommée `promote:admin` qui prend en paramètre le login d'un utilisateur et lui donne le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour ajouter un rôle) à la classe `Utilisateur` :
 
-    ```php
-    public function addRole($role) : void {
-        if(!in_array($role, $this->roles)) {
-            $this->roles[] = $role;
-        }
-    }
-    ```
+   ```php
+   public function addRole($role) : void {
+       if(!in_array($role, $this->roles)) {
+           $this->roles[] = $role;
+       }
+   }
+   ```
 
 4. Créez et testez la commande `RevokeAdminCommand` nommée `revoke:admin` qui prend en paramètre le login d'un utilisateur et lui enlève le rôle `ROLE_ADMIN`. Vous aurez besoin d'ajouter la méthode suivante (pour retirer un rôle) à la classe `Utilisateur` :
 
-    ```php
-    public function removeRole($role) : void {
-        $index = array_search($role, $this->roles);
-        //array_search renvoie soit l'index (la clé) soit false si rien n'est trouvé 
-        //Préciser le !== false est bien nécessaire, car si le rôle se trouve à l'index 0, utiliser un simple if($index) ne vérifie pas le type! Et donc, si l'index retourné est 0, la condition ne passe pas...!
-        if ($index !== false) {
-            unset($this->roles[$index]);
-        }
-    }
-    ```
+   ```php
+   public function removeRole($role) : void {
+       $index = array_search($role, $this->roles);
+       //array_search renvoie soit l'index (la clé) soit false si rien n'est trouvé 
+       //Préciser le !== false est bien nécessaire, car si le rôle se trouve à l'index 0, utiliser un simple if($index) ne vérifie pas le type! Et donc, si l'index retourné est 0, la condition ne passe pas...!
+       if ($index !== false) {
+           unset($this->roles[$index]);
+       }
+   }
+   ```
 </div>
 
 ## Conclusion
