@@ -973,7 +973,7 @@ Attention, au niveau des attributs des relations `OneToOne` ou `ManyToOne`, une 
 
 * On peut aussi spécifier `#[ORM\JoinColumn(onDelete="SET NULL")]` si on veut appliquer la stratégie de mettre l'attribut référencé à `null` lors de la suppression de l'entité référencée (au lieu de supprimer complètement la ressource qui lui est liée).
 
-Vous pouvez également consulter [une documentation plus complète](https://www.doctrine-project.org/projects/doctrine-orm/en/3.2/reference/association-mapping.html).
+Vous pouvez également consulter [une documentation plus complète](https://www.doctrine-project.org/projects/doctrine-orm/en/current/reference/association-mapping.html).
 
 Fort heureusement, Symfony nous permet de mâcher ce travail en utilisant encore une fois la commande `make:entity` en mettant à jour notre entité cible. Il faut simplement :
 
