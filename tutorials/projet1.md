@@ -7,7 +7,7 @@ lang: fr
 
 ## Sujet - Annuaire en ligne
 
-Ce projet se fera en **trinôme** (et excpetionnellement en **quadrinôme**) et s'intéressera au développement d'une application **d'annuaire en ligne**.
+Ce projet se fera en **trinôme** (et exceptionnellement en **quadrinôme**) et s'intéressera au développement d'une application **d'annuaire en ligne**.
 
 L'objectif est de développer un site web classique en "server-side rendering" (qui gère à la fois la partie client et serveur) en utilisant Symfony et Twig ([TD1]({{site.baseurl}}/tutorials/tutorial1), [TD2]({{site.baseurl}}/tutorials/tutorial2) et [TD3]({{site.baseurl}}/tutorials/tutorial3) de Symfony).
 
@@ -90,7 +90,7 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 * Dans le [TD3]({{site.baseurl}}/tutorials/tutorial3), nous avons vu qu'il faut renvoyer un objet `JsonResponse` quand on veut renvoyer une réponse au format JSON plutôt qu'une page web complète (générée avec **Twig**). Vous trouverez plus d'informations [ici](https://symfony.com/doc/7.4/components/http_foundation.html#creating-a-json-response).
 
-* Pour réaliser la fonctionnalité qui vérifie l'unicité du login, du code du profil et de l'adresse email à l'aide des requêtes asynchrones, vous pouvez vous inspirer de [ce TD de JavaScript](https://gitlabinfo.iutmontp.univ-montp2.fr/r4.01-developpementweb/TD5) de 2ᵉ année, notamment pour mettre en place un système de **debouncing**.
+* Pour réaliser la fonctionnalité qui vérifie l'unicité du login et de l'adresse email à l'aide des requêtes asynchrones, vous pouvez vous inspirer de [ce TD de JavaScript](https://gitlabinfo.iutmontp.univ-montp2.fr/r4.01-developpementweb/TD5) de 2ᵉ année, notamment pour mettre en place un système de **debouncing**.
 
 * La création de commandes et la gestion des rôles et permissions sont également abordées lors du [TD3]({{site.baseurl}}/tutorials/tutorial3).
 
