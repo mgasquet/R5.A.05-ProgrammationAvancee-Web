@@ -82,7 +82,7 @@ Pour vous aider dans la réalisation du projet, voici quelques pistes :
 
 * L'attribut `#[ORM\PrePersist]` n'est utilisé que dans le cas d'une insertion dans la base de données (donc, quand l'entité est créée, pas lorsqu'elle est mise à jour).
 
-* Concernant le fait de vérifier que la valeur d'un champ est bien répété dans un formulaire, vous pouvez jeter un œil [ici](https://symfony.com/doc/7.4/reference/forms/types/repeated.html).
+* Concernant le fait de vérifier que la valeur d'un champ est bien répétée dans un formulaire, vous pouvez jeter un œil [ici](https://symfony.com/doc/7.4/reference/forms/types/repeated.html).
 
 * Nous avons vu comment générer une chaîne aléatoire lors de la sauvegarde de la photo de profil de l'utilisateur dans le [TD2]({{site.baseurl}}/tutorials/tutorial2).
 
