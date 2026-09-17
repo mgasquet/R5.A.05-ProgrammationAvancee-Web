@@ -7,7 +7,7 @@ lang: fr
 
 ## Sujet - Annuaire en ligne
 
-Ce projet se fera en **trinôme** et s'intéressera au développement d'une application **d'annuaire en ligne**.
+Ce projet se fera en **trinôme** (et excpetionnellement en **quadrinôme**) et s'intéressera au développement d'une application **d'annuaire en ligne**.
 
 L'objectif est de développer un site web classique en "server-side rendering" (qui gère à la fois la partie client et serveur) en utilisant Symfony et Twig ([TD1]({{site.baseurl}}/tutorials/tutorial1), [TD2]({{site.baseurl}}/tutorials/tutorial2) et [TD3]({{site.baseurl}}/tutorials/tutorial3) de Symfony).
 
@@ -26,23 +26,23 @@ Voici les détails du service qui devra être développé :
 
 * Lors de l'inscription (via un formulaire) l'utilisateur précise seulement un minimum d'informations : login, adresse email, mot de passe et la visibilité du profil (public/non répertorié/privé). Par mesure de sécurité, l'utilisateur doit saisir son mot de passe deux fois dans le formulaire d'inscription. Le login et l’adresse e-mail doivent chacun être uniques.
 
-* Chaque profil doit être associé à un **code unique**. Pendant l'inscription, l'utilisateur peut choisir de préciser lui-même ce code ou non (à condition qu'il ne soit pas déjà pris). S'il ne précise rien, un code aléatoire sera alors généré.
+* Chaque profil est associé à un **code unique de profil** généré aléatoirement. Ce code aura une taille fixe de 30 caractères et ne doit contenir que des caractères alphanumériques (et est sensible à la case : **PmKj** est différent de **pMkJ**).
 
-* Quand l'utilisateur décide lui-même de saisir un code, l'application doit vérifier en temps réel (sans rechargement de la page) que le code n'est pas déjà pris, avant la soumission du formulaire (donc, en utilisant du **JavaScript** et des **requêtes asynchrones**). Le code ne doit contenir que des caractères alphanumériques. De la même façon, le site vérifie également en direct que le login et l'adresse email spécifiés ne sont pas déjà pris. Le même système de vérification est mis en place lors de la modification du compte (pour l'adresse email et le code).
+* Lors de l'inscription, l'application doit vérifier en temps réel (sans rechargement de la page) que le login et l'adresse email spécifiés ne sont pas déjà pris, avant la soumission du formulaire (donc, en utilisant du **JavaScript** et des **requêtes asynchrones**). Le même système de vérification est mis en place lors de la modification du compte (pour l'adresse email seulement, car le login ne doit pas être modifiable après l'inscription).
 
-* Une fois connecté, l'utilisateur peut **éditer son profil** avec des **informations complémentaires** de votre choix (par exemple, numéro de téléphone, pays, adresse postale, réseaux sociaux, etc.). À vous de trouver les données qui vous semblent intéressantes à préciser sur le profil. Il faut que ces données soient suffisamment riches et variées !
+* Une fois connecté, l'utilisateur peut **éditer son profil** avec des **informations complémentaires** de votre choix (par exemple, numéro de téléphone, pays, adresse postale, réseaux sociaux, etc.). À vous de trouver les données qui vous semblent intéressantes à préciser sur le profil. Il faut que ces données soient suffisamment riches et variées ! Le login ne peut pas être changé.
 
 * Le **formulaire d'édition** du profil doit être automatiquement **pré-rempli** avec les informations.
 
-* À tout moment, l'utilisateur peut **changer le code associé à son profil** (soit en spécifiant un nouveau, soit en demandant la génération d'un code aléatoire).
+* À tout moment, l'utilisateur peut **changer le code associé à son profil** (en demandant la génération d'un nouveau code aléatoire).
 
 * L'utilisateur peut **supprimer son compte**.
 
-* Une route incluant le **code du profil** permet d'accéder et de visualiser la page de profil d'un utilisateur (par exemple `/profil/{code}`). Il n'y a pas besoin d'être connecté pour cela. Bien sûr, ce lien ne doit pas fonctionner si le profil est en mode privé, si quelqu'un d'autre que le propriétaire essaye de le consulter.
+* Une route incluant le **code unique du profil** permet d'accéder et de visualiser la page de profil d'un utilisateur (par exemple `/profil/{code}`). Il n'y a pas besoin d'être connecté pour cela. Bien sûr, ce lien ne doit pas fonctionner si le profil est en mode privé, si quelqu'un d'autre que le propriétaire essaye de le consulter.
 
 * L'utilisateur peut **changer la visibilité de son profil** à tout moment.
 
-* En plus de la route qui permet de visualiser le profil de l'utilisateur sur une page dédiée, une autre route (qui inclut donc aussi le code secret du profil) doit renvoyer les informations de l'utilisateur au format `JSON` (donc, pas une page web complète, seulement les données). Cela vous servira plus tard, lors du 3ᵉ projet où vous utiliserez directement de ce service. Attention, comme pour le lien de la page de profil, ce lien ne fonctionne pas si le profil est en mode privé.
+* En plus de la route qui permet de visualiser le profil de l'utilisateur sur une page dédiée, une autre route (qui inclut donc aussi le code unique du profil) doit renvoyer les informations de l'utilisateur au format `JSON` (donc, pas une page web complète, seulement les données). Cela vous servira plus tard, lors du 3ᵉ projet où vous utiliserez directement de ce service. Attention, comme pour le lien de la page de profil, ce lien ne fonctionne pas si le profil est en mode privé.
 
 * Sur le profil, l'application doit afficher **la date de dernière modification du profil**. **Attention**, vous devrez faire en sorte que cette date soit mise à jour dès que **l'objet** (entité) stockant l'utilisateur est mis à jour, peu importe l'endroit où cela est fait : dans un contrôleur, dans un service, dans une commande, etc. Il faut ainsi faire en sorte de ne pas avoir à dupliquer le code gérant cette logique si une nouvelle portion de code mettant à jour cette entité est implémentée. Par contre, **il ne faut pas que la date d'édition du profil** soit automatiquement mise à jour dès que l'utilisateur se connecte simplement.
 
@@ -50,9 +50,9 @@ Voici les détails du service qui devra être développé :
 
 * Certains utilisateurs peuvent posséder le rôle d'**administrateur**. Sur la page principale, en plus des profils **publics**, les profils **non répertoriés** et **privés** sont également listés, et il peut y accéder. De même, il **peut tout à fait accéder à la page de détails d'un profil privé**. Aussi, à partir d'un profil, un administrateur peut **supprimer le compte** de l'utilisateur qui possède ce profil, sauf si cet utilisateur est aussi un administrateur.
 
-* Sur la page de profil d'un utilisateur, un administrateur peut voir la **dernière date de connexion** de l'utilisateur à qui appartient le profil.
+* Sur la page de profil d'un utilisateur, un **administrateur** peut voir la **dernière date de connexion** de l'utilisateur à qui appartient le profil.
 
-* Un système permet aux utilisateurs de **signaler** un profil dont le contenu est inapproprié, avec un commentaire. Les administrateurs ont alors accès à une page spéciale qui liste les signalements, avec les différentes informations nécessaires (utilisateur à l'origine du signalement, commentaire, lien vers le profil signalé...). Il doit être possible de supprimer un signalement (afin qu'il ne reste pas listé une fois qu'il a été traité...).
+* Un système permet aux utilisateurs (**connectés**) de **signaler** un profil dont le contenu est inapproprié, avec un commentaire simple (texte). Les administrateurs ont alors accès à une page spéciale qui liste les signalements, avec les différentes informations nécessaires (utilisateur à l'origine du signalement, commentaire, lien vers le profil signalé...). Il doit être possible de supprimer un signalement (afin qu'il ne reste pas listé une fois qu'il a été traité...). Un utilisateur ne peut pas signaler son propre profil, mais il peut signaler plusieurs fois un même profil.
 
 * Plusieurs commandes (**Symfony**) doivent être ajoutées :
     * Une commande qui permet de créer un utilisateur depuis le terminal en précisant ses informations et son rôle (normal/administrateur).
@@ -62,7 +62,7 @@ Voici les détails du service qui devra être développé :
 
 ## Contraintes techniques
 
-* Seul le **JavaScript** vu en TD est autorisé (pas de framework JS réactif comme React, Angular, etc... Juste le fonctionnement du JavaScript dans Symfony vu dans le TD3, notamment avec les controllers Stimulus).
+* **Le projet doit suivre les façons de faire vues en TD**. Par exemple, pas de framework JS réactif autorisé (comme React, Angular, etc...), juste le fonctionnement du JavaScript dans Symfony vu dans le TD3, notamment avec les controllers Stimulus.
 
 * Pour le style du site, faites ce que vous voulez, tant que ce n'est pas trop laid ! Cependant, **il est interdit de reprendre le style de The Feed**. Par contre, vous pouvez utiliser n'importe quel Framework CSS (par exemple [bootstrap](https://getbootstrap.com/docs/5.3/getting-started/download/), [tailwind css](https://tailwindcss.com/) ou bien quelque chose d'encore plus simple comme [bulma](https://bulma.io/)). De plus, **Symfony** vous permet d'intégrer facilement [bootstrap](https://symfony.com/doc/7.4/form/bootstrap5.html) pour générer facilement des formulaires stylisés. Le site de [tailwind css](https://tailwindcss.com/docs/guides/symfony) possède aussi un guide d'installation pour Symfony.
 
@@ -112,9 +112,13 @@ Cette archive devra contenir :
 
 * Un fichier **README** qui contient :
 
+    * **Le lien de l'application** (hébergée et déployée sur `webinfo`).
+
     * Le lien du dépôt git où le code source de l'application est stocké.
 
-    * Un mini manuel d'utilisation qui détaille les fonctionnalités de l'application, comment y accéder, les utiliser, etc.
+    * La répartition du travail dans l'équipe (qui a fait quoi, qui a travaillé sur quelle partie) en indiquant, pour chaque membre, **une estimation en pourcentages de la proportion des contributions individuelles réalisées dans le projet par rapport au reste de l'équipe**. Cette répartition doit être validée par l'ensemble du groupe.
+
+    * Un mini-manuel d'utilisation qui détaille les fonctionnalités de l'application, comment y accéder, les utiliser, etc.
 
     * Éventuellement, des indications supplémentaires s'il y a des choses particulières à faire pour lancer et tester votre application en local (autrement que de lancer le serveur, configurer et générer la base de données, etc...).
     
@@ -122,15 +126,31 @@ Cette archive devra contenir :
 
 * Un fichier **IDENTIFIANTS** qui donne les identifiants de **plusieurs** comptes utilisateurs (normaux et administrateurs) sur votre application hébergée sur `webinfo`.
 
-* Un fichier **TRAVAIL_GROUPE** qui détaille, **pour chaque membre du groupe** :
-    * Un **pourcentage** de son investissement sur le projet.
-    * La liste **précise** du travail qu'il a réalisé (fonctionnalités, sécurité, etc). Il faut donc penser à bien noter tout cela au fur et à mesure du projet (utilisez des outils de gestion de projet adaptés).
+* Pour **chaque membre du groupe** un document **CONTRIBUTIONS_NOM_PRENOM** incluant les éléments suivants :
+
+    * Pour **chaque fonctionnalité ou partie du projet** à laquelle le membre du groupe a contribué :
+        * nom de la fonctionnalité / partie du projet ;
+        * description de ce qu’il a personnellement réalisé ;
+        * les fichiers concernés (ajoutés, modifiés). Par exemple les classes, contrôleurs, entités, repositories, services, templates, script JS, fichiers de configuration, etc. L'idée n'est pas d'être exhaustif, mais plutôt d'indiquer "Si vous voulez voir comment j'ai réalisé cette fonctionnalité, voici où regarder."
+
+    * La difficulté technique principale rencontrée pendant le développement (s'il y en a eu une), et comment elle a été résolue.
 
 ## Soutenances et notation
 
-Des oraux de soutenance auront lieu quelque temps après la remise du projet. Le document **TRAVAIL_GROUPE** que vous aurez remis servira comme base à cette soutenance. Diverses questions techniques seront posées à chaque membre du groupe selon le travail qu'il a réalisé. Il faudra alors bien maîtriser le code de votre projet pour pouvoir y répondre. Lors de cette soutenance, vous devrez venir avec le code source chargé dans votre IDE, afin de pouvoir vous appuyer dessus pour répondre aux questions. Votre application devra aussi être disponible afin d'effectuer d'éventuels tests en direct. Le but de ces oraux est d'évaluer à quel point vous comprenez et vous maîtrisez le projet que vous avez produit et les notions abordées en cours.
+Des oraux **individuels** (d'une dizaine de minutes) auront lieu quelque temps après la remise du projet. Le document **CONTRIBUTIONS_NOM_PRENOM** que vous aurez remis pour chaque membre de l'équipe servira comme base à cette soutenance. 
 
-La note du projet sera à la fois composée du résultat (est-ce que l'application fonctionne, remplit le cahier des charges, est ergonomique, ne présente pas de bugs, etc) qui sera évalué en amont, puis de la note de la soutenance, qui aura un poids bien plus important et permettra d'individualiser la note de chaque membre du groupe.
+Diverses questions techniques seront posées vis-à-vis du travail réalisé. Il faudra alors bien maîtriser le code de votre projet et les notions en relation, pour pouvoir y répondre. Le but de ces oraux est d'évaluer à quel point vous comprenez et vous maîtrisez le projet que vous avez produit et les notions abordées en cours.
+
+Vous pourrez être interrogé sur les éléments que vous déclarez avoir réalisés. Vous devez donc être capable de retrouver le code correspondant, d’expliquer son fonctionnement, savoir comment le faire évoluer, et aussi justifier vos choix. **Vous pourrez également être interrogé sur le fonctionnement général du projet** et sur des évolutions qui ne correspondent pas exactement à ce que vous avez initialement réalisé.
+
+Plusieurs éléments vont intervenir dans le calcul de la note :
+
+* Le résultat fonctionnel : est-ce que l'application fonctionne, remplit le cahier des charges, est ergonomique, ne présente pas de bugs, etc. 
+* La qualité technique : pas de problèmes de sécurité, code conforme, documenté, etc.
+* La proportion de travail réalisée individuellement, par rapport au reste de l'équipe.
+* La note de la soutenance, **qui aura un poids bien plus important que le reste.**
+
+Ce système permettra d'individualiser la note de chaque membre du groupe.
 
 ## Déroulement du projet et accompagnement
 
