@@ -26,7 +26,7 @@ Voici les détails du service qui devra être développé :
 
 * Lors de l'inscription (via un formulaire) l'utilisateur précise seulement un minimum d'informations : login, adresse email, mot de passe et la visibilité du profil (public/non répertorié/privé). Par mesure de sécurité, l'utilisateur doit saisir son mot de passe deux fois dans le formulaire d'inscription. Le login et l’adresse e-mail doivent chacun être uniques.
 
-* Chaque profil est associé à un **code unique de profil** généré aléatoirement. Ce code aura une taille fixe de 30 caractères et ne doit contenir que des caractères alphanumériques (et est sensible à la case : **PmKj** est différent de **pMkJ**).
+* Chaque profil est associé à un **code unique de profil** généré aléatoirement. Ce code aura une taille fixe de 12 caractères et ne doit contenir que des caractères alphanumériques (le code ne sera pas sensible à la case, donc **PmKj** est équivalent à **pMkJ**).
 
 * Lors de l'inscription, l'application doit vérifier en temps réel (sans rechargement de la page) que le login et l'adresse email spécifiés ne sont pas déjà pris, avant la soumission du formulaire (donc, en utilisant du **JavaScript** et des **requêtes asynchrones**). Le même système de vérification est mis en place lors de la modification du compte (pour l'adresse email seulement, car le login ne doit pas être modifiable après l'inscription).
 
