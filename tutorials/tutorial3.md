@@ -426,11 +426,11 @@ Notre route est fonctionnelle, mais actuellement, n'importe qui (même déconnec
        * `Response::HTTP_FORBIDDEN` (403) si l'utilisateur n'est pas auteur de la publication (opération interdite).
        * `Response::HTTP_NO_CONTENT` (204) si tout se passe bien, comme avant.
 
-2. En utilisant l'attribut `IsGranted`, faites en sorte que cette route soit seulement accessible aux utilisateurs connectés (possédant le rôle `ROLE_USER`). Allez consulter le TD2 si vous ne savez plus comment faire.
+2. Vérifiez avec `curl` qu'un identifiant inexistant renvoie bien un code `404`.
 
-3. Vérifiez avec `curl` qu'un identifiant inexistant renvoie bien un code `404`.
+3. En utilisant l'attribut `IsGranted`, faites en sorte que cette route soit seulement accessible aux utilisateurs connectés (possédant le rôle `ROLE_USER`). Allez consulter le TD2 si vous ne savez plus comment faire.
 
-   Désactiver temporairement dans `publication.html.twig` la condition `if` afin d'afficher le bouton *Supprimer* sur toutes les publications. Testez sur le site Web la suppression d'une publication dont vous n'êtes pas l'auteur alors que vous êtes connecté. Observez la réponse `403 (Forbidden)` dans l'onglet `Console` des outils de développement. Réactivez le `if`.
+4. Désactiver temporairement dans `publication.html.twig` la condition `if` afin d'afficher le bouton *Supprimer* sur toutes les publications. Testez sur le site Web la suppression d'une publication dont vous n'êtes pas l'auteur alors que vous êtes connecté. Observez la réponse `403 (Forbidden)` dans l'onglet `Console` des outils de développement. Réactivez le `if`.
 
    Vérifiez que la suppression fonctionne toujours normalement depuis le site pour l'auteur d'une publication. 
 
