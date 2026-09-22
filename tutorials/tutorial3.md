@@ -1318,24 +1318,32 @@ class MaCommande
         /* Doit être placé avant les autres paramètres */
         SymfonyStyle $io,
         
-        /* Premier argument (obligatoire) */
-        #[Argument(description: "...")] string $arg1,
+        /* Premier argument (obligatoire) : saisi en même temps que la commande */
+        #[Argument(description: "...")] 
+        string $arg1,
 
         /* Deuxième argument (obligatoire): pose une question en console à l'utilisateur */
-        #[Ask("Question...")] int $arg2,
+        #[Argument(description: "...")]
+        #[Ask("Question...")] 
+        int $arg2,
 
         /* Troisième argument (obligatoire): pose une question en console à l'utilisateur, et cache la valeur saisie (par exemple, pour un mon de passe...) */
-        #[Ask("Question...", hidden: true)] int $arg3,
+        #[Argument(description: "...")] 
+        #[Ask("Question...", hidden: true)] 
+        int $arg3,
                             
         /* Quatrième argument (optionnel): à mettre après les arguments obligatoires. */
         /* Il est optionnel car on donne une valeur par défaut */
-        #[Argument(description: "...")] string $arg4 = "Valeur par défaut...",
+        #[Argument(description: "...")] 
+        string $arg4 = "Valeur par défaut...",
                            
         /* On peut configurer des options qui s'utilisent ainsi `--nomOption` n'importe où dans la commande, et qui donnent une valeur booléenne (activer, désactiver) */
-        #[Option(description:"...")] bool $option1 = false,
+        #[Option(description:"...")] 
+        bool $option1 = false,
                         
         /* On peut aussi définir une option à laquelle on associe une valeur `--nomOption=valeur` */
-        #[Option(description:"...")] int $option2 = 5
+        #[Option(description:"...")] 
+        int $option2 = 5
     ): int
    {
 
@@ -1373,7 +1381,7 @@ Bien sûr, dans l'exemple, on utilise `$arg1`, `$option1`, etc, mais vous pouvez
 php bin/console macommande --help
 ```
 
-Dans `#[Argument]`, `#[Option]`, etc, il est aussi possible de changer le nom du paramètre affiché en console avec la propriété `name`, et de suggérer des valeurs avec `suggestedValues`. Il est aussi possible de créer une classe externe pour regrouper plusieurs arguments puis les utiliser dans la commande grâce à [l'attribut `#[MapInput]`](https://symfony.com/doc/7.4/console/input.html#mapping-input-to-objects).
+Dans `#[Argument]` et `#[Option]`, il est aussi possible de changer le nom du paramètre affiché en console avec la propriété `name`, et de suggérer des valeurs avec `suggestedValues`. Il est aussi possible de créer une classe externe pour regrouper plusieurs arguments puis les utiliser dans la commande grâce à [l'attribut `#[MapInput]`](https://symfony.com/doc/7.4/console/input.html#mapping-input-to-objects). Cela permet notamment d'utiliser des assertions pour valider certaines données, comme nous le faisons avec les entités ou les classes utilisées pour la gestion des formulaires.
 
 {% comment %}
 Pour initialiser la classe d'une commande, on exécute :
