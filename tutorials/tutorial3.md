@@ -303,9 +303,11 @@ let URL = Routing.generate('maRoute', {"param": val, ...});
 
 <div class="exercise">
 
-1. Installez `FOSJsRoutingBundle` et configurez tout ce qu'il faut (URL par défaut, export des routes, import dans `app.js`) pour pouvoir utiliser la fonction `Routing.generate` dans votre controller Stimulus. Vous pouvez supprimer le dossier `public/bundles` qui ne nous servira pas.
+1. Exposez votre route `supprimerPublication`.
 
-2. Pour vérifier que tout fonctionne, modifiez temporairement la fonction `supprimerPublication` de `publications_controller.js` afin qu'elle affiche dans la console le résultat de `Routing.generate('supprimerPublication', {"id": 123})`.  
+2. Installez `FOSJsRoutingBundle` et configurez tout ce qu'il faut (URL par défaut, export des routes, import dans `app.js`) pour pouvoir utiliser la fonction `Routing.generate` dans votre controller Stimulus. Vous pouvez supprimer le dossier `public/bundles` qui ne nous servira pas.
+
+3. Pour vérifier que tout fonctionne, modifiez temporairement la fonction `supprimerPublication` de `publications_controller.js` afin qu'elle affiche dans la console le résultat de `Routing.generate('supprimerPublication', {"id": 123})`.  
    
    Rechargez la page, cliquez sur un bouton "Supprimer" et vérifiez dans la console (`F12`) que l'URL générée correspond bien à celle de votre route (par exemple `http://localhost/the_feed/public/publications/123`).
 
