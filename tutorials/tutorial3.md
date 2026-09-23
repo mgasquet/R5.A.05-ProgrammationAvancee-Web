@@ -212,7 +212,7 @@ $entityManager->flush();
 
 <div class="exercise">
 
-1. Dans `PublicationController.php`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Pour l'instant, on reste simple : pas besoin de vérifier si la publication existe ou si l'utilisateur courant en est l'auteur (nous ajouterons ces vérifications plus tard). Concrètement, la route doit :
+1. Dans `PublicationController.php`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE`. Pour l'instant, on reste simple : pas besoin de vérifier si la publication existe ou si l'utilisateur courant en est l'auteur (nous ajouterons ces vérifications plus tard). Concrètement, la route doit :
 
    * Récupérer la publication visée par l'identifiant donné dans la route (souvenez-vous, lors du TD2, nous avions vu une méthode très simple pour récupérer une entité précisée à partir d'une route paramétrée, sans utiliser explicitement son repository !).
    * Supprimer la publication.
