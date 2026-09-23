@@ -30,22 +30,7 @@ flasher:
 
 Il faudra bien sûr adapter ce paramètre, lors du déploiement sur un serveur en production (comme `webinfo`).
 
-Il y a d'autres paramètres qu'il peut être utile de modifier, afin de customiser l'affichage. Il est aussi possible d'utiliser des lbirairies plus spécialisées (toastr, noty, notyf, sweetalert...). Un paramètre itnéressant est l'intégration avec le style d'un framework CSS :
-
-```yaml
-#src/config/packages/flasher.yaml
-flasher:
-    main:
-    ...
-        # Use bulma CSS framework (true/false)
-        use_bulma: false
-
-        # Use tailwind CSS framework (true/false)
-        use_tailwind: false
-
-        # Use bootstrap CSS framework (true/false)
-        use_bootstrap: false
-```
+Il y a d'autres paramètres qu'il peut être utile de modifier, afin de customiser l'affichage.
 
 Toutes les options de configuration peuvent être trouvées [sur cette page](https://php-flasher.io/symfony/).
 
