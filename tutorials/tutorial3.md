@@ -588,7 +588,9 @@ Il est tout à fait possible de combiner plusieurs instructions !
     ...
 </turbo-stream>
 <turbo-stream action="prepend" target="flashes">
-    <p>Film ajouté!</p>
+    <template>
+        <p>Film ajouté!</p>
+    </template>
 </turbo-stream>
 ```
 
