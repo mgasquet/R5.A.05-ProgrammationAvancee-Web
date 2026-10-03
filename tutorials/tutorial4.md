@@ -202,7 +202,7 @@ Pour générer le code de base lié à l'entité publication, nous allons utilis
 
 </div>
 
-Comme vous pouvez le constater, en plus des annotations liées à doctrine que vous connaissez déjà, une annotation `#[ApiResource]` est présente. Elle permet simplement d'indiquer à l'application que cette entité est une ressource de l'API. Avec cette configuration simple, notre ressource est manipulable avec toutes les méthodes HTTP.
+Comme vous pouvez le constater, en plus des attributs liés à doctrine que vous connaissez déjà, un attribut `#[ApiResource]` est présente. Elle permet simplement d'indiquer à l'application que cette entité est une ressource de l'API. Avec cette configuration simple, notre ressource est manipulable avec toutes les méthodes HTTP.
 
 ### Premières requêtes
 
@@ -526,7 +526,7 @@ Dans les deux cas, il peut être possible de définir des **groupes** pour contr
 
 Présentement, nous allons d'abord nous intéresser à la **normalisation** pour qu'on puisse représenter quelques données de l'auteur d'une publication.
 
-Un paramètre de l'attribut `#[ApiResource(...)` nommé `normalizationContext : ["groups" => ['nom_groupe1', ...]]` permet d'activer certains groupes pendant la phase de **normalisation**. Au niveau des propriétés, l'annotation `#[Groups(['nom_groupe1', 'nom_groupe2', ...])]` permet de faire en sorte qu'une propriété soit affichée ou non dans le document `JSON` selon le groupe activé.
+Un paramètre de l'attribut `#[ApiResource(...)` nommé `normalizationContext : ["groups" => ['nom_groupe1', ...]]` permet d'activer certains groupes pendant la phase de **normalisation**. Au niveau des propriétés, l'attribut `#[Groups(['nom_groupe1', 'nom_groupe2', ...])]` permet de faire en sorte qu'une propriété soit affichée ou non dans le document `JSON` selon le groupe activé.
 
 Par exemple :
 
@@ -788,7 +788,7 @@ Nous avons défini `normalizationContext` de manière globale (pour toutes les o
 
 Comme nous l'avons vu en introduction de ce TD, avec l'architecture `REST`, il doit être possible d'accéder à la liste des publications d'un utilisateur précis en utilisant cette route :
 
-`/utilisateurs/{id}/publications`
+`/utilisateurs/{idUtilisateur}/publications`
 
 Par exemple : `/utilisateurs/2/publications` : les publications de l'utilisateur 2.
 
@@ -838,13 +838,15 @@ class Etudiant {
 
 <div class="exercise">
 
-1. En ajoutant une **nouvelle opération** `#[GetCollection]` dans `Publication`, faites en sorte d'ajouter une route qui permet d'obtenir la liste des publications d'un utilisateur précis.
+1. En ajoutant une **nouvelle opération** `#[GetCollection]` dans `Publication`, faites en sorte d'ajouter une route `/utilisateurs/{idUtilisateur}/publications` qui permet d'obtenir la liste des publications d'un utilisateur précis.
 
 2. Comme pour l'opération `#[GetCollection]` normale (qui permet de récupérer toutes les publications), faites en sorte que la pagination ne soit pas activée et que les résultats soient triés par ordre décroissant de la date de publication. Pour éviter la duplication, vous pouvez déplacer ces deux paramètres directement dans `#[ApiResource]` afin d'appliquer cette règle de manière globale sur les opérations de la ressource.
 
 3. Videz le cache.
 
 4. Testez votre nouvelle route en essayant d'afficher la liste des publications d'un de vos utilisateurs.
+
+5. Afin de vérifier que vous avez bien compris ce système, ajoutez une opération `#[Get]` dans `Utilisateur` ayant pour route `/publications/{idPublication}/auteur` et permettant de récupérer l'utilisateur auteur d'une publication.
 
 </div>
 
@@ -1127,7 +1129,7 @@ Maintenant, nous faisons face à un autre problème : on voudrait que certaine
 
 À l'inverse des groupes de **normalisation** où nous avions précisé quels attributs afficher ou non lors d'une opération type `GET`, les groupes de **dénormalisation** permettent d'ignorer certaines propriétés.
 
-Au niveau d'une propriété, il suffit de rajouter le `groupe` (dans l'annotation `#[Groups(...)]` que vous avez déjà utilisé pour la normalisation) pour lequel la propriété ne doit pas être ignoré. Par exemple : 
+Au niveau d'une propriété, il suffit de rajouter le `groupe` (dans l'attribut `#[Groups(...)]` que vous avez déjà utilisé pour la normalisation) pour lequel la propriété ne doit pas être ignoré. Par exemple : 
 
 ```php
 
@@ -1701,6 +1703,8 @@ Ici, la route utilisant la méthode `POST` sur cette ressource est uniquement ac
 
 Il est également possible d'utiliser l'attribut `securityPostDenormalize` qui active la vérification **après** le traitement des données envoyées par la requête (après l'étape de dénormalisation) ce qui est notamment utile dans le cas d'opérations d'écritures. Dans le cas d'une mise à jour, on peut alors aussi accéder à "l'ancien" objet (avant modification).
 
+Enfin, une troisième variante du paramètre est `securityPostValidation` qui permet d'appliquer des vérifications après que la phase de validation (avec les contraintes placées sur les propriétés) est terminée.
+
 On a aussi accès à certaines variables :
 
 * `user` : représente l'instance de l'utilisateur connecté.
@@ -1819,7 +1823,7 @@ En plus du même `ProcessorInterface` que vous avez utilisé auparavant (pour sa
 
 2. Au niveau de la classe `Publication`, spécifiez votre nouveau processeur au niveau de la méthode `POST`.
 
-3. Toujours dans la même classe, servez-vous de l'annotation `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également l'attribut `NotBlank` que vous aviez sans doute placé précédemment sur cette propriété. Remarque : à la place d'utiliser `#[ApiProperty]`, on aurait aussi pu mettre en place des groupes de sérialisation pour les opérations d'écriture...
+3. Toujours dans la même classe, servez-vous de l'attribut `#[ApiProperty]` pour interdire l'écriture de l'auteur (vu qu'il est affecté automatiquement). Retirez également l'attribut `#[Assert\NotBlank]` que vous aviez sans doute placé précédemment sur cette propriété. Remarque : à la place d'utiliser `#[ApiProperty]`, on aurait aussi pu mettre en place des groupes de sérialisation pour les opérations d'écriture...
 
 4. Videz le cache puis connectez-vous (si ce n'est pas déjà fait, c'est-à-dire si vous ne possédez pas le cookie **BEARER** contenant le `JWT`) et tentez de créer une nouvelle publication. Le JWT sera automatiquement envoyé au serveur avec la requête, dans un cookie. Vérifiez alors que la publication est bien créée et que l'auteur a bien été affecté par rapport à l'utilisateur représenté par le `JWT` que vous utilisez.
 
@@ -1846,6 +1850,14 @@ nelmio_cors:
 
 </div>
 
+Un autre paramètre important est présent dans le fichier `allow_origin: ['%env(CORS_ALLOW_ORIGIN)%']`. Ce paramètre pointe sur une variable de notre fichier `.env`. Cette variable va permettre de lister les domaines (noms de domaines) qui sont autorisés à envoyer des requêtes vers l'API. Actuellement, cette variable vaut :
+
+```yaml
+CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+```
+
+Donc, on peut émettre les requêtes depuis un client web se situant sur `localhost`, ou bien l'adresse IP `127.0.0.1`, et sur n'importe quel port. C'est donc parfait pour le moment, car nous sommes en train de développer une application en local (notre futur client web sera aussi sur `localhost`). En production, il faudra idéalement changer cela par le véritable nom de domaine (où se situe le client).
+
 ## Bonus
 
 Pour finir, quelques sections bonus afin d'améliorer encore plus votre API !
@@ -1865,8 +1877,7 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
     public function __construct(
         /* Injection de dépendances */
     )
-    {
-    }
+    {}
 
     public function __invoke(object $object): array
     {
@@ -1874,34 +1885,40 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
         //On peut vérifier que l'objet traité est bien du type attendu...
         assert($object instanceof Exemple);
 
-        //On décide du (ou des) groupe(s) à ajouter...
-        $group = "...";
+        //Groupe par défaut, à inclure
+        $groups = ['Default'];
 
+        //On décide du (ou des) groupe(s) à ajouter...
+        if(...) {
+            $groups[] = "...";
+        }
+        else {
+            $groups[] = "...";
+        }
         //On retourne un tableau avec le groupe "Default" et le (ou les) groupe(s) ajoutés
-        return ['Default', $group];
+        return $group;
     }
 }
 ```
 
 ```php
-#[ApiResource(
-    operations: [
-        new Post(validationContext: ["groups" => ExempleGroupGenerator::class]),
-    ],
+#[ApiResource]
+#[Post(
+    validationContext: ["groups" => ExempleGroupGenerator::class]
 )]
 ```
 
 <div class="exercise">
 
-1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `validation:publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `validation:publication:write:normal` (en récupérant le code correspondant dans le TD précédent...).
+1. Modifiez les contraintes de votre entité `Publication` afin que le message puisse contenir jusqu'à 200 caractères si un des groupes de validation activé est `validation:publication:write:premium` et jusqu'à 50 caractères si un des groupes activés est `validation:publication:write:normal` (en récupérant éventuellement le code correspondant dans le TD précédent...).
 
 2. Créez un dossier `Validator` dans `src` puis à l'intérieur une classe `PublicationWriteGroupGenerator` qui permettra de choisir la bonne liste de groupes à partir du statut de l'utilisateur. Vous aurez encore une fois besoin du service `Security` pour obtenir l'utilisateur courant.
 
 3. Modifiez l'opération `POST` au niveau de l'entité `Publication` afin d'utiliser votre nouveau générateur de groupes, pour la validation.
 
-4. Dans votre base de données, rendez un utilisateur premium (en changeant manuellement la propriété). Sinon, si vous aviez fait la section à propos des commandes lors du dernier, vous pouvez les importer et les utiliser!
+4. Dans votre base de données, rendez un utilisateur premium (en changeant manuellement la propriété). Sinon, si vous aviez fait la section à propos des commandes lors du dernier, vous pouvez les importer et les utiliser !
 
-5. Videz le cache. Sur Postman, utilisez le JWT d'un compte non premium et vérifiez que l'erreur apparaît bien si vous faites un message dépassant 50 caractères. Vérifiez également que l'erreur n’apparaît pas si vous faites la même chose sur un compte premium (mais que dans ce cas, la limite à 200 est toujours présente).
+5. Videz le cache. Sur Postman, authentifiez-vous sur un compte non premium et vérifiez que l'erreur apparaît bien si vous faites un message dépassant 50 caractères. Vérifiez également que l'erreur n’apparaît pas si vous faites la même chose sur un compte premium (mais que dans ce cas, la limite à 200 est toujours présente).
 
 </div>
 
@@ -1912,34 +1929,30 @@ Il est possible d'utiliser le système de **Voter** avec **API Platform** afin d
 Dans le paramètre `security` de chaque opération, il suffit de préciser la permission dans la fonction `is_granted` et l'objet `object` (si besoin de vérifier la permission par rapport à un objet précis, comme le propriétaire, etc.) :
 
 ```php
-#[ApiResource(
-    operations: [
-        new Post(security: "is_granted('PERMISSION', object)"),
-    ]
-)]
+#[Post(security: "is_granted('PERMISSION', object)")]
 ```
 
 <div class="exercise">
 
-1. Importez la hiérarchie de rôles que vous aviez mis en place dans `security.yaml` du projet précédent (avec `ROLE_ADMIN`).
+1. Importez la hiérarchie de rôles que vous aviez mis en place dans `config/packages/security.yaml` du projet précédent (avec `ROLE_ADMIN`).
 
-1. Importez le voter `PublicationVoter` depuis le projet précédent (il faudra créer le chemin de répertoires `src/Security/Voter`).
+2. Importez le voter `PublicationVoter` depuis le projet précédent (il faudra créer le chemin de répertoires `src/Security/Voter`).
 
-2. Mettez à jour la permission de l'opération `DELETE` pour utiliser la permission définie dans votre **voter**.
+3. Mettez à jour la permission de l'opération `DELETE` pour utiliser la permission définie dans votre **voter**.
 
-3. Créez un nouveau **voter** nommé `UtilisateurVoter` et traitant la permission `UTILISATEUR_EDIT` (qui sera utilisé à la fois pour la mise à jour et la suppression). Cette permission est accordée à un utilisateur connecté qui est soit administrateur (`ROLE_ADMIN`) soit lui-même l'objet cible de cette permission.
+4. Créez un nouveau **voter** nommé `UtilisateurVoter` et traitant la permission `UTILISATEUR_EDIT` (qui sera utilisé à la fois pour la mise à jour et la suppression). Cette permission est accordée à un utilisateur connecté qui est soit administrateur (`ROLE_ADMIN`) soit lui-même l'objet cible de cette permission.
 
-4. Mettez à jour les permissions des opérations `PATCH` et `DELETE` pour utiliser votre nouvelle permission, issue de votre **voter**.
+5. Mettez à jour les permissions des opérations `PATCH` et `DELETE` pour utiliser votre nouvelle permission, issue de votre **voter**.
 
-5. Videz le cache et vérifiez que les permissions fonctionnent bien (mêmes tests que dans l'exercice que nous avions effectué dans la partie "sécurité" de ce TD).
+6. Videz le cache et vérifiez que les permissions fonctionnent bien (mêmes tests que dans l'exercice que nous avions effectué dans la partie "sécurité" de ce TD).
 
-6. Si vous voulez, vous pouvez également ajouter une permission `PUBLICATION_CREATE` dans votre `PublicationVoter`. La permission est accordée si l'utilisateur est connecté (donc possède `ROLE_USER`). Cela permet de centraliser cette permission et la changer si besoin, dans le futur. Attention toutefois : dans une opération de création, la publication n'existe pas encore! Donc en l'état, notre méthode `support` ne fonctionnerait pas. Dans ce cas, il faut utiliser le paramètre `securityPostDenormalize` au lieu de `security` au niveau de l'opération.
+7. Si vous voulez, vous pouvez également ajouter une permission `PUBLICATION_CREATE` dans votre `PublicationVoter`. La permission est accordée si l'utilisateur est connecté (donc possède `ROLE_USER`). Cela permet de centraliser cette permission et la changer si besoin, dans le futur. Attention toutefois : dans une opération de création, la publication n'existe pas encore ! Donc en l'état, notre méthode `support` ne fonctionnerait pas. Dans ce cas, il faut utiliser le paramètre `securityPostDenormalize` au lieu de `security` au niveau de l'opération. Il faudra aussi bien penser à lui donner l'objet en question (deuxième paramètre de `is_granted`).
 
 </div>
 
 ### Vérification du mot de passe avant mise à jour
 
-L'attribut `#[UserPassword]` (placé au-dessus d'une propriété) permet de vérifier que la chaîne de caractère (en clair) correspond au mot de passe actuel de l'utilisateur, lors de la phase de validation.
+L'attribut `#[UserPassword]` (placé au-dessus d'une propriété) permet de vérifier que la chaîne de caractère (en clair) correspond au mot de passe actuel de l'utilisateur connecté, lors de la phase de validation.
 
 Nous souhaitons créer un système pour que quand un utilisateur souhaite mettre à jour son profil, il soit obligé de préciser une propriété `currentPlainPassword` dans le payload afin de valider son identité (et seulement pour la mise à jour !).
 
@@ -1953,16 +1966,411 @@ Normalement, vous avez toutes les connaissances nécessaires pour implémenter c
    
    Vous n'avez pas besoin de quitter la classe `Utilisateur` ou créer de nouvelles classes. Attention, **cette propriété ne doit pas être utilisée lors de la création de l'entité, ou de sa lecture**. Vous pouvez configurer `#[UserPassword]` comme les autres assertions (en utilisant le paramètre `groups`, par exemple).
 
-3. Dans la méthode `eraseCredentials` mettez aussi `currentPlainPassword` à **null**.
-
-4. Videz le cache puis, sur Postman, vérifiez si tout fonctionne (tentez de mettre à jour votre profil sans puis avec `currentPlainPassword`).
+3. Videz le cache puis, sur Postman, vérifiez si tout fonctionne (tentez de mettre à jour votre profil sans puis avec `currentPlainPassword`).
 
 </div>
+
+### Introduction aux DTOs
+
+Un **DTO** (pour **Data Transfer Object**) est un mécanisme utilisé dans différents types d'applications (généralement des APIs, mais pas que). L'idée est d'avoir des classes **séparées de l'entité** qui décrivent les données du **payload** dans le cadre des opérations d'écriture, mais aussi de lecture.
+
+Par exemple, on pourrait avoir un DTO par type d'opération (`GET`, `POST`, `PATCH`, etc).
+
+Dans le cadre de **l'écriture** le `DTO` décrit tous les attributs qu'il est possible d'envoyer dans la requête, et y associe les fameux attributs de validation que nous utilisons (`#  [Assert\...]`).
+
+Dans le cadre de la **lecture** d'une entité, le `DTO` décrit tous les attributs qui sont renvoyés au client, dans la réponse de la requête.
+
+Cette approche a l'avantage de mieux séparer les responsabilités, et d'éviter d'utiliser un grand nombre de groupes de validation et de sérialisation, notamment dans le process d'écriture. Chaque classe DTO représente l'entrée ou la sortie d'une opération. Ainsi, tous les attributs liés à la validation ainsi que la plupart des groupes de sérialisation sont déplacés hors de l'entité doctrine.
+
+Cela est notamment pertinent quand ce qui est demandé ou rendu par l'API diffère des données stockées en base. Par exemple, dans notre cas, il y a deux attributs qui "traînent" dans notre entité `Utilisateur` : `plainPassword` et `currentPlainPassword`, qui ne sont pas sauvegardés en base, et ne sont liés qu'à l'API.
+
+Historiquement, mettre en place des DTO avec API Platform était assez fastidieux, car il fallait obligatoirement créer un **processor** ou un **provider** pour "mapper" les données de l'objet DTO vers l'entité ou inversement. Cependant, depuis la version 7 de Symfony, un composant nommé [Object Mapper](https://symfony.com/doc/current/object_mapper.html) permet de considérablement automatiser ce travail et se passer (en partie) des processors et providers pour la plupart des opéations. La [documentation officielle d'API Platform](https://api-platform.com/docs/core/dto/) pousse d'ailleurs de plus en plus vers l'utilisation systématique d'une ressource externe rattachée à l'entité et d'un DTO pour chaque opération.
+
+Cependant, bien que prometteur, ce système n'est pas encore stable. Quelques bugs et anomalies demeurent, qui devraient être réglées dans les prochaines version de Symfony (future 8.4, puis probablement les versions 9.x) et d'API Platform. Utiliser ce système demande aussi de mettre en place plus de code et plus de classes, ce qui peut être fastidieux en début de projet (mais fait gagner du temps sur le long terme).
+
+Dans le cadre de cette section, nous vous proposons une approche hybride : nous allons utiliser des DTOs pour les opérations `POST` et `PATCH` de l'utilisateur.
+
+Une classe `DTO` d'écriture contient les propriétés autorisées pour l'opération (avec le même nom que dans l'entité), avec la visibilité **public**, ainsi que d'éventuelles contraintes de validation. On doit aussi déclarer vers quelle entité seront mappées les données envoyées par le client :
+
+```php
+<?php
+namespace App\Dto\Etudiant;
+
+use App\Entity\Etudiant;
+use Symfony\Component\ObjectMapper\Attribute\Map;
+use Symfony\Component\Validator\Constraints as Assert;
+
+//Les données seront mappées vers la classe étudiant
+#[Map(target: Etudiant::class)]
+class CreateEtudiant
+{
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 30,
+        minMessage: "Le nom doit comporter au moins {{ limit }} caractères!",
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères!")
+    ]
+    public string $nom;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 30,
+        minMessage: "Le prénom doit comporter au moins {{ limit }} caractères!",
+        maxMessage: "Le prénom ne peut pas dépasser {{ limit }} caractères!")
+    ]
+    public string $prenom;
+
+    #[Assert\NotBlank]
+    #[Assert\GreaterThanOrEqual(value : 18, message : "L'étudiant doit au moins avoir 18 ans!")]
+    public int $age;
+}
+```
+
+Ensuite, il faut :
+* Ajouter un `setter` pour l'id dans l'entité cible (ici, `Etudiant`).
+* Définir le paramètre `input` dans l'opération `Post` et la faire pointer sur `CreateEtudiant`.
+
+```php
+<?php
+
+namespace App\Entity;
+
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Post;
+use App\Dto\Etudiant\CreateEtudiant;
+use App\Repository\EtudiantRepository;
+use Doctrine\ORM\Mapping as ORM;
+#[ORM\Entity(repositoryClass: EtudiantRepository::class)]
+#[ApiResource]
+#[Post(
+    input : CreateEtudiant::class
+)]
+class Etudiant
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $prenom = null;
+
+    #[ORM\Colum]
+    private ?int $age = null;
+
+    //...Getters et setters habituels
+
+    public function setId(?int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+} 
+```
+
+Et le tour est joué ! Pas de processor à écrire, et plus aucune contraintes de validation du côté de l'entité.
+
+Il est aussi possible de nommer les propriétés du `DTO` autrement et d'indiquer ensuite vers quelels propriétés celles-ci sont mappées :
+
+```php
+<?php
+namespace App\Dto\Etudiant;
+
+use App\Entity\Etudiant;
+use Symfony\Component\ObjectMapper\Attribute\Map;
+use Symfony\Component\Validator\Constraints as Assert;
+
+#[Map(target: Etudiant::class)]
+class CreateEtudiant
+{
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 2,
+        max: 30,
+        minMessage: "Le nom doit comporter au moins {{ limit }} caractères!",
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères!")
+    ]
+    //nomEtudiant (envoyé dans le payload) sera mappé vers la propriété nom dans l'entité
+    #[Map(target: 'nom')]
+    public string $nomEtudiant;
+
+    ...
+}
+```
+
+Il arrive parfois qu'un champ envoyé dans le payload doive subir une transformation complexe (par exemple, nécessitant un algo ou des services) avant d'être mappé. Par exemple, afin de transformer un mot de passe en clair en mot de passe haché ! Il est possible d'écrire une classe qui traite la valeur en la transformant avant qu'elle soit mappée dans l'entité correspondante.
+
+Il suffit que la classe implémente l'interface `TransformCallableInterface` et sa méthode `__invoke`. Il est aussi possible d'injecter des services dans cette classe. Ensuite, on précise cette classe dans le paramètre `transform` de l'attribut `#[Map]` attaché à la propriété, dans le `DTO`.
+
+Par exemple, imaginons qu'à la place de l'âge, le payload envoie une date de naissance, que l'on souhaite convertir en âge dans l'entité `Etudiant` :
+
+```php
+<?php
+
+namespace App\ObjectMapper;
+
+use DateTime;
+use App\Entity\Etudiant;
+use Symfony\Component\ObjectMapper\TransformCallableInterface;
+
+class TransformBirthDateToAge implements TransformCallableInterface
+{
+    public function __construct(
+        //Injection de dépendances...
+    ) {}
+
+    /**
+     * @param $value La valeur de la propriété dans le payload
+     * @param $source L'objet DTO, contenant le payload envoyé par le client
+     * @param $target L'entité cible (ici, un objet Etudiant)
+     * 
+     * @return int La valeur transformée
+     */
+    public function __invoke(mixed $value, object $source, ?object $target): mixed
+    {
+        /** @var DateTime $value **/
+        $today = new DateTime('today');
+        $difference = $today->diff($value);
+        return $difference->y;
+    }
+}
+```
+
+```php
+<?php
+namespace App\Dto\Etudiant;
+
+use App\Entity\Etudiant;
+use App\ObjectMapper\TransformBirthDateToAge;
+use Symfony\Component\ObjectMapper\Attribute\Map;
+use Symfony\Component\Validator\Constraints as Assert;
+
+#[Map(target: Etudiant::class)]
+class CreateEtudiant
+{
+    #[Assert\NotBlank]
+    #[Map(target: 'age', transform: TransformBirthDateToAge::class)]
+    public DateTime $dateDeNaissance;
+
+    ...
+}
+```
+
+Il existe aussi un paramètre `if` pour conditionner le mapping d'une propriété.
+
+Quand on souahite avoir un `DTO` pour les opérations de lecture, le processus est similaire, mais on utilise alors :
+* `source` à la place de `target` dans les attributs `#[Map]` du `DTO` (pour celle au-dessus de la classe et celles qui se trouvent éventuellement sur les propriétés).
+* `output` dans l'attribut qui correspond à l'opération (ou sur `#[ApiRessource]`, si on veut que cela soit fait globalement). À noter qu'il faut aussi le préciser sur les opérations d'écriture (type `POST`, `PATCH` et `PUT`), car ces opérations retournent un résultat.
+
+Vous pourrez retrouver plus d'informations sur [la documentation officielle du composant](https://symfony.com/doc/current/object_mapper.html).
+
+Nous vous proposons donc maintenant de mettre en place deux DTOs : un pour l'écriture d'un utilisateur, l'autre pour la mise à jour. Pour al mise à jour, il faudra tout de même écriture un petit processeur (autrement, un bug peut survenir, dû au fait que ce composant et son intégration dans API Platform soit encore récent, comme expliqué plus tôt).
+
+Comme il va y avoir beaucoup de changements dans la classe `Utilisateur`, il est conseillé de sauvegarder la version de cette classe quelque part, si vous souhaitez garder une trace de ce que vous aviez fait jusqu'ici.
+
+<div class="exercise">
+
+1. Dans la classe `Utilisateur` :
+    * Supprimez les propriétés `plainPassword` et `currentPlainPassword` et les getters/setters associés.
+    * Supprimez toutes les attributs de validation `#[Assert\...]`.
+    * Dans les opérations `POST` et `PATCH`, retirez les paramètres `processor`, `denormalizationContext` et `validation_context`.
+    * Retirez les groupes `serialization:utilisateur:write` et `serialization:utilisateur:update` des propriétés de la classe.
+    * Ajoutez un setter `setId`.
+
+2. Créez la classe `CreateUtilisateur` suivant, dans un nouveau dossier `src/Dto/Utilisateur` :
+
+    ```php
+    <?php
+
+    namespace App\Dto\Utilisateur;
+
+    use App\Entity\Utilisateur;
+    use App\ObjectMapper\TransformPlainPasswordToHashedPassword;
+    use Symfony\Component\ObjectMapper\Attribute\Map;
+    use Symfony\Component\Validator\Constraints as Assert;
+
+    class CreateUtilisateur
+    {
+        #[Assert\NotBlank]
+        #[Assert\Length(
+            min: 4,
+            max: 20,
+            minMessage: "Le login doit comporter au moins {{ limit }} caractères!",
+            maxMessage: "Le login ne peut pas dépasser {{ limit }} caractères!")
+        ]
+        public string $login;
+
+        #[Assert\NotBlank]
+        #[Assert\Email(message: "L'adresse email n'est pas valide!")]
+        public string $adresseEmail;
+
+        #[Assert\NotBlank]
+        #[Assert\Length(
+            min: 8,
+            max: 30,
+            minMessage: "Le mot de passe doit comporter au moins {{ limit }} caractères!",
+            maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères!"
+        )]
+        #[Assert\Regex(
+            pattern: "#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#",
+            message: "Le mot de passe doit comporter au moins 8 caractères, une lettre minuscule, une lettre majuscule et un chiffre"
+        )]
+        public string $plainPassword;
+    }
+    ```
+
+3. Créez et complétez la classe `TransformPlainPasswordToHashedPassword` suivante dans un nouveau dossier `src/ObjectMapper` :
+
+    ```php
+    <?php
+
+    namespace App\ObjectMapper;
+
+    use App\Entity\Utilisateur;
+    use Symfony\Component\ObjectMapper\TransformCallableInterface;
+
+    class TransformPlainPasswordToHashedPassword implements TransformCallableInterface
+    {
+
+        public function __construct(
+            //Injection du service pour hacher les mots de passe
+        )
+        {
+        }
+
+        public function __invoke(mixed $value, object $source, ?object $target): mixed
+        {
+            /* 
+            On se sert du service pour hacher le mot de passe.
+            Pour rappel : 
+            $value : le mot de passe en clair.
+            $target : l'entité Utilisateur vers qui on mappe le mot de passe.
+            On retourne le mot de passe haché.
+            */
+            /** @var Utilisateur $target **/
+            return ...;
+        }
+    }
+    ```
+
+4. Dans `CreateUtilisateur`, servez-vous de l'attribut `#[Map]` afin de :
+    * Déclarer que le DTO sera mappé dans la classe `Utilisateur::class`.
+    * Faire en sorte que `$plainPassword` soit mappé vers `password` en appliquant la transformation via votre classe `TransformPlainPasswordToHashedPassword`.
+
+5. Enfin, dans `Utilisateur`, faites en sorte que `CreateUtilisateur` soit utilisé comme `DTO` de l'opération `POST`.
+
+6. Testez que la création d'un nouvel utilisateur fonctionne toujours.
+</div>
+
+Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, il faudra quand même utiliser un petit processeur et désactiver le mapping automatique, car autrement, un bug peut survenir quand l'entité visée est en relation avec d'autres entités (comme dans notre cas où l'utilisateur peut être auteur de publications). C'est assez vicieux, car le bug ne survient que si l'utilisateur à une propriété collection de l'entité en relation (ici, `publications`) et que cette collection n'est pas vide (donc, dans notre cas, si l'utilisateur est auteur d'au moins une publication). Cependant, pas de panique, le travail est quand même bien simplifié par l'object mapper.
+
+<div class="exercise">
+
+1. Créez la classe `UpdateUtilisateur` dans `src/Dto/Utilisateur` :
+
+    ```php
+    <?php
+
+    namespace App\Dto\Utilisateur;
+
+    use App\ObjectMapper\TransformPlainPasswordToHashedPassword;
+    use Symfony\Component\ObjectMapper\Attribute\Map;
+    use Symfony\Component\Security\Core\Validator\Constraints\UserPassword;
+    use Symfony\Component\Validator\Constraints as Assert;
+    class UpdateUtilisateur
+    {
+        #[Assert\Email(message: "L'adresse email n'est pas valide!")]
+        public string $adresseEmail;
+
+        #[Assert\Length(
+            min: 8,
+            max: 30,
+            minMessage: "Le mot de passe doit comporter au moins {{ limit }} caractères!",
+            maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères!"
+        )]
+        #[Assert\Regex(
+            pattern: "#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#",
+            message: "Le mot de passe doit comporter au moins 8 caractères, une lettre minuscule, une lettre majuscule et un chiffre"
+        )]
+        #[Map(target: 'password', transform: TransformPlainPasswordToHashedPassword::class)]
+        public string $newPassword;
+
+        #[Assert\NotBlank]
+        #[UserPassword]
+        public string $currentPassword;
+    }
+    ```
+
+    On notera qu'il n'y a pas besoin de préciser `#[NotBlank]` sur l'adresse email et le nouveau mot de passe : ils peuvent ne pas être transmis (par contre, on veut que le mot de passe de l'utilisateur courant soit transmis).
+
+    Comme le login n'est pas présent dans le `DTO`, il ne pourra pas être transmis et modifié (c'est ce que l'on veut !).
+
+    **Pas de mapping déclaré au niveau de la classe** : nous allons nous en charger avec un processeur custom.
+
+3. Créez le processeur `UtilisateurUpdateProcessor` dans `src/State` :
+
+    ```php
+    <?php
+
+    namespace App\State;
+
+    use ApiPlatform\Metadata\Operation;
+    use ApiPlatform\State\ProcessorInterface;
+    use ApiPlatform\Validator\ValidatorInterface;
+    use Symfony\Component\DependencyInjection\Attribute\Autowire;
+    use Symfony\Component\ObjectMapper\ObjectMapperInterface;
+
+    class UtilisateurUpdateProcessor implements ProcessorInterface
+    {
+        public function __construct(
+            #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
+            private ProcessorInterface $persistProcessor,
+            private ObjectMapperInterface $objectMapper,
+            private ValidatorInterface $validator,
+        )
+        {}
+
+        public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+        {
+            //Cette ligne permet de récupérer l'objet utilisateur stocké en BD (avant modification, donc).
+            $utilisateur = $context['request']->attributes->get('read_data');
+
+            //On mappe "$data" qui est notre DTO de type UpdateUtilisateur, dans l'objet $utilisateur récupéré. C'est à ce moment-là que newPassword est transformé en password.
+            $utilisateur = $this->objectMapper->map($data, $utilisateur);
+
+            //On valide l'utilisateur final, après modification (permet de vérifier les contraintes UniqueEntity placées sur l'utilisateur : s'il n'y en a pas, on peut sauter cette étape, car le DTO valide déjà ses propriétés).
+            $this->validator->validate($utilisateur);
+
+            //On sauvegarde les modifications et on retourne l'utilisateur
+            return $this->persistProcessor->process($utilisateur, $operation, $uriVariables, $context);
+        }
+    }
+    ```
+
+4. Dans votre `UtilisateurVoter`, si vous vérifiez la permission `UTILISATEUR_EDIT` ainsi : `$user == $subject` cela ne fonctionnera plus. en effet, quand on utilise un DTO, l'objet récupéré (`$subject`) ne passe plus ce test. À la place, il faut comparer la valeur de l'id : `$user->getId() == $subject->getId()` (c'est d'ailleurs généralement une meilleure pratique).
+
+5. Enfin, affectez les paramètres `input` et `processor` de l'opération `PATCH` dans la classe `Utilisateur`.
+
+6. Vérifiez que la modification de votre profil fonctionne bien.
+</div>
+
+Comme vous pouvez le constater, nous avons déplacé toute notre logique de validation en dehors de `Utilisateur`. Aussi, nous n'avons plus de groupe de **dénormalisation** et de **validation** dans la classe. Comme mentionné plus tôt, il est possible de faire de pour la **normalisation** avec des DTO de "sortie" et le paramètre `output` des opérations. Cependant, cela ne veut pas dire que les groupes disparaissent complètement :
+
+* Obligatoire quand on veut inclure les données d'une entité dans une autre entité (comme nous le faisons avec l'auteur d'une publication).
+* Obligatoire quand on veut appliquer différentes contraintes selon le contexte (par exemple, si nous faisions un `DTO` pour écrire les publications, on devrait quand même avoir les groupes pour différencier les assertions qui vérifient la longueur du message en fonction du statut premium de l'utilisateur).
+* Obligatoire si on veut créer une entité imbriquée quand ont créé une autre entité (système détaille dans les notes complémentaires).
+
+Bref, si le système de `DTO` est appliqué judicieusement, cela permet de mieux répartir les responsabilités dans l'application, en échange d'une mise en place un peu plus volumineuse, avec plus de classes.
 
 ## Conclusion
 
 Nous avons terminé de construire notre `API` ! Elle est complète et prête à l'emploi pour être utilisée dans n'importe quelle application cliente (mobile, web, robot maléfique, etc).
 
-Vous avez pu constater la puissance de l'outil `API Platform`. Nous ne sommes pas beaucoup sortis des classes **entités** et la majeure partie de la logique métier de l'application est spécifiée grâce aux attributs dans ces classes. Pour les traitements particuliers, nous pouvons utiliser les **state processors** (et les **state provider**). S'il y a vraiment besoin, il y a toujours possibilité de définir des **controllers** avec des routes comme nous le faisions avant (par exemple, pour un **webhook**).
+Vous avez pu constater la puissance de l'outil `API Platform`. Nous ne sommes pas beaucoup sortis des classes **entités** et la majeure partie de la logique métier de l'application est spécifiée grâce aux attributs au niveau des propriétés. Pour les traitements particuliers, nous pouvons utiliser les **state processors** (et les **state provider**). Il n'y a donc pas besoin de définir de **contrôleurs** (les processors et providers jouent ce rôle), même s'il y a toujours possibilité d'en définir pour certains traitements spécifiques (par exemple, pour un **webhook**, pour uploader des images, etc).
 
 Dans la suite des TDs de web, vous allez apprendre à utiliser un framework JS client : `Vue.js`. Gardez donc cette API de côté, vous serez amenés à la réutiliser...
