@@ -6,27 +6,32 @@ lang: fr
 
 ## Introduction
 
-Jusqu'ici, afin d'interroger la base de données, nous avons utilisé les diverses fonctionnalités offertes par les **repository** de nos entités : `find`, `findAll`, `findBy`, `findOneBy`.
+Jusqu'ici, afin d'interroger la base de données, nous avons utilisé les diverses fonctionnalités offertes par les **repository** de nos entités : `find`, `findAll`, `findBy`, `findOneBy`.
 
-Même si ces fonctions sont très utiles et couvrent beaucoup de cas, il se peut que dans certains cas, nous ayons besoin d'effectuer une **requête** plus précise (ou plus performante). Pour cela, on peut alors utiliser le **Doctrine Query Language** (ou `DQL`).
+Même si ces fonctions sont très utiles et couvrent beaucoup de cas, il se peut que nous ayons parfois besoin d'effectuer une **requête** plus précise (ou plus performante). Pour cela, on peut alors utiliser le **Doctrine Query Language** (ou `DQL`).
 
 ## Le Doctrine Query Language (DQL)
 
-Le `DQL` est un langage qui *ressemble* au `SQL` et permet d'interroger la base de données (ou bien de faire des mises à jour/suppression de données). Doctrine va ensuite traduire cette requête en une requête compatible avec le `SGBD` utilisé (toutes les requêtes écrites en `DQL` sont donc portables, peu importe la base de données utilisée).
+Le `DQL` est un langage qui *ressemble* au `SQL` et permet d'interroger la base de données (ou bien de faire des mises à jour/suppressions de données ; en revanche, il ne permet pas de faire d'insertion : on utilise pour cela `persist` et `flush`). Doctrine va ensuite traduire cette requête en une requête compatible avec le `SGBD` utilisé (toutes les requêtes écrites en `DQL` sont donc portables, peu importe la base de données utilisée).
 
-Les différences majeures entre le `SQL` et le `DQL` sont qu'on ne fait pas de requêtes sur des tables, mais sur les **entités** de l'application et qu'on utilise les **propriétés** de ces dernières dans les clauses `SELECT`, `WHERE`, `JOIN`, etc, au lieu de noms de colonnes.
+Les différences majeures entre le `SQL` et le `DQL` sont qu'on ne fait pas de requêtes sur des tables, mais sur les **entités** de l'application et qu'on utilise les **propriétés** de ces dernières dans les clauses `SELECT`, `WHERE`, `JOIN`, etc., au lieu de noms de colonnes.
 
-Les jointures se font donc **entre les entités** : il faut donc qu'il existe une propriété liant les deux entités dans le type d'entité sélectionnée dans le `FROM` pour pouvoir faire une jointure.
+Les jointures se font donc **entre les entités** : en général, on joint en suivant une propriété d'association d'une entité déjà présente dans la requête (par exemple `f.genre` ou `c.ville`). Il est aussi possible de joindre une entité sans association avec la syntaxe `JOIN App\Entity\Xxx x WITH <condition>`.
 
-Dans le cadre de requêtes de **sélection**, Doctrine convertira automatiquement le résultat de la requête en instances d'entités de l'application.
+Dans le cadre de requêtes de **sélection**, quand on sélectionne des entités (par exemple `SELECT f`), Doctrine convertira automatiquement le résultat de la requête en instances d'entités de l'application. Si on sélectionne des valeurs (par exemple `SELECT f.titre, COUNT(a.id)`), on obtient des tableaux de valeurs.
 
 ### Comment effectuer une requête
 
-Imaginons l'ensemble d'entités suivant :
+Imaginons l'ensemble d'entités suivant :
 
 ```php
 namespace App\Entity;
 
+use App\Repository\FilmRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: FilmRepository::class)]
 class Film {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -49,7 +54,7 @@ class Film {
     private Collection $acteurs;
 
     /**
-     * @var Collection<int, Film>
+     * @var Collection<int, Cinema>
      */
     #[ORM\ManyToMany(targetEntity: Cinema::class, inversedBy: 'filmsDiffuses')]
     private Collection $cinemasDiffusion;
@@ -59,6 +64,10 @@ class Film {
 ```php
 namespace App\Entity;
 
+use App\Repository\GenreRepository;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: GenreRepository::class)]
 class Genre {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -73,6 +82,10 @@ class Genre {
 ```php
 namespace App\Entity;
 
+use App\Repository\ActeurRepository;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: ActeurRepository::class)]
 class Acteur {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -93,6 +106,10 @@ class Acteur {
 ```php
 namespace App\Entity;
 
+use App\Repository\VilleRepository;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: VilleRepository::class)]
 class Ville {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -102,14 +119,19 @@ class Ville {
     #[ORM\Column(length: 255)]
     private ?string $nom = null;
 
-    #[ORM\Column]
-    private ?int $codePostal = null;
+    #[ORM\Column(length: 5)]
+    private ?string $codePostal = null;
 }
 ```
 
 ```php
 namespace App\Entity;
 
+use App\Repository\CinemaRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: CinemaRepository::class)]
 class Cinema {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -133,7 +155,7 @@ class Cinema {
 }
 ```
 
-Pour créer et exécuter une requête `DQL`, on utilise le service `EntityManagerInterface` (que nous utilisons déjà pour insérer, mettre à jour et supprimer une entité). La méthode la plus basique pour effectuer une requête est d'utiliser la fonction `createQuery` :
+Pour créer et exécuter une requête `DQL`, on utilise le service `EntityManagerInterface` (que nous utilisons déjà pour insérer, mettre à jour et supprimer une entité). La méthode la plus basique pour effectuer une requête est d'utiliser la fonction `createQuery` :
 
 ```php
 namespace App\Service;
@@ -148,14 +170,14 @@ class MonService {
         //On veut récupérer tous les films sortis entre 2000 et 2025 (inclus).
         //On désigne l'entité par son nom complet (namespace + nom) : App\Entity\Film
         //anneeSortie est le nom d'un attribut de la classe Film
-        $requete = $entityManager->createQuery('SELECT f FROM App\Entity\Film f WHERE f.anneeSortie >= 2000 AND f.anneeSortie <= 2025');
+        $requete = $this->entityManager->createQuery('SELECT f FROM App\Entity\Film f WHERE f.anneeSortie >= 2000 AND f.anneeSortie <= 2025');
         //On récupère un tableau d'entités films
         $films = $requete->getResult();
     }
 }
 ```
 
-Même s'il est possible d'injecter `EntityManager` dans n'importe quel service, on préférera plutôt utiliser le `DQL` dans les **repositories** des entités en questions (où il est déjà intégré) :
+Même s'il est possible d'injecter `EntityManager` dans n'importe quel service, on préférera utiliser le `DQL` dans les **repositories** des entités en question (où l'`EntityManager` est déjà accessible via `$this->getEntityManager()`) :
 
 ```php
 namespace App\Repository;
@@ -191,11 +213,11 @@ class FilmRepository extends ServiceEntityRepository
 }
 ```
 
-Dans le dernier exemple, on remarque qu'il est possible de **préparer** des requêtes et d'y injecter des paramètres (obligatoire pour éviter les **injections SQL**!).
+Dans le dernier exemple, on remarque qu'il est possible de **préparer** des requêtes et d'y injecter des paramètres (obligatoire dès qu'une valeur provient de l'extérieur, pour éviter les **injections SQL** !).
 
 ### Query Builder
 
-Une alternative à la méthode `createyQuery` de `EntityManager` est la méthode `createQueryBuilder` qui permet de créer une requête pas à pas via le design pattern créateur `Builder`. Cette méthode est très utile, notamment quand certaines parties de la requête sont dépendantes de certaines conditions. De plus, si on l'utilise dans un repository, on peut utiliser la méthode `$this->createQueryBuilder()` qui permettra de sélectionner directement à partir de l'entité liée au repository (donc, pour éviter de préciser la clause `FROM`...).
+Une alternative à la méthode `createQuery` de `EntityManager` est la méthode `createQueryBuilder` qui permet de créer une requête pas à pas via le design pattern créateur `Builder`. Cette méthode est très utile, notamment quand certaines parties de la requête dépendent de conditions. De plus, si on l'utilise dans un repository, on peut utiliser la méthode `$this->createQueryBuilder('alias')` qui permettra de sélectionner directement à partir de l'entité liée au repository (ce qui évite de préciser la clause `FROM`).
 
 ```php
 namespace App\Repository;
@@ -238,7 +260,7 @@ class FilmRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('f')
                              ->join('f.genre', 'g')
                              ->join('f.acteurs', 'a')
-                             ->where('g.id >= :genre')
+                             ->where('g.id = :genre')
                              ->andWhere('a.nbOscars >= :nbOscars')
                              ->setParameter('genre', $genre->getId())
                              ->setParameter('nbOscars', $nbOscarsMinimum);
@@ -265,7 +287,7 @@ class FilmRepository extends ServiceEntityRepository
     /**
     * @return Film[]
     */
-    public function findFilmsDiffusesDansCinemas($nbCinemas) : array {
+    public function findFilmsDiffusesDansAuMoinsNCinemas(int $nbCinemas) : array {
         $queryBuilder = $this->createQueryBuilder('f')
                         ->leftJoin('f.cinemasDiffusion', 'c')
                         ->groupBy('f.id')
@@ -287,13 +309,24 @@ class FilmRepository extends ServiceEntityRepository
 }
 ```
 
+Attention, une suppression (ou une mise à jour) en `DQL` agit directement sur la base de données, sans passer par l'`EntityManager` : les événements du cycle de vie des entités et les options `cascade` ne sont pas déclenchés, et les entités déjà chargées en mémoire ne sont pas mises à jour.
+
 ### Utiliser du SQL natif
 
-Il est aussi tout à fait possible d'utiliser du SQL natif pour réaliser les requêtes, mais :
+Il est aussi tout à fait possible d'utiliser du SQL natif pour réaliser les requêtes, mais :
 * Elles ne seront pas nécessairement portables d'un SGBD à l'autre.
 * Il faut expliquer à Doctrine comment **mapper** le résultat de la requête en objet.
 
 ```php
+namespace App\Repository;
+
+use App\Entity\Acteur;
+use App\Entity\Film;
+use App\Entity\Genre;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\ResultSetMapping;
+use Doctrine\Persistence\ManagerRegistry;
+
 /**
 * @extends ServiceEntityRepository<Film>
 */
@@ -343,6 +376,8 @@ class FilmRepository extends ServiceEntityRepository
     }
 }
 ```
+
+Comme en `DQL`, on utilise des paramètres (`:debut`, `:fin`) dans les requêtes natives pour éviter les injections SQL. Pour éviter de décrire le mapping champ par champ, on peut aussi utiliser la classe `ResultSetMappingBuilder` (et sa méthode `addRootEntityFromClassMetadata`) qui construit le mapping à partir des métadonnées de l'entité.
 
 ## Conclusion
 
