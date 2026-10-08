@@ -30,7 +30,7 @@ flasher:
 
 Il faudra bien sûr adapter ce paramètre, lors du déploiement sur un serveur en production (comme `webinfo`).
 
-Il y a d'autres paramètres qu'il peut être utile de modifier, afin de customiser l'affichage. Il est aussi possible d'utiliser des bibliothèques JavaScript plus spécialisées (toastr, noty, notyf, sweetalert...). Un paramètre intéressant est l'intégration avec le style d'un framework CSS :
+Il y a d'autres paramètres qu'il peut être utile de modifier, afin de personnaliser l'affichage. Il est aussi possible d'utiliser des bibliothèques JavaScript plus spécialisées (toastr, noty, notyf, sweetalert...). Un paramètre intéressant est l'intégration avec le style d'un framework CSS :
 
 ```yaml
 #config/packages/flasher.yaml

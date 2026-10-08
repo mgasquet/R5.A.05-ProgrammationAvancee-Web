@@ -212,7 +212,7 @@ $entityManager->flush();
 
 <div class="exercise">
 
-1. Dans `PublicationController.php`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE` et **exposée**. Pour l'instant, on reste simple : pas besoin de vérifier si la publication existe ou si l'utilisateur courant en est l'auteur (nous ajouterons ces vérifications plus tard). Concrètement, la route doit :
+1. Dans `PublicationController.php`, créez une route `supprimerPublication` possédant une route paramétrée `/publications/{id}`, accessible via la méthode `DELETE`. Pour l'instant, on reste simple : pas besoin de vérifier si la publication existe ou si l'utilisateur courant en est l'auteur (nous ajouterons ces vérifications plus tard). Concrètement, la route doit :
 
    * Récupérer la publication visée par l'identifiant donné dans la route (souvenez-vous, lors du TD2, nous avions vu une méthode très simple pour récupérer une entité précisée à partir d'une route paramétrée, sans utiliser explicitement son repository !).
    * Supprimer la publication.
@@ -303,9 +303,11 @@ let URL = Routing.generate('maRoute', {"param": val, ...});
 
 <div class="exercise">
 
-1. Installez `FOSJsRoutingBundle` et configurez tout ce qu'il faut (URL par défaut, export des routes, import dans `app.js`) pour pouvoir utiliser la fonction `Routing.generate` dans votre controller Stimulus. Vous pouvez supprimer le dossier `public/bundles` qui ne nous servira pas.
+1. Exposez votre route `supprimerPublication`.
 
-2. Pour vérifier que tout fonctionne, modifiez temporairement la fonction `supprimerPublication` de `publications_controller.js` afin qu'elle affiche dans la console le résultat de `Routing.generate('supprimerPublication', {"id": 123})`.  
+2. Installez `FOSJsRoutingBundle` et configurez tout ce qu'il faut (URL par défaut, export des routes, import dans `app.js`) pour pouvoir utiliser la fonction `Routing.generate` dans votre controller Stimulus. Vous pouvez supprimer le dossier `public/bundles` qui ne nous servira pas.
+
+3. Pour vérifier que tout fonctionne, modifiez temporairement la fonction `supprimerPublication` de `publications_controller.js` afin qu'elle affiche dans la console le résultat de `Routing.generate('supprimerPublication', {"id": 123})`.  
    
    Rechargez la page, cliquez sur un bouton "Supprimer" et vérifiez dans la console (`F12`) que l'URL générée correspond bien à celle de votre route (par exemple `http://localhost/the_feed/public/publications/123`).
 
@@ -586,7 +588,9 @@ Il est tout à fait possible de combiner plusieurs instructions !
     ...
 </turbo-stream>
 <turbo-stream action="prepend" target="flashes">
-    <p>Film ajouté!</p>
+    <template>
+        <p>Film ajouté!</p>
+    </template>
 </turbo-stream>
 ```
 
@@ -1318,24 +1322,32 @@ class MaCommande
         /* Doit être placé avant les autres paramètres */
         SymfonyStyle $io,
         
-        /* Premier argument (obligatoire) */
-        #[Argument(description: "...")] string $arg1,
+        /* Premier argument (obligatoire) : saisi en même temps que la commande */
+        #[Argument(description: "...")] 
+        string $arg1,
 
         /* Deuxième argument (obligatoire): pose une question en console à l'utilisateur */
-        #[Ask("Question...")] int $arg2,
+        #[Argument(description: "...")]
+        #[Ask("Question...")] 
+        int $arg2,
 
         /* Troisième argument (obligatoire): pose une question en console à l'utilisateur, et cache la valeur saisie (par exemple, pour un mon de passe...) */
-        #[Ask("Question...", hidden: true)] int $arg3,
+        #[Argument(description: "...")] 
+        #[Ask("Question...", hidden: true)] 
+        int $arg3,
                             
         /* Quatrième argument (optionnel): à mettre après les arguments obligatoires. */
         /* Il est optionnel car on donne une valeur par défaut */
-        #[Argument(description: "...")] string $arg4 = "Valeur par défaut...",
+        #[Argument(description: "...")] 
+        string $arg4 = "Valeur par défaut...",
                            
         /* On peut configurer des options qui s'utilisent ainsi `--nomOption` n'importe où dans la commande, et qui donnent une valeur booléenne (activer, désactiver) */
-        #[Option(description:"...")] bool $option1 = false,
+        #[Option(description:"...")] 
+        bool $option1 = false,
                         
         /* On peut aussi définir une option à laquelle on associe une valeur `--nomOption=valeur` */
-        #[Option(description:"...")] int $option2 = 5
+        #[Option(description:"...")] 
+        int $option2 = 5
     ): int
    {
 
@@ -1373,7 +1385,7 @@ Bien sûr, dans l'exemple, on utilise `$arg1`, `$option1`, etc, mais vous pouvez
 php bin/console macommande --help
 ```
 
-Dans `#[Argument]`, `#[Option]`, etc, il est aussi possible de changer le nom du paramètre affiché en console avec la propriété `name`, et de suggérer des valeurs avec `suggestedValues`. Il est aussi possible de créer une classe externe pour regrouper plusieurs arguments puis les utiliser dans la commande grâce à [l'attribut `#[MapInput]`](https://symfony.com/doc/7.4/console/input.html#mapping-input-to-objects).
+Dans `#[Argument]` et `#[Option]`, il est aussi possible de changer le nom du paramètre affiché en console avec la propriété `name`, et de suggérer des valeurs avec `suggestedValues`. Il est aussi possible de créer une classe externe pour regrouper plusieurs arguments puis les utiliser dans la commande grâce à [l'attribut `#[MapInput]`](https://symfony.com/doc/7.4/console/input.html#mapping-input-to-objects). Cela permet notamment d'utiliser des assertions pour valider certaines données, comme nous le faisons avec les entités ou les classes utilisées pour la gestion des formulaires.
 
 {% comment %}
 Pour initialiser la classe d'une commande, on exécute :
