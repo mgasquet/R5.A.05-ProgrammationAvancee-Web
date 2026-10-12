@@ -355,7 +355,7 @@ Dans le HTML, mon attribut était nommé `data-exemple-machin`, ce qui donne en 
 
 #### Envoyer la requête de suppression
 
-Notre prochain objectif est de modifier la fonction `supprimerPublication` de `publications_controller.js` afin qu'elle effecturune requête asynchrone vers la route nommée `supprimerPublication` de méthode `DELETE`.
+Notre prochain objectif est de modifier la fonction `supprimerPublication` de `publications_controller.js` afin qu'elle effectue une requête asynchrone vers la route nommée `supprimerPublication` de méthode `DELETE`.
 Vous pouvez notamment utiliser la fonction `fetch` et l’instruction `await` que vous devez maîtriser depuis les cours de JavaScript de l’année dernière ! Quelques petits rappels (et nouvelles précisions) dans le contexte d'une requête simple sans corps de requête :
 
 ```javascript
