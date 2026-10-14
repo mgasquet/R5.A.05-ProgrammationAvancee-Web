@@ -202,7 +202,7 @@ Pour générer le code de base lié à l'entité publication, nous allons utilis
 
 </div>
 
-Comme vous pouvez le constater, en plus des attributs liés à doctrine que vous connaissez déjà, un attribut `#[ApiResource]` est présente. Elle permet simplement d'indiquer à l'application que cette entité est une ressource de l'API. Avec cette configuration simple, notre ressource est manipulable avec toutes les méthodes HTTP.
+Comme vous pouvez le constater, en plus des attributs liés à doctrine que vous connaissez déjà, un attribut `#[ApiResource]` est présent. Il permet simplement d'indiquer à l'application que cette entité est une ressource de l'API. Avec cette configuration simple, notre ressource est manipulable avec toutes les méthodes HTTP.
 
 ### Premières requêtes
 
@@ -434,7 +434,7 @@ Pour créer la ressource `Utilisateur`, nous n'allons pas nous embêter et repre
 
 <div class="exercise">
 
-1. Téléchargez puis importez la classe [Utilisateur]({{site.baseurl}}/assets/TD4/Utilisateur.php) dans `src/Entity` ainsi que la classe [UtilisateurRepository](({{site.baseurl}}/assets/TD4/UtilisateurRepository.php)) dans `src/Repository`. Il s'agit (en partie) de l'entité `Utilisateur` que vous avez déjà développée lors des TDs précédents. Pour l'instant, nous ne faisons pas le lien entre publication et utilisateur. De même, nous ne gérerons pas l'upload de photo de profil dans notre API (cela est néanmoins possible !). Certaines propriétés liées à la gestion de l'utilisateur (mot de passe, rôle, etc) sont commentées (ne supprimez rien). Nous réactiverons tout cela un peu plus tard, quand il faudra authentifier l'utilisateur.
+1. Téléchargez puis importez la classe [Utilisateur]({{site.baseurl}}/assets/TD4/Utilisateur.php) dans `src/Entity` ainsi que la classe [UtilisateurRepository]({{site.baseurl}}/assets/TD4/UtilisateurRepository.php) dans `src/Repository`. Il s'agit (en partie) de l'entité `Utilisateur` que vous avez déjà développée lors des TDs précédents. Pour l'instant, nous ne faisons pas le lien entre publication et utilisateur. De même, nous ne gérerons pas l'upload de photo de profil dans notre API (cela est néanmoins possible !). Certaines propriétés liées à la gestion de l'utilisateur (mot de passe, rôle, etc) sont commentées (ne supprimez rien). Nous réactiverons tout cela un peu plus tard, quand il faudra authentifier l'utilisateur.
 
 2. Faites en sorte que cette entité soit utilisée comme une ressource et autorisez toutes les opérations à l'exception de la méthode `PUT` (mise à jour partielle avec `PATCH` autorisée, mais pas de mise à jour complète avec `PUT`).
 
