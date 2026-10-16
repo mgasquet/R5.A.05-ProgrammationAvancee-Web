@@ -7,7 +7,7 @@ lang: fr
 
 ## Introduction
 
-Dans ce TD, nous allons mettre en place une **API REST** pour l'application **The Feed** que nous avons développé lors des TDs précédemment. Nous n'allons pas directement poursuivre le code du site que vous avez développé (dans une API, il n'y a que le côté "back-end", hors pages de documentation) mais vous pourrez reprendre certains bouts de code qui pourront être réutilisés (notamment les assertions).
+Dans ce TD, nous allons mettre en place une **API REST** pour l'application **The Feed** que nous avons développée lors des TDs précédemment. Nous n'allons pas directement poursuivre le code du site que vous avez développé (dans une API, il n'y a que le côté "back-end", hors pages de documentation) mais vous pourrez reprendre certains bouts de code qui pourront être réutilisés (notamment les assertions).
 
 Nous avons déjà abordé la notion d'API l'an dernier. Nous allons tout de même faire une petite remise à niveau sur les **API** et plus particulièrement sur les **API REST**.
 
@@ -35,7 +35,7 @@ Pour manipuler ces ressources, on utilise les méthodes `HTTP` suivantes :
 
 * `GET` : Récupère les données de la ressource désignée par la route. On utilise généralement cette méthode sous deux formes : soit pour récupérer un ensemble de ressources (liste) ou bien pour récupérer une ressource précise.
 
-* `POST` : Crée une ressource dans l'ensemble désignée par la route avec les informations fournies dans le corps de la requête.
+* `POST` : Crée une ressource dans l'ensemble désigné par la route avec les informations fournies dans le corps de la requête.
 
 * `PUT` : Remplace complètement la ressource désignée par la route avec les informations fournies dans le corps de la requête (tous les attributs nécessaires doivent donc être spécifiés, comme pour `POST`). On écrase l'ancienne ressource avec la nouvelle.
 
@@ -49,7 +49,7 @@ Donc, par exemple, on pourrait avoir :
 
 * `GET /publications/1` : Renvoie les informations de la publication ayant pour identifiant 1.
 
-* `POST /publications` : Créé une nouvelle publication (et renvoie ses informations).
+* `POST /publications` : Crée une nouvelle publication (et renvoie ses informations).
 
 * `DELETE /utilisateurs/3` : Supprime l'utilisateur numéro 3.
 
@@ -65,7 +65,7 @@ En plus de cela, une `API REST` doit être **sans état** (stateless), c'est-à-
 
 Pour développer le plus simplement possible notre **API**, nous allons utiliser un outil appelé **API Platform** exploitable au travers de **Symfony**.
 
-Cet outil est assez puissant, car il permet de centraliser une grande partie de la logique de l'API au niveau des classes **entités**. Il y a peu de code à écrire dans d'autres classes (sauf pour certaines opérations spécifiques plus complexes) et généralement pas du tout de contrôleur à mettre en place (sauf opérations très particulières, comme un webhook, par exemple pour Stripe). À partir des données des entités et des différents attributs, **API Platform** se charge de générer les routes et appliquer les différentes opérations de récupération, de sauvegarde, de vérification, etc... Vous n'aurez quasiment pas à manipuler de repositories par vous-même.
+Cet outil est assez puissant, car il permet de centraliser une grande partie de la logique de l'API au niveau des classes **entités**. Il y a peu de code à écrire dans d'autres classes (sauf pour certaines opérations spécifiques plus complexes) et généralement pas du tout de contrôleur à mettre en place (sauf opérations très particulières, comme un webhook, par exemple pour Stripe). À partir des données des entités et des différents attributs, **API Platform** se charge de générer les routes et d'appliquer les différentes opérations de récupération, de sauvegarde, de vérification, etc... Vous n'aurez quasiment pas à manipuler de repositories par vous-même.
 
 Vous allez vite vous rendre compte qu'il est possible de configurer beaucoup d'aspects de l'API au travers des **attributs** (comme nous le faisions pour les routes, par exemple). Bien sûr, nous n'allons pas explorer toutes les possibilités qu'offre l'outil aujourd'hui, mais vous pourrez pousser plus loin dans votre projet !
 
@@ -75,9 +75,9 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
 1. Depuis le terminal (dans le conteneur docker), assurez-vous d'être bien placé dans `/var/www/html` puis exécutez la commande suivante :
 
-    ```bash
-    composer create-project symfony/skeleton:"7.4.*" the_feed_api
-    ```
+   ```bash
+   composer create-project symfony/skeleton:"7.4.*" the_feed_api
+   ```
 
     Le projet est accessible sur votre machine (hors conteneur) dans le dossier `shared/public_html/the_feed_api`.
 
@@ -85,17 +85,17 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
     * Dans le dossier du projet, exécutez la commande suivante :
 
-        ```bash
-        composer require api
-        ```
+      ```bash
+      composer require api
+      ```
 
         Répondez `n` (no) à la question posée.
 
         Puis (pour générer le fichier `.htaccess` dans `public`) :
 
-        ```bash
-        composer require symfony/apache-pack
-        ```
+      ```bash
+      composer require symfony/apache-pack
+      ```
 
         Répondez `y` (oui) à la question posée.
 
@@ -107,7 +107,7 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
    Il peut y avoir des erreurs et certaines permissions non accordées, ce n'est pas grave.
 
-4. Ouvrez le projet, et localisez le fichier `config/packages/api_plaform.yaml` puis éditez-le ainsi :
+4. Ouvrez le projet, et localisez le fichier `config/packages/api_platform.yaml` puis éditez-le ainsi :
 
    ```yaml
    api_platform:
@@ -125,21 +125,21 @@ Comme expliqué plus tôt, nous allons créer un nouveau projet indépendamment 
 
 5. Nous allons maintenant configurer la base de données dans le fichier `.env`. Configurez donc une nouvelle base nommée `the_feed_api`. Pour rappel, comme nous sommes dans le conteneur, l'adresse hôte à utiliser est `db`, le login `root` et le mot de passe `root`. Le port est `3306` et la version de `MySQL` que nous utilisons est `26.7.0` (dans le conteneur). L'adresse est donc :
 
-    ```yaml
-    DATABASE_URL="mysql://root:root@db:3306/the_feed_api?serverVersion=26.7.0"
-    ```
+   ```yaml
+   DATABASE_URL="mysql://root:root@db:3306/the_feed_api?serverVersion=26.7.0"
+   ```
 
 6. Exécutez la commande suivante afin de créer la base :
 
-    ```bash
-    php bin/console doctrine:database:create
-    ```
+   ```bash
+   php bin/console doctrine:database:create
+   ```
     
 7. En vous rendant dans le dossier du projet, videz le cache :
 
-    ```bash
-    php bin/console cache:clear
-    ```
+   ```bash
+   php bin/console cache:clear
+   ```
 
 8. Rendez-vous sur votre site à l'adresse : [https://localhost/the_feed_api/public/api/](https://localhost/the_feed_api/public/api/). Si cela fonctionne, tout est prêt. Vous devriez voir une page de documentation (vide pour le moment) générée par **API Platform**.
 
@@ -169,15 +169,15 @@ Pour le moment, comme dans le premier TD, nos publications n'auront pas d'auteur
 
 ### Création de l'entité
 
-Pour générer le code de base lié à l'entité publication, nous allons utiliser la commande `make:entity` que vous connaissez bien. Néanmoins, le `bundle` permettant d'utiliser ces commandes n'est pas installé. En effet, vous aurez peut-être remarqué que contrairement au premier TD, nous n'avons pas installé l'ensemble de librairie `webapp` (avec composer). C'est un ensemble de librairies utiles pour développer un site web traditionnel, mais dans notre cas, nous n'avons pas besoin de tout ça pour construire une API. Le bundle `maker` fait partie de ce lot, mais nous pouvons l'installer indépendamment.
+Pour générer le code de base lié à l'entité publication, nous allons utiliser la commande `make:entity` que vous connaissez bien. Néanmoins, le `bundle` permettant d'utiliser ces commandes n'est pas installé. En effet, vous aurez peut-être remarqué que contrairement au premier TD, nous n'avons pas installé l'ensemble des librairies `webapp` (avec composer). C'est un ensemble de librairies utiles pour développer un site web traditionnel, mais dans notre cas, nous n'avons pas besoin de tout ça pour construire une API. Le bundle `maker` fait partie de ce lot, mais nous pouvons l'installer indépendamment.
 
 <div class="exercise">
 
 1. Installez le bundle `maker-bundle` :
 
-    ```bash
-    composer require symfony/maker-bundle --dev
-    ```
+   ```bash
+   composer require symfony/maker-bundle --dev
+   ```
 
 2. Créez une nouvelle entité `Publication` à l'aide de la commande `make:entity` en ajoutant l'option `--api-resource` qui permet d'indiquer à Symfony que nous créons une entité liée à **API Platform**.
 
@@ -193,10 +193,10 @@ Pour générer le code de base lié à l'entité publication, nous allons utilis
 
 5. Mettez à jour la structure de votre base de données. Pour rappel, les commandes à utiliser sont :
 
-    ```bash
-    php bin/console make:migration
-    php bin/console doctrine:migrations:migrate
-    ```
+   ```bash
+   php bin/console make:migration
+   php bin/console doctrine:migrations:migrate
+   ```
 
     Vérifiez que votre base de données est bien à jour.
 
@@ -236,12 +236,12 @@ Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de 
 
     * Remplissez la zone de saisie des données avec le `payload` suivant :
 
-    ```json
-    {
-        "message": "Hello world!",
-        "datePublication": "2026-10-02T21:18:27.568Z"
-    }
-    ```
+   ```json
+   {
+       "message": "Hello world!",
+       "datePublication": "2026-10-02T21:18:27.568Z"
+   }
+   ```
 
 3. Cliquez sur **Send**. L'application envoie une alerte, car nous utilisons un certificat auto-signé pour pouvoir proposer `https` sur notre serveur web. Acceptez d'utiliser ce certificat "non sécurisé" et poursuivez la requête. Observez le résultat : la publication devrait vous être renvoyée (avec son identifiant) ! Ajoutez-en quelques autres.
 
@@ -249,7 +249,7 @@ Nous allons donc tenter de manipuler notre ressource `publication` à l'aide de 
 
 5. Ouvrez un nouvel onglet et faites en sorte de récupérer une publication précise. Ici, il n'y a encore pas de `payload`, l'identifiant doit être précisé au niveau de l'URL.
 
-6. Ouvrez un nouvel onglet et faite en sorte de supprimer une publication. 
+6. Ouvrez un nouvel onglet et faites en sorte de supprimer une publication. 
 </div>
 
 ### Configuration plus poussée
@@ -287,38 +287,38 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
 
 1. Faites les modifications nécessaires au niveau de l'entité `Publication` afin qu'une date entrée dans le `payload` soit ignorée (qu'on ne puisse pas l'écrire). Ensuite, pour que celle-ci soit plutôt générée automatiquement du côté du serveur, on pourra utiliser le code suivant qu'on avait déjà utilisé dans les TDs précédents :
 
-    ```php
-    use DateTime;
+   ```php
+   use DateTime;
 
-    #[ORM\HasLifecycleCallbacks]
-    class Publication {
+   #[ORM\HasLifecycleCallbacks]
+   class Publication {
 
-        #[ORM\PrePersist]
-        public function prePersistDatePublication() : void {
-            $this->datePublication = new DateTime();
-        }
+       #[ORM\PrePersist]
+       public function prePersistDatePublication() : void {
+           $this->datePublication = new DateTime();
+       }
 
-    }
-    ```
+   }
+   ```
 
 2. Nous allons reprendre les **assertions** de notre ancienne classe `Publication` pour la propriété `message`. Concernant l'assertion `Length`, nous allons en garder qu'une seule pour le moment, et sans son groupe de validation (nous ajouterons le premium plus tard...).
 
-    ```php
-    use Symfony\Component\Validator\Constraints as Assert;
+   ```php
+   use Symfony\Component\Validator\Constraints as Assert;
 
-    class Publication {
+   class Publication {
 
-        #[ORM\Column(type: Types::TEXT)]
-        #[Assert\NotBlank]
-        #[Assert\Length(
-            min: 4,
-            max: 50,
-            minMessage: "Le message est trop court! ({{ limit }} caractères minimum)",
-            maxMessage: "Le message est trop long! ({{ limit }} caractères maximum)"
-        )]
-        private ?string $message = null;
-    }
-    ```
+       #[ORM\Column(type: Types::TEXT)]
+       #[Assert\NotBlank]
+       #[Assert\Length(
+           min: 4,
+           max: 50,
+           minMessage: "Le message est trop court! ({{ limit }} caractères minimum)",
+           maxMessage: "Le message est trop long! ({{ limit }} caractères maximum)"
+       )]
+       private ?string $message = null;
+   }
+   ```
 
 3. Videz le cache.
 
@@ -328,7 +328,7 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
     * Les assertions de validation appliquées sur le message sont bien prises en compte.
 </div>
 
-Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En effet, nous ne voulons pas que les publications soient modifiables. Il faut donc interdire les méthodes `PUT` et `PATCH`, ou plutôt, autoriser seulement les autres méthodes. Pour cela, il suffit de placer de nouveaux **attributs** paramétrables dans notre entité afin de lister les opérations permises. Le système marche sous forme de liste blanche à partir du moment où une opération est listée : seule les opérations listées via les attributs seront autorisées.
+Maintenant, nous aimerions interdire l'utilisation de certaines méthodes. En effet, nous ne voulons pas que les publications soient modifiables. Il faut donc interdire les méthodes `PUT` et `PATCH`, ou plutôt, autoriser seulement les autres méthodes. Pour cela, il suffit de placer de nouveaux **attributs** paramétrables dans notre entité afin de lister les opérations permises. Le système marche sous forme de liste blanche à partir du moment où une opération est listée : seules les opérations listées via les attributs seront autorisées.
 
 Les opérations possibles sont :
 
@@ -355,7 +355,7 @@ class MonEntite {
 
 Petite note à part, par défaut, `#[GetCollection]` utilise un système de pagination afin de limiter le nombre de ressources renvoyées (par défaut, 30). Il est alors possible de préciser un paramètre `page` dans le **query string** de la route, pour naviguer. Par exemple, `/api/publications` renvoie les publications de 1 à 30. Et `/api/publications?page=3` renvoie les publications de 61 à 90.
 
-Ce système est nécessaire afin de limiter les données lues côté client et ainsi charger le contenu au fur et à mesure (imaginez si vous deviez charger tout **Twitter/X** à chaque accès !!!). Il est possible d'augmenter le nombre de ressources renvoyées par page ou bien simplement désactiver ce système (et donc tout renvoyer à chaque fois). Par convenance dans le cadre de ce TP, nous allons donc désactiver ce système, mais retenez bien que dans un contexte réel, il faudrait le conserver et charger le contenu petit à petit, au fil du parcours de l'utilisateur.
+Ce système est nécessaire afin de limiter les données lues côté client et ainsi charger le contenu au fur et à mesure (imaginez si vous deviez charger tout **Twitter/X** à chaque accès !!!). Il est possible d'augmenter le nombre de ressources renvoyées par page ou bien simplement désactiver ce système (et donc tout renvoyer à chaque fois). Par convenance dans le cadre de ce TD, nous allons donc désactiver ce système, mais retenez bien que dans un contexte réel, il faudrait le conserver et charger le contenu petit à petit, au fil du parcours de l'utilisateur.
 
 Pour configurer tout cela, il existe deux moyens.
 
@@ -386,7 +386,7 @@ class MonEntite {
 }
 ```
 
-Dans le cadre du TP, nous allons plutôt choisir la deuxième solution, et configurer directement ces paramètres sur l'opération en question.
+Dans le cadre du TD, nous allons plutôt choisir la deuxième solution, et configurer directement ces paramètres sur l'opération en question.
 
 Toujours au niveau de l'attribut `#[GetCollection]`, il est possible de rajouter un paramètre `order` pour spécifier comment sont ordonnés les résultats de la requête. 
 
@@ -473,11 +473,11 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
 
 2. On souhaite que lorsqu'un utilisateur est supprimé, toutes ses publications soient également supprimées. Pour cela, on peut donc utiliser la stratégie de suppression `CASCADE` que nous avons vu auparavant. Dans le TD2, nous avons aussi parlé des deux modes pour charger une entité issue d'une relation : le **lazy loading** et le **eager loading**. Ici, on souhaite que les données de l'auteur soient chargées quand les données de la publication sont chargées. Activez la stratégie de suppression `CASCADE` ainsi que le mode de chargement `EAGER` sur la propriété correspondant à l'auteur d'une publication :
 
-    ```php
-    #[ORM\ManyToOne(fetch: 'EAGER', inversedBy: 'publications')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?Utilisateur $auteur = null;
-    ```
+   ```php
+   #[ORM\ManyToOne(fetch: 'EAGER', inversedBy: 'publications')]
+   #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+   private ?Utilisateur $auteur = null;
+   ```
 
 3. Ajoutez les attributs (assertions) nécessaires pour "forcer" l'utilisateur à préciser l'auteur lorsqu'il crée une publication. Il faut que l'auteur ne soit pas absent du payload de la requête (not blank).
 
@@ -491,14 +491,14 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
 
 8. Maintenant, tentez d'ajouter une publication en précisant l'identifiant numérique (son id, entre double quotes) de l'utilisateur pour la partie `auteur`. Analysez le message d'erreur que vous obtenez. Par exemple :
 
-    ```json
-    {
-        "message": "Hello world!",
-        "auteur" : "1"
-    }
-    ```
+   ```json
+   {
+       "message": "Hello world!",
+       "auteur" : "1"
+   }
+   ```
 
-9. La valeur à préciser pour faire référence à une autre ressource est appelée `IRI` (International Resource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/the_feed_api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veut pas créer un utilisateur lorsqu'on crée une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TP (mais il sera détaillé dans des notes complémentaires).
+9. La valeur à préciser pour faire référence à une autre ressource est appelée `IRI` (International Resource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/the_feed_api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veut pas créer un utilisateur lorsqu'on crée une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TD (mais il sera détaillé dans des notes complémentaires).
 
 10. Une fois le mécanisme des `IRI` compris, retentez de créer une publication en affectant un utilisateur.
 
@@ -752,7 +752,7 @@ class Groupe {
 
 Ici, sur l'opération `#[GetCollection]`, les détails du groupe imbriqués ne sont pas affichés, alors que dans l'opération `#[Get]`, les détails du groupe sont affichés.
 
-Il est important de définir les groupes sur les autres opérations d'écriture (POST/PATCH/PUT) si elles sont activées, car ces opérations renvoient aussi la ressource, à la fin du traitement. Il est tout à fait possible d'apppliquer un groupe global puis de définir des sous-groupes juste pour les opérations spéciales, qui divergent du comprotement global. Par exemple :
+Il est important de définir les groupes sur les autres opérations d'écriture (POST/PATCH/PUT) si elles sont activées, car ces opérations renvoient aussi la ressource, à la fin du traitement. Il est tout à fait possible d'appliquer un groupe global puis de définir des sous-groupes juste pour les opérations spéciales, qui divergent du comportement global. Par exemple :
 
 ```php
 //Toutes les opérations utilisent le groupe serialization:etudiant:read, sauf GET, qui a deux groupes activés
@@ -1031,9 +1031,9 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
    Modifiez aussi le fournisseur de sécurité
    ```diff
-    security:
-        firewalls:
-            main:
+   security:
+       firewalls:
+           main:
    -            provider: users_in_memory
    +            provider: app_user_provider
    ```
@@ -1044,30 +1044,30 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 5. Reprenez les contraintes que vous utilisiez dans la classe `InscrireUtilisateurType` du projet précédent pour les appliquer sur cette propriété (sous forme d'attributs) :
 
-    ```php
-    #[Assert\NotBlank]
-    #[Assert\Length(
-        min: 8,
-        max: 30,
-        minMessage: "Le mot de passe doit comporter au moins {{ limit }} caractères!",
-        maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères!"
-    )]
-    #[Assert\Regex(
-        pattern: "#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#",
-        message: "Le mot de passe doit comporter au moins 8 caractères, une lettre minuscule, une lettre majuscule et un chiffre"
-    )]
-    private ?string $plainPassword = null;
-    ```
+   ```php
+   #[Assert\NotBlank]
+   #[Assert\Length(
+       min: 8,
+       max: 30,
+       minMessage: "Le mot de passe doit comporter au moins {{ limit }} caractères!",
+       maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères!"
+   )]
+   #[Assert\Regex(
+       pattern: "#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#",
+       message: "Le mot de passe doit comporter au moins 8 caractères, une lettre minuscule, une lettre majuscule et un chiffre"
+   )]
+   private ?string $plainPassword = null;
+   ```
 
-6. Créez un **state processor** nommé `UtilisateurProcessor` qui devra hacher le mot de passe de l'utilisateur (`plainPassword`), puis l'affecter à `password`. Il faut ensuite utiliser passer `plainPassword` à **null** (via son setter) afin de supprimer les informations sensibles. Enfin, il faut reprendre le traitement normal d'API Platform pour sauvegarder l'entité en base. 
+6. Créez un **state processor** nommé `UtilisateurProcessor` qui devra hacher le mot de passe de l'utilisateur (`plainPassword`), puis l'affecter à `password`. Il faut ensuite passer `plainPassword` à **null** (via son setter) afin de supprimer les informations sensibles. Enfin, il faut reprendre le traitement normal d'API Platform pour sauvegarder l'entité en base. 
 
     * Vous pouvez réutiliser le bout de code (voir la méthode complète) définie dans la classe `UtilisateurManager` du projet précédent. Il vous faudra donc aussi injecter et utiliser le service `UserPasswordHasherInterface`.
 
     * `process` ne sait pas que `data` est de type `Utilisateur`. Pour pouvoir utiliser l'auto-complétion de votre IDE avec cette variable, vous pouvez ajouter la documentation suivante à l'intérieur de la fonction :
 
-    ```php
-    /** @var Utilisateur $data **/
-    ```
+   ```php
+   /** @var Utilisateur $data **/
+   ```
 
     * **Attention** : lorsque vous utilisez la commande `make:state-processor`, le type de retour de la fonction `process` est `void`. Changez plutôt cela en `mixed`.
 
@@ -1132,7 +1132,6 @@ Maintenant, nous faisons face à un autre problème : on voudrait que certaine
 Au niveau d'une propriété, il suffit de rajouter le `groupe` (dans l'attribut `#[Groups(...)]` que vous avez déjà utilisé pour la normalisation) pour lequel la propriété ne doit pas être ignoré. Par exemple : 
 
 ```php
-
 //Si 'entite:create' ou 'entite:update' sont des groupes de dénormalisation actifs, la propriété n'est pas ignorée
 #[Groups(['serialization:entite:read', 'serialization:entite:create', 'serialization:entite:update'])]
 private ?string $prop1 = null;
@@ -1159,7 +1158,7 @@ Comme pour `normalizationContext`, il est possible de définir les groupes globa
 
 <div class="exercise">
 
-1. En utilisant deux nouveaux groupes : `serialization:utilisateur:create` et `serialization:utilisateur:update`, faites en sorte que le **login** soit ignoré dans le cadre d'une requête `PATCH` s'il est envoyé dans le **payload** de la requête. Attention, il aussi faut préciser les groupes de **dénormalisation** des propriétés `plainPassword` et `adresseEmail` qui doivent pouvoir être utilisés lors de la création et la mise à jour de l'utilisateur, (là où `login` est seulement disponible lors de la création). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le créé ou le mette à jour de manière générale.
+1. En utilisant deux nouveaux groupes : `serialization:utilisateur:create` et `serialization:utilisateur:update`, faites en sorte que le **login** soit ignoré dans le cadre d'une requête `PATCH` s'il est envoyé dans le **payload** de la requête. Attention, il aussi faut préciser les groupes de **dénormalisation** des propriétés `plainPassword` et `adresseEmail` qui doivent pouvoir être utilisés lors de la création et la mise à jour de l'utilisateur, (là où `login` est seulement disponible lors de la création). L'identifiant est un cas à part, car il n'est pas possible que l'utilisateur le crée ou le mette à jour de manière générale.
 
 2. Videz le cache. Tentez de mettre à jour le login d'un utilisateur (avec `PATCH`). Vous devriez constater que le login n'a pas été mis à jour !
 
@@ -1226,27 +1225,27 @@ Attention, ici, on utilise le nom d'attribut `password` et pas `plainPassword`.
 
 1. Installez le package suivant (système d'authentification par JWT) :
 
-    ```bash
-    composer require "lexik/jwt-authentication-bundle"
-    ```
+   ```bash
+   composer require "lexik/jwt-authentication-bundle"
+   ```
 
 2. Comme nous l'avons vu, la création et la vérification de `JWT` nécessite une paire de clés (publique/privée). Utilisez la commande suivante pour générer ces clés :
 
-    ```bash
-    php bin/console lexik:jwt:generate-keypair
-    ```
+   ```bash
+   php bin/console lexik:jwt:generate-keypair
+   ```
 
     Elles sont placées dans le dossier `config/jwt`. Les fichiers de configuration se mettent à jour automatiquement (jetez un œil à `.env`, par exemple). Il faut aussi protéger ce dossier pour qu'on ne puisse pas récupérer vos clés (selon comment votre application est déployée). Globalement, nous allons interdire tout accès de dossier en dehors du dossier `public`. Pour cela, créez un fichier `.htaccess` à la racine de votre projet, avec le contenu suivant :
 
-    ```
-    Require all denied
-    ```
+   ```
+   Require all denied
+   ```
 
     Et ajoutez la ligne suivante au début du fichier `public/.htaccess` :
 
-    ```
-    Require all granted
-    ```
+   ```
+   Require all granted
+   ```
 
 3. Au niveau du fichier `config/routes/api_platform.yaml` ajoutez la route d'authentification.
 
@@ -1283,7 +1282,7 @@ Un attaquant pourrait par exemple envoyer des informations (par exemple, quand i
 
 Le danger vient donc du fait que n'importe quel script `javascript` puisse accéder et lire dans `localStorage`. Si le contenu du `JWT` n'est pas sensible en soi, le `JWT` en lui-même est utilisé pour vous identifier. Il faut donc absolument éviter de le stocker dans un endroit potentiellement vulnérable.
 
-Pour pallier ce problème, une alternative peut être choisie : utiliser des **cookies sécurisés**. Plus précisent des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stocker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
+Pour pallier ce problème, une alternative peut être choisie : utiliser des **cookies sécurisés**. Plus précisément, des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stocker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
 
 * **secure** : le cookie n'est envoyé que si la requête est chiffrée (**https**).
 * **httpOnly** : le cookie n'est pas accessible dans le **javascript**. Il sera envoyé automatiquement à chaque requête vers le serveur, mais à aucun moment un script pourra lire ses données. Cela élimine le risque de se le faire voler en cas d'attaque XSS.
@@ -1327,7 +1326,7 @@ Naturellement, le **cookie** stockant le token a la même date d'expiration que 
 
 1. Modifiez le fichier `config/packages/lexik_jwt_authentication.yaml` afin de changer la gestion du `JWT` dans la réponse de la requête d’authentification.
 
-2. Sur `Postman`, identifiez-vous de nouveau. Cette-fois, le corps de la réponse devrait être vide. Cliquez sur le bouton **Cookies** (sous le bouton **Send**). Vous devriez observer le `JWT` stocké sous le nom de `Bearer`.
+2. Sur `Postman`, identifiez-vous de nouveau. Cette fois, le corps de la réponse devrait être vide. Cliquez sur le bouton **Cookies** (sous le bouton **Send**). Vous devriez observer le `JWT` stocké sous le nom de `Bearer`.
 
 </div>
 
@@ -1408,11 +1407,11 @@ Plus tôt, nous avions évoqué le **système de rafraîchissement** pour permet
 
 * Les JWT émis par l'application suite à l'authentification ont une faible durée de vie (3600 secondes par défaut). C'est une bonne chose que ce `JWT` d’authentification qui est transmis dans **beaucoup de requêtes** ne soit valide que sur une courte durée. Ainsi, on limite les risques en cas de vol ou autre. Cependant, en l'état, cela n'est pas très pratique, car cela voudrait dire que l'utilisateur est déconnecté de force dès que le token expire (et doit donc se reconnecter après 3600 secondes).
 
-* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraîchissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, un mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appelle à une route spéciale permettant de rafraîchir notre JWT, en transmettant le token de rafraîchissement. Un nouveau JWT est transmis et la durée de vie du token de rafraîchissement est soit réinitialisé (durée de vie remise au maximum), ou alors, un nouveau token de rafraîchissement est émis (plus sécurisé). 
+* Pour ne pas avoir à demander à l'utilisateur de se reconnecter dès que son JWT expire, lors de l'authentification, on transmet un **token de rafraîchissement** (en plus du JWT). Ce token a une durée de vie bien plus longue (par exemple, un mois) et est stocké en base. Dès que l'application cliente détecte que le JWT de l'utilisateur a expiré, elle fait appel à une route spéciale permettant de rafraîchir notre JWT, en transmettant le token de rafraîchissement. Un nouveau JWT est transmis et la durée de vie du token de rafraîchissement est soit réinitialisé (durée de vie remise au maximum), ou alors, un nouveau token de rafraîchissement est émis (plus sécurisé). 
 
 La route de rafraîchissement peut aussi être utilisée à chaque ouverture de l'application afin d'obtenir un nouveau `JWT`.
 
-Contrairement au JWT d'authentification, le token de rafraîchissement peut être gardé de manière plus sécurisée et n'a pas besoin d'être transmis à chaque requête. Si un client n'est pas actif pendant une longue période (par exemple, une semaine) son JWT d'authentification (avec une courte durée de vie) aura expiré, mais il ne sera pas "déconnecté" pour autant, car si **token de rafraîchissement** n'aura pas expiré. En fait, quand il retournera sur l'application, son JWT d'authentification sera renouvelé grâce au token de rafraîchissement. Cependant, au bout d'une trop longue période d'inactivité (par exemple, plusieurs mois) l'utilisateur sera naturellement "déconnecté" à cause de l'expiration de son token de rafraîchissement.
+Contrairement au JWT d'authentification, le token de rafraîchissement peut être gardé de manière plus sécurisée et n'a pas besoin d'être transmis à chaque requête. Si un client n'est pas actif pendant une longue période (par exemple, une semaine) son JWT d'authentification (avec une courte durée de vie) aura expiré, mais il ne sera pas "déconnecté" pour autant, car son **token de rafraîchissement** n'aura pas expiré. En fait, quand il retournera sur l'application, son JWT d'authentification sera renouvelé grâce au token de rafraîchissement. Cependant, au bout d'une trop longue période d'inactivité (par exemple, plusieurs mois) l'utilisateur sera naturellement "déconnecté" à cause de l'expiration de son token de rafraîchissement.
 
 Lorsque le token de rafraichissement est utilisé, on peut prolonger sa durée de vie ou bien en générer un nouveau (plus sécurisé).
 
@@ -1483,11 +1482,11 @@ gesdinet_jwt_refresh_token:
     # Pour que le token soit invalidé et supprimé après rafraîchissement, et qu'un nouveau soit fourni
     single_use: true
 
-    # Cette option permet de hacher les tokens en base (un peu comem les mot de passe). Ainsi, en cas de fuite de la base de données, les tokens ne seront pas compromis et ne pourront pas être utilisés pour obtenir des JWT d'authentification en usurpant l'identité d'un utilisateur.
+    # Cette option permet de hacher les tokens en base (un peu comme les mots de passe). Ainsi, en cas de fuite de la base de données, les tokens ne seront pas compromis et ne pourront pas être utilisés pour obtenir des JWT d'authentification en usurpant l'identité d'un utilisateur.
     hash_tokens:
         enabled: true
 
-    # Cette option permet de limiter le nombre de tokens de rafraîchissement actifs pour un utilisateur. Par exemple, pour limiter le nombre d'appareils depuis lesquels il effectue une connexion. Si l'utilisateur tente de se connecter alors qu'il a déjà atteint la limite, le token le plus ancien est remplacé. Par défaut, si cette option n'est pas activé, le nombre de tokens est illimité (ce qui peut être souhaitable dans certains contextes, mais dans ce cas il faut combiner cela avec un système de rate limiting pour éviter qu'un utilisateur malveillant créé des tokens en boucle). 
+    # Cette option permet de limiter le nombre de tokens de rafraîchissement actifs pour un utilisateur. Par exemple, pour limiter le nombre d'appareils depuis lesquels il effectue une connexion. Si l'utilisateur tente de se connecter alors qu'il a déjà atteint la limite, le token le plus ancien est remplacé. Par défaut, si cette option n'est pas activée, le nombre de tokens est illimité (ce qui peut être souhaitable dans certains contextes, mais dans ce cas il faut combiner cela avec un système de rate limiting pour éviter qu'un utilisateur malveillant crée des tokens en boucle). 
     max_tokens_per_user: 5
     
     # Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de le renvoyer dans le corps de la réponse.
@@ -1514,9 +1513,9 @@ Maintenant, à vous de jouer !
 
 1. Installez le bundle `JWTRefreshTokenBundle` :
 
-    ```bash
-    composer require gesdinet/jwt-refresh-token-bundle
-    ```
+   ```bash
+   composer require gesdinet/jwt-refresh-token-bundle
+   ```
 
     Quand on vous pose la question relative à l'utilisation d'une `recipe` répondez **yes**. Le mécanisme des `recipes` permet de configurer automatiquement certains aspects de l'application quand on ajoute une nouvelle librairie, un bundle... Par exemple, en créant de nouveaux fichiers ou en complétant certains fichiers de configuration. Cela est défini par le développeur du module installé.
 
@@ -1542,7 +1541,7 @@ Si toutefois on a vraiment besoin de donner certaines informations du JWT au cli
 
 ### Suppression du cookie et invalidation du token (déconnexion)
 
-Nous avons mis en place un système d'authentification grâce aux **JWT** et nous pouvons maintenant "connecter" un utilisateur en utilisant la route `/api/auth` et également obtenir un **token de rafraichissement** permettant de renouveler notre **JWT** grâce à la route `/api/token/refresh`. Cependant, il reste un problème à régler : comment "déconnecte" t-on un utilisateur quand on utilise ces tokens.
+Nous avons mis en place un système d'authentification grâce aux **JWT** et nous pouvons maintenant "connecter" un utilisateur en utilisant la route `/api/auth` et également obtenir un **token de rafraichissement** permettant de renouveler notre **JWT** grâce à la route `/api/token/refresh`. Cependant, il reste un problème à régler : comment "déconnecte"-t-on un utilisateur quand on utilise ces tokens.
 
 Ici, le terme de "déconnexion" (comme le terme de "connexion") est un abus de langage. On ne connecte pas vraiment l'utilisateur : on lui délivre des **tokens** qui lui permettront de s'authentifier à chaque requête. Il n'y a pas de système de session qui débute ou est terminée comme dans un site web classique. La question est donc de savoir comment faire pour que l'utilisateur puisse décider d'invalider son **JWT d'authentification** et son **token de rafraichissement avant la durée d'expiration prévue** et aussi comment faire en sorte que le **client** (navigateur ou autre) n'utilise plus ces tokens invalides.
 
@@ -1801,7 +1800,7 @@ Dans cet exemple :
 
 Attention, dans cet exemple, il faut que `$desactive` ait une valeur par défaut ou puisse être null en base de données, car un journaliste non-administrateur ne pourra pas l'écrire dans le payload d'une requête `POST`.
 
-Ici aussi, bien que pratique, cette fonctionnalité est limité, car elle ne permet pas de différencier l'opération (au niveau de la propriété). Pour gérer des conditions plus complexes, on préférera utiliser diverses techniques comme :
+Ici aussi, bien que pratique, cette fonctionnalité est limitée, car elle ne permet pas de différencier l'opération (au niveau de la propriété). Pour gérer des conditions plus complexes, on préférera utiliser diverses techniques comme :
 
 * [Ajouter dynamiquement un groupe de sérialisation](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-dynamically) selon les permissions de l'utilisateur connecté.
 * Utiliser une classe pour [calculer dynamiquement les groupes de sérialisation activés](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony)
@@ -1896,7 +1895,7 @@ class ExempleGroupGenerator implements ValidationGroupsGeneratorInterface
             $groups[] = "...";
         }
         //On retourne un tableau avec le groupe "Default" et le (ou les) groupe(s) ajoutés
-        return $group;
+        return $groups;
     }
 }
 ```
@@ -1986,7 +1985,7 @@ Cela est notamment pertinent quand ce qui est demandé ou rendu par l'API diffè
 
 Historiquement, mettre en place des DTO avec API Platform était assez fastidieux, car il fallait obligatoirement créer un **processor** ou un **provider** pour "mapper" les données de l'objet DTO vers l'entité ou inversement. Cependant, depuis la version 7 de Symfony, un composant nommé [Object Mapper](https://symfony.com/doc/current/object_mapper.html) permet de considérablement automatiser ce travail et se passer (en partie) des processors et providers pour la plupart des opéations. La [documentation officielle d'API Platform](https://api-platform.com/docs/core/dto/) pousse d'ailleurs de plus en plus vers l'utilisation systématique d'une ressource externe rattachée à l'entité et d'un DTO pour chaque opération.
 
-Cependant, bien que prometteur, ce système n'est pas encore stable. Quelques bugs et anomalies demeurent, qui devraient être réglées dans les prochaines version de Symfony (future 8.4, puis probablement les versions 9.x) et d'API Platform. Utiliser ce système demande aussi de mettre en place plus de code et plus de classes, ce qui peut être fastidieux en début de projet (mais fait gagner du temps sur le long terme).
+Cependant, bien que prometteur, ce système n'est pas encore stable. Quelques bugs et anomalies demeurent, qui devraient être réglées dans les prochaines versions de Symfony (future 8.4, puis probablement les versions 9.x) et d'API Platform. Utiliser ce système demande aussi de mettre en place plus de code et plus de classes, ce qui peut être fastidieux en début de projet (mais fait gagner du temps sur le long terme).
 
 Dans le cadre de cette section, nous vous proposons une approche hybride : nous allons utiliser des DTOs pour les opérations `POST` et `PATCH` de l'utilisateur.
 
@@ -2060,7 +2059,7 @@ class Etudiant
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
-    #[ORM\Colum]
+    #[ORM\Column]
     private ?int $age = null;
 
     //...Getters et setters habituels
@@ -2075,7 +2074,7 @@ class Etudiant
 
 Et le tour est joué ! Pas de processor à écrire, et plus aucune contraintes de validation du côté de l'entité.
 
-Il est aussi possible de nommer les propriétés du `DTO` autrement et d'indiquer ensuite vers quelels propriétés celles-ci sont mappées :
+Il est aussi possible de nommer les propriétés du `DTO` autrement et d'indiquer ensuite vers quelles propriétés celles-ci sont mappées :
 
 ```php
 <?php
@@ -2163,13 +2162,13 @@ class CreateEtudiant
 
 Il existe aussi un paramètre `if` pour conditionner le mapping d'une propriété.
 
-Quand on souahite avoir un `DTO` pour les opérations de lecture, le processus est similaire, mais on utilise alors :
+Quand on souhaite avoir un `DTO` pour les opérations de lecture, le processus est similaire, mais on utilise alors :
 * `source` à la place de `target` dans les attributs `#[Map]` du `DTO` (pour celle au-dessus de la classe et celles qui se trouvent éventuellement sur les propriétés).
 * `output` dans l'attribut qui correspond à l'opération (ou sur `#[ApiRessource]`, si on veut que cela soit fait globalement). À noter qu'il faut aussi le préciser sur les opérations d'écriture (type `POST`, `PATCH` et `PUT`), car ces opérations retournent un résultat.
 
 Vous pourrez retrouver plus d'informations sur [la documentation officielle du composant](https://symfony.com/doc/current/object_mapper.html).
 
-Nous vous proposons donc maintenant de mettre en place deux DTOs : un pour l'écriture d'un utilisateur, l'autre pour la mise à jour. Pour al mise à jour, il faudra tout de même écriture un petit processeur (autrement, un bug peut survenir, dû au fait que ce composant et son intégration dans API Platform soit encore récent, comme expliqué plus tôt).
+Nous vous proposons donc maintenant de mettre en place deux DTOs : un pour l'écriture d'un utilisateur, l'autre pour la mise à jour. Pour la mise à jour, il faudra tout de même écrire un petit processeur (autrement, un bug peut survenir, dû au fait que ce composant et son intégration dans API Platform soit encore récent, comme expliqué plus tôt).
 
 Comme il va y avoir beaucoup de changements dans la classe `Utilisateur`, il est conseillé de sauvegarder la version de cette classe quelque part, si vous souhaitez garder une trace de ce que vous aviez fait jusqu'ici.
 
@@ -2178,85 +2177,85 @@ Comme il va y avoir beaucoup de changements dans la classe `Utilisateur`, il est
 1. Dans la classe `Utilisateur` :
     * Supprimez les propriétés `plainPassword` et `currentPlainPassword` et les getters/setters associés.
     * Supprimez toutes les attributs de validation `#[Assert\...]`.
-    * Dans les opérations `POST` et `PATCH`, retirez les paramètres `processor`, `denormalizationContext` et `validation_context`.
-    * Retirez les groupes `serialization:utilisateur:write` et `serialization:utilisateur:update` des propriétés de la classe.
+    * Dans les opérations `POST` et `PATCH`, retirez les paramètres `processor`, `denormalizationContext` et `validationContext`.
+    * Retirez les groupes `serialization:utilisateur:create` et `serialization:utilisateur:update` des propriétés de la classe.
     * Ajoutez un setter `setId`.
 
 2. Créez la classe `CreateUtilisateur` suivant, dans un nouveau dossier `src/Dto/Utilisateur` :
 
-    ```php
-    <?php
+   ```php
+   <?php
 
-    namespace App\Dto\Utilisateur;
+   namespace App\Dto\Utilisateur;
 
-    use App\Entity\Utilisateur;
-    use App\ObjectMapper\TransformPlainPasswordToHashedPassword;
-    use Symfony\Component\ObjectMapper\Attribute\Map;
-    use Symfony\Component\Validator\Constraints as Assert;
+   use App\Entity\Utilisateur;
+   use App\ObjectMapper\TransformPlainPasswordToHashedPassword;
+   use Symfony\Component\ObjectMapper\Attribute\Map;
+   use Symfony\Component\Validator\Constraints as Assert;
 
-    class CreateUtilisateur
-    {
-        #[Assert\NotBlank]
-        #[Assert\Length(
-            min: 4,
-            max: 20,
-            minMessage: "Le login doit comporter au moins {{ limit }} caractères!",
-            maxMessage: "Le login ne peut pas dépasser {{ limit }} caractères!")
-        ]
-        public string $login;
+   class CreateUtilisateur
+   {
+       #[Assert\NotBlank]
+       #[Assert\Length(
+           min: 4,
+           max: 20,
+           minMessage: "Le login doit comporter au moins {{ limit }} caractères!",
+           maxMessage: "Le login ne peut pas dépasser {{ limit }} caractères!")
+       ]
+       public string $login;
 
-        #[Assert\NotBlank]
-        #[Assert\Email(message: "L'adresse email n'est pas valide!")]
-        public string $adresseEmail;
+       #[Assert\NotBlank]
+       #[Assert\Email(message: "L'adresse email n'est pas valide!")]
+       public string $adresseEmail;
 
-        #[Assert\NotBlank]
-        #[Assert\Length(
-            min: 8,
-            max: 30,
-            minMessage: "Le mot de passe doit comporter au moins {{ limit }} caractères!",
-            maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères!"
-        )]
-        #[Assert\Regex(
-            pattern: "#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#",
-            message: "Le mot de passe doit comporter au moins 8 caractères, une lettre minuscule, une lettre majuscule et un chiffre"
-        )]
-        public string $plainPassword;
-    }
-    ```
+       #[Assert\NotBlank]
+       #[Assert\Length(
+           min: 8,
+           max: 30,
+           minMessage: "Le mot de passe doit comporter au moins {{ limit }} caractères!",
+           maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères!"
+       )]
+       #[Assert\Regex(
+           pattern: "#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#",
+           message: "Le mot de passe doit comporter au moins 8 caractères, une lettre minuscule, une lettre majuscule et un chiffre"
+       )]
+       public string $plainPassword;
+   }
+   ```
 
 3. Créez et complétez la classe `TransformPlainPasswordToHashedPassword` suivante dans un nouveau dossier `src/ObjectMapper` :
 
-    ```php
-    <?php
+   ```php
+   <?php
 
-    namespace App\ObjectMapper;
+   namespace App\ObjectMapper;
 
-    use App\Entity\Utilisateur;
-    use Symfony\Component\ObjectMapper\TransformCallableInterface;
+   use App\Entity\Utilisateur;
+   use Symfony\Component\ObjectMapper\TransformCallableInterface;
 
-    class TransformPlainPasswordToHashedPassword implements TransformCallableInterface
-    {
+   class TransformPlainPasswordToHashedPassword implements TransformCallableInterface
+   {
 
-        public function __construct(
-            //Injection du service pour hacher les mots de passe
-        )
-        {
-        }
+       public function __construct(
+           //Injection du service pour hacher les mots de passe
+       )
+       {
+       }
 
-        public function __invoke(mixed $value, object $source, ?object $target): mixed
-        {
-            /* 
-            On se sert du service pour hacher le mot de passe.
-            Pour rappel : 
-            $value : le mot de passe en clair.
-            $target : l'entité Utilisateur vers qui on mappe le mot de passe.
-            On retourne le mot de passe haché.
-            */
-            /** @var Utilisateur $target **/
-            return ...;
-        }
-    }
-    ```
+       public function __invoke(mixed $value, object $source, ?object $target): mixed
+       {
+           /* 
+           On se sert du service pour hacher le mot de passe.
+           Pour rappel : 
+           $value : le mot de passe en clair.
+           $target : l'entité Utilisateur vers qui on mappe le mot de passe.
+           On retourne le mot de passe haché.
+           */
+           /** @var Utilisateur $target **/
+           return ...;
+       }
+   }
+   ```
 
 4. Dans `CreateUtilisateur`, servez-vous de l'attribut `#[Map]` afin de :
     * Déclarer que le DTO sera mappé dans la classe `Utilisateur::class`.
@@ -2273,38 +2272,38 @@ Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, i
 
 1. Créez la classe `UpdateUtilisateur` dans `src/Dto/Utilisateur` :
 
-    ```php
-    <?php
+   ```php
+   <?php
 
-    namespace App\Dto\Utilisateur;
+   namespace App\Dto\Utilisateur;
 
-    use App\ObjectMapper\TransformPlainPasswordToHashedPassword;
-    use Symfony\Component\ObjectMapper\Attribute\Map;
-    use Symfony\Component\Security\Core\Validator\Constraints\UserPassword;
-    use Symfony\Component\Validator\Constraints as Assert;
-    class UpdateUtilisateur
-    {
-        #[Assert\Email(message: "L'adresse email n'est pas valide!")]
-        public string $adresseEmail;
+   use App\ObjectMapper\TransformPlainPasswordToHashedPassword;
+   use Symfony\Component\ObjectMapper\Attribute\Map;
+   use Symfony\Component\Security\Core\Validator\Constraints\UserPassword;
+   use Symfony\Component\Validator\Constraints as Assert;
+   class UpdateUtilisateur
+   {
+       #[Assert\Email(message: "L'adresse email n'est pas valide!")]
+       public string $adresseEmail;
 
-        #[Assert\Length(
-            min: 8,
-            max: 30,
-            minMessage: "Le mot de passe doit comporter au moins {{ limit }} caractères!",
-            maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères!"
-        )]
-        #[Assert\Regex(
-            pattern: "#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#",
-            message: "Le mot de passe doit comporter au moins 8 caractères, une lettre minuscule, une lettre majuscule et un chiffre"
-        )]
-        #[Map(target: 'password', transform: TransformPlainPasswordToHashedPassword::class)]
-        public string $newPassword;
+       #[Assert\Length(
+           min: 8,
+           max: 30,
+           minMessage: "Le mot de passe doit comporter au moins {{ limit }} caractères!",
+           maxMessage: "Le mot de passe ne peut pas dépasser {{ limit }} caractères!"
+       )]
+       #[Assert\Regex(
+           pattern: "#^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\w\W]{8,30}$#",
+           message: "Le mot de passe doit comporter au moins 8 caractères, une lettre minuscule, une lettre majuscule et un chiffre"
+       )]
+       #[Map(target: 'password', transform: TransformPlainPasswordToHashedPassword::class)]
+       public string $newPassword;
 
-        #[Assert\NotBlank]
-        #[UserPassword]
-        public string $currentPassword;
-    }
-    ```
+       #[Assert\NotBlank]
+       #[UserPassword]
+       public string $currentPassword;
+   }
+   ```
 
     On notera qu'il n'y a pas besoin de préciser `#[NotBlank]` sur l'adresse email et le nouveau mot de passe : ils peuvent ne pas être transmis (par contre, on veut que le mot de passe de l'utilisateur courant soit transmis).
 
@@ -2314,43 +2313,43 @@ Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, i
 
 3. Créez le processeur `UtilisateurUpdateProcessor` dans `src/State` :
 
-    ```php
-    <?php
+   ```php
+   <?php
 
-    namespace App\State;
+   namespace App\State;
 
-    use ApiPlatform\Metadata\Operation;
-    use ApiPlatform\State\ProcessorInterface;
-    use ApiPlatform\Validator\ValidatorInterface;
-    use Symfony\Component\DependencyInjection\Attribute\Autowire;
-    use Symfony\Component\ObjectMapper\ObjectMapperInterface;
+   use ApiPlatform\Metadata\Operation;
+   use ApiPlatform\State\ProcessorInterface;
+   use ApiPlatform\Validator\ValidatorInterface;
+   use Symfony\Component\DependencyInjection\Attribute\Autowire;
+   use Symfony\Component\ObjectMapper\ObjectMapperInterface;
 
-    class UtilisateurUpdateProcessor implements ProcessorInterface
-    {
-        public function __construct(
-            #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
-            private ProcessorInterface $persistProcessor,
-            private ObjectMapperInterface $objectMapper,
-            private ValidatorInterface $validator,
-        )
-        {}
+   class UtilisateurUpdateProcessor implements ProcessorInterface
+   {
+       public function __construct(
+           #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
+           private ProcessorInterface $persistProcessor,
+           private ObjectMapperInterface $objectMapper,
+           private ValidatorInterface $validator,
+       )
+       {}
 
-        public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
-        {
-            //Cette ligne permet de récupérer l'objet utilisateur stocké en BD (avant modification, donc).
-            $utilisateur = $context['request']->attributes->get('read_data');
+       public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
+       {
+           //Cette ligne permet de récupérer l'objet utilisateur stocké en BD (avant modification, donc).
+           $utilisateur = $context['request']->attributes->get('read_data');
 
-            //On mappe "$data" qui est notre DTO de type UpdateUtilisateur, dans l'objet $utilisateur récupéré. C'est à ce moment-là que newPassword est transformé en password.
-            $utilisateur = $this->objectMapper->map($data, $utilisateur);
+           //On mappe "$data" qui est notre DTO de type UpdateUtilisateur, dans l'objet $utilisateur récupéré. C'est à ce moment-là que newPassword est transformé en password.
+           $utilisateur = $this->objectMapper->map($data, $utilisateur);
 
-            //On valide l'utilisateur final, après modification (permet de vérifier les contraintes UniqueEntity placées sur l'utilisateur : s'il n'y en a pas, on peut sauter cette étape, car le DTO valide déjà ses propriétés).
-            $this->validator->validate($utilisateur);
+           //On valide l'utilisateur final, après modification (permet de vérifier les contraintes UniqueEntity placées sur l'utilisateur : s'il n'y en a pas, on peut sauter cette étape, car le DTO valide déjà ses propriétés).
+           $this->validator->validate($utilisateur);
 
-            //On sauvegarde les modifications et on retourne l'utilisateur
-            return $this->persistProcessor->process($utilisateur, $operation, $uriVariables, $context);
-        }
-    }
-    ```
+           //On sauvegarde les modifications et on retourne l'utilisateur
+           return $this->persistProcessor->process($utilisateur, $operation, $uriVariables, $context);
+       }
+   }
+   ```
 
 4. Dans votre `UtilisateurVoter`, si vous vérifiez la permission `UTILISATEUR_EDIT` ainsi : `$user == $subject` cela ne fonctionnera plus. en effet, quand on utilise un DTO, l'objet récupéré (`$subject`) ne passe plus ce test. À la place, il faut comparer la valeur de l'id : `$user->getId() == $subject->getId()` (c'est d'ailleurs généralement une meilleure pratique).
 
