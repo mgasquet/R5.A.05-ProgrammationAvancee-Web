@@ -782,8 +782,6 @@ Si vous avez bien compris ce mécanisme, à vous de jouer !
 
 </div>
 
-Nous avons défini `normalizationContext` de manière globale (pour toutes les opérations de la ressource) mais il est aussi possible de le définir pour une opération précise (dans les paramètres de `new Get()`, `new Post()`, etc...)
-
 ### Publications d'un utilisateur
 
 Comme nous l'avons vu en introduction de ce TD, avec l'architecture `REST`, il doit être possible d'accéder à la liste des publications d'un utilisateur précis en utilisant cette route :
