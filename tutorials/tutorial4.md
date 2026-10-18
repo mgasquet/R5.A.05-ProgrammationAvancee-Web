@@ -1555,21 +1555,21 @@ Nous avons mis en place un système d'authentification grâce aux **JWT** et nou
 
 Ici, le terme de "déconnexion" (comme le terme de "connexion") est un abus de langage. On ne connecte pas vraiment l'utilisateur : on lui délivre des **tokens** qui lui permettront de s'authentifier à chaque requête. Il n'y a pas de système de session qui débute ou est terminée comme dans un site web classique. La question est donc de savoir comment faire pour que l'utilisateur puisse décider d'invalider son **JWT d'authentification** et son **token de rafraichissement avant la durée d'expiration prévue** et aussi comment faire en sorte que le **client** (navigateur ou autre) n'utilise plus ces tokens invalides.
 
-On a donc deux étapes à gérer : **l'invalidation des tokens** (pour qu'il devienne inutilisable) et la suppression de ces derniers côté client, dans l'espace dans lequel ils sont stockés.
+On a donc deux étapes à gérer : **l'invalidation des tokens** (pour qu'ils deviennent inutilisables) et la suppression de ces derniers côté client, dans l'espace dans lequel ils sont stockés.
 
 Pour la **première étape** :
 
 * Concernant le **JWT d'authentification**, on peut utiliser un système de **liste de blocage** gérée en mémoire grâce au bundle `LexikJWTAuthenticationBundle`. Quand on décide **d'invalider le JWT**, il est alors répertorié dans un cache. Le token est supprimé de la liste quand il arrive à expiration. Ainsi, même si une requête est envoyée avec un `JWT` valide (signature correcte, non expiré), s'il est présent dans la liste de blocage, la requête échouera. Cela renforce également la sécurité globale de l'application : si le `JWT` est volé, si l'utilisateur décide de l'invalider (en se "déconnectant") alors le voleur ne pourra plus utiliser ce token.
 
-Les données **mises en cache** n'ont généralement pas pour vocation d'êtres gardée pendant une longue durée (plusieurs jours, plusieurs mois, etc). C'est parfait, car nos `JWT` ont une durée de vie courte ! (généralement une heure). Ces tokens seront automatiquement détruits (et donc retiré de la liste de blocage) lors de leur expiration.
+  Les données **mises en cache** n'ont généralement pas pour vocation d'êtres gardée pendant une longue durée (plusieurs jours, plusieurs mois, etc). C'est parfait, car nos `JWT` ont une durée de vie courte ! (généralement une heure). Ces tokens seront automatiquement détruits (et donc retiré de la liste de blocage) lors de leur expiration.
 
 * Concernant le **token de rafraichissement**, un système d'invalidation est prévu par le bundle `JWTRefreshTokenBundle`. On n'utilise donc pas de liste de blocage avec cache (comme pour les **JWT** d'authentification) : le système d'invalidation et de blocage est directement géré grâce aux données stockées dans la base. Les tokens de rafraîchissement seront automatiquement détruits et retirés de la base de données lors de l'invalidation.
 
-On a aussi accès à cette commande qui permet de révoquer un token précis (par exemple, si le compte de l'utilisateur est compromis) :
-
-```bash
-php bin/console gesdinet:jwt:revoke TOKEN
-```
+  On a aussi accès à cette commande qui permet de révoquer un token précis (par exemple, si le compte de l'utilisateur est compromis) :
+  
+  ```bash
+  php bin/console gesdinet:jwt:revoke TOKEN
+  ```
 
 Dans tous les cas, il faut que la demande d'invalidation du token soit faite par le client auprès du serveur, via une **route**, par exemple.
 
@@ -1667,7 +1667,7 @@ Bref, le choix de la méthode à privilégier dépend du contexte de votre proje
 
 * Si l'API n'est **pas sur le même nom domaine que le client** (et que **plusieurs clients web** et éventuellement autres doivent utiliser l'API) : il faut plutôt choisir de renvoyer les tokens dans le corps de la réponse, le stocker, et, pour les sites web qui utilisent l'API, faire particulièrement attention à sécuriser le site contre les attaques `XSS`.
 
-* On pourrait aussi éventuellement envisager d'avoir **les deux options en même temps** : lors de l'authentification, des cookies sont créés et les `JWTs` sont renvoyés dans le corps de la requête. Comme ça, on s'adapte en fonction du client. Les différents composants que nous venons de voir proposent de faire cela en activant une option pour conserver le `JWT` dans le corps de la réponse, même si les cookies sont utilisés :
+* On pourrait aussi éventuellement envisager d'avoir **les deux options en même temps** : lors de l'authentification, des cookies sont créés et les `JWTs` sont renvoyés dans le corps de la réponse. Comme ça, on s'adapte en fonction du client. Les différents composants que nous venons de voir proposent de faire cela en activant une option pour conserver le `JWT` dans le corps de la réponse, même si les cookies sont utilisés :
 
 ```yaml
 # config/packages/lexik_jwt_authentication.yaml
@@ -1817,8 +1817,8 @@ Attention, dans cet exemple, il faut que `$desactive` ait une valeur par défaut
 Ici aussi, bien que pratique, cette fonctionnalité est limitée, car elle ne permet pas de différencier l'opération (au niveau de la propriété). Pour gérer des conditions plus complexes, on préférera utiliser diverses techniques comme :
 
 * [Ajouter dynamiquement un groupe de sérialisation](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-dynamically) selon les permissions de l'utilisateur connecté.
-* Utiliser une classe pour [calculer dynamiquement les groupes de sérialisation activés](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony)
-* Utiliser une classe pour [calculer dynamiquement les groupes de validation activés](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony)
+* Utiliser une classe pour [calculer dynamiquement les groupes de sérialisation activés](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony).
+* Utiliser une classe pour [calculer dynamiquement les groupes de validation activés](https://api-platform.com/docs/core/serialization/#changing-the-serialization-context-on-a-per-item-basis-for-symfony).
 
 Nous aurons l'occasion de voir certains de ces mécanismes dans la section bonus du TD.
 
