@@ -1,0 +1,21 @@
+---
+config:
+  fontFamily: "arial, sans-serif"
+  themeVariables:
+    fontFamily: "arial, sans-serif"
+  sequence:
+    width: 180
+---
+sequenceDiagram
+    participant N as Navigateur d'Alice
+    participant M as site-malveillant.com
+    participant A as API<br/>monsite.fr/api
+    Note over N: Alice est connectée :<br/>cookie BEARER du site monsite.fr
+    N->>M: GET / (Alice clique sur un lien piégé)
+    M-->>N: page contenant un formulaire caché
+    N->>A: POST /api/publications<br/>(déclenché par la page de site-malveillant.com)
+    alt SameSite=None
+        Note over N,A: cookie joint : l'API exécute l'action au nom d'Alice
+    else SameSite=Lax ou Strict
+        Note over N,A: cookie absent : l'API répond 401
+    end

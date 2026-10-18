@@ -1,0 +1,18 @@
+---
+config:
+  fontFamily: "arial, sans-serif"
+  themeVariables:
+    fontFamily: "arial, sans-serif"
+  sequence:
+    width: 180
+---
+sequenceDiagram
+    participant N as Navigateur d'Alice<br/>(page https://monsite.fr)
+    participant A as API<br/>monsite.fr/api
+    participant M as site-malveillant.com
+    Note over N: cookie BEARER :<br/>HttpOnly, Secure, SameSite=Lax
+    N->>A: GET /api/utilisateurs/7 (profil de Mallory)
+    A-->>N: biographie piégée
+    Note over N: le script injecté s'exécute sur monsite.fr
+    N->>A: POST /api/publications (déclenché par le script)<br/>Cookie: BEARER=... (même site : cookie joint)
+    A-->>N: 201 : publication créée au nom d'Alice

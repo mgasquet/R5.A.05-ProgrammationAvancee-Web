@@ -1,0 +1,21 @@
+---
+config:
+  fontFamily: "arial, sans-serif"
+  themeVariables:
+    fontFamily: "arial, sans-serif"
+  htmlLabels: false
+  flowchart:
+    htmlLabels: false
+    wrappingWidth: 400
+---
+flowchart TB
+    subgraph S2 ["Site différent"]
+        M["Site de Mallory<br/>https://site-malveillant.com"]
+    end
+    subgraph S1 ["Site monsite.fr (une seule origine : https://monsite.fr)"]
+        direction LR
+        C["Client web Vue.js<br/>https://monsite.fr"]
+        A["API<br/>https://monsite.fr/api"]
+        C -- "requêtes même site,<br/>même origine" --> A
+    end
+    M -. "requêtes cross-site" .-> A

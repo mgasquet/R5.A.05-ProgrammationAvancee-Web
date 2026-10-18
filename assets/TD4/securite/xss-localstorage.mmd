@@ -1,0 +1,22 @@
+---
+config:
+  fontFamily: "arial, sans-serif"
+  themeVariables:
+    fontFamily: "arial, sans-serif"
+  sequence:
+    width: 180
+---
+sequenceDiagram
+    actor Mal as Mallory
+    participant N as Navigateur d'Alice<br/>(page https://monsite.fr)
+    participant A as API<br/>monsite.fr/api
+    participant M as site-malveillant.com
+    Mal->>A: PATCH /api/utilisateurs/7<br/>biographie piégée (img + onerror)
+    Note over N: Alice est connectée :<br/>JWT dans le localStorage de monsite.fr
+    N->>A: GET /api/utilisateurs/7 (profil de Mallory)
+    A-->>N: biographie piégée
+    Note over N: affichage sans échappement :<br/>le script s'exécute sur l'origine monsite.fr
+    N->>M: GET /vol?jwt=eyJ... (JWT lu dans le localStorage)
+    Note over Mal,M: plus tard, depuis la machine de Mallory
+    Mal->>A: requête avec Postman<br/>Authorization: Bearer eyJ...
+    A-->>Mal: 200 : Mallory est authentifié comme Alice

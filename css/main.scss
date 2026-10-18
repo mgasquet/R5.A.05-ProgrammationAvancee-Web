@@ -150,6 +150,11 @@ ul.menu {
     margin: 0 auto;
 }
 
+/* Schémas SVG incorporés avec <object> */
+object[type="image/svg+xml"] {
+    max-width: 100%;
+}
+
 /* Tables */
 table {
     border-collapse: collapse
