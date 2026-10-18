@@ -617,6 +617,87 @@ class Groupe {
 }
 ```
 
+Si ce n'est pas encore clair, ce que nous faisons ici, c'est dire à quel groupe appartient telle ou telle propriété. Lorsque l'API traite une requête (en GET, en POST, etc...) elle n'activera pas les mêmes groupes, selon le contexte. Ces groupes définissent les propriétés qui sont renvoyées dans le JSON lors de requêtes de lecture (type GET) et à l'inverse ce qui est traité (ou ignoré, si le groupe ne correspond pas) dans le **payload** lors d'une requête d'écriture (POST, PUT, PATCH...).
+
+Bref, les groupes activés dans `normalizationContext` traversent les entités ! Il est aussi possible de définir plusieurs groupes (affichant plus ou moins de propriétés selon le contexte). On peut même créer une classe et une méthode permettant de coder un algorithme pour savoir quels groupes sont activés (par exemple, pour afficher plus d'informations à un utilisateur connecté...).
+
+Il faut éviter dans se retrouver dans une situation de "cycle" (par exemple, un étudiant donne aussi les infos de son groupe, qui donne les infos sur ses étudiants, qui donne les infos de leur groupe, etc...).
+
+Si vous avez bien compris ce mécanisme, à vous de jouer !
+
+<div class="exercise">
+
+1. En utilisant les groupes de sérialisation, faites en sorte que quand on lit une publication (avec toutes les opérations qui renvoient la ressource), on obtienne aussi les détails de l'utilisateur (id, login, adresse email, premium).
+
+2. Videz le cache.
+
+3. Testez en appelant la méthode `GET` générale, mais aussi en ciblant une publication en particulier.
+
+</div>
+
+Nous avons défini `normalizationContext` de manière globale, pour toutes les opérations de la ressource. Voici quelques précisions et variantes supplémentaires sur les groupes de sérialisation : elles ne sont pas indispensables pour la suite du TD, mais pourront vous être utiles par la suite.
+
+Il est aussi possible d'appliquer des groupes **seulement sur certaines opérations**. Il suffit de définir le paramètre `normalizationContext` sur l'opération voulue :
+
+```php
+#[ApiResource]
+#[GetCollection(
+    normalizationContext: ["groups" => ["serialization:etudiant:read"]],
+)]
+#[Get(
+    normalizationContext: ["groups" => ["serialization:etudiant:read", "serialization:groupe:read"]],
+)]
+class Etudiant {
+
+    #[Groups(['serialization:etudiant:read'])]
+    private ?int $id = null;
+
+    #[Groups(['serialization:etudiant:read'])]
+    private ?string $nom = null;
+
+    #[Groups(['serialization:etudiant:read'])]
+    private ?string $prenom = null;
+
+    #[Groups(['serialization:etudiant:read'])]
+    public ?Groupe $groupe = null;
+}
+
+#[ApiResource(
+    normalizationContext: ["groups" => ["serialization:groupe:read"]],
+)]
+class Groupe {
+
+    #[Groups(['serialization:groupe:read'])]
+    private ?int $id = null;
+
+    #[Groups(['serialization:groupe:read'])]
+    private ?string $nomGroupe = null;
+
+    public Collection $etudiants;
+
+}
+```
+
+Ici, sur l'opération `#[GetCollection]`, les détails du groupe imbriqués ne sont pas affichés, alors que dans l'opération `#[Get]`, les détails du groupe sont affichés.
+
+Il est important de définir les groupes sur les autres opérations d'écriture (POST/PATCH/PUT) si elles sont activées, car ces opérations renvoient aussi la ressource, à la fin du traitement. Il est tout à fait possible d'appliquer un groupe global puis de définir des sous-groupes juste pour les opérations spéciales, qui divergent du comportement global. Par exemple :
+
+```php
+//Toutes les opérations utilisent le groupe serialization:etudiant:read, sauf GET, qui a deux groupes activés
+#[ApiResource(
+    normalizationContext: ["groups" => ["serialization:etudiant:read"]],
+)]
+#[Get(
+    normalizationContext: ["groups" => ["serialization:etudiant:read", "serialization:groupe:read"]],
+)]
+#[GetCollection]
+#[Post]
+#[Patch]
+class Etudiant {
+    ...
+}
+```
+
 Cependant, ce système peut devenir assez lourd, quand il y a beaucoup d'entités/de groupes. On aurait pu alors plutôt préciser directement le groupe `serialization:groupe:read` dans l'attribut `normalizationContext` de la classe `Etudiant` :
 
 ```php
@@ -702,87 +783,6 @@ class Groupe {
 
 }
 ```
-
-Si ce n'est pas encore clair, ce que nous faisons ici, c'est dire à quel groupe appartient telle ou telle propriété. Lorsque l'API traite une requête (en GET, en POST, etc...) elle n'activera pas les mêmes groupes, selon le contexte. Ces groupes définissent les propriétés qui sont renvoyées dans le JSON lors de requêtes de lecture (type GET) et à l'inverse ce qui est traité (ou ignoré, si le groupe ne correspond pas) dans le **payload** lors d'une requête d'écriture (POST, PUT, PATCH...).
-
-Bref, les groupes activés dans `normalizationContext` traversent les entités ! Il est aussi possible de définir plusieurs groupes (affichant plus ou moins de propriétés selon le contexte). On peut même créer une classe et une méthode permettant de coder un algorithme pour savoir quels groupes sont activés (par exemple, pour afficher plus d'informations à un utilisateur connecté...).
-
-Il faut éviter dans se retrouver dans une situation de "cycle" (par exemple, un étudiant donne aussi les infos de son groupe, qui donne les infos sur ses étudiants, qui donne les infos de leur groupe, etc...).
-
-Il est aussi possible d'appliquer des groupes **seulement sur certaines opérations**. Il suffit de définir le paramètre `normalizationContext` sur l'opération voulue :
-
-```php
-#[ApiResource]
-#[GetCollection(
-    normalizationContext: ["groups" => ["serialization:etudiant:read"]],
-)]
-#[Get(
-    normalizationContext: ["groups" => ["serialization:etudiant:read", "serialization:groupe:read"]],
-)]
-class Etudiant {
-
-    #[Groups(['serialization:etudiant:read'])]
-    private ?int $id = null;
-
-    #[Groups(['serialization:etudiant:read'])]
-    private ?string $nom = null;
-
-    #[Groups(['serialization:etudiant:read'])]
-    private ?string $prenom = null;
-
-    #[Groups(['serialization:etudiant:read'])]
-    public ?Groupe $groupe = null;
-}
-
-#[ApiResource(
-    normalizationContext: ["groups" => ["serialization:groupe:read"]],
-)]
-class Groupe {
-
-    #[Groups(['serialization:groupe:read'])]
-    private ?int $id = null;
-
-    #[Groups(['serialization:groupe:read'])]
-    private ?string $nomGroupe = null;
-
-    public Collection $etudiants;
-
-}
-```
-
-Ici, sur l'opération `#[GetCollection]`, les détails du groupe imbriqués ne sont pas affichés, alors que dans l'opération `#[Get]`, les détails du groupe sont affichés.
-
-Il est important de définir les groupes sur les autres opérations d'écriture (POST/PATCH/PUT) si elles sont activées, car ces opérations renvoient aussi la ressource, à la fin du traitement. Il est tout à fait possible d'appliquer un groupe global puis de définir des sous-groupes juste pour les opérations spéciales, qui divergent du comportement global. Par exemple :
-
-```php
-//Toutes les opérations utilisent le groupe serialization:etudiant:read, sauf GET, qui a deux groupes activés
-#[ApiResource(
-    normalizationContext: ["groups" => ["serialization:etudiant:read"]],
-)]
-#[Get(
-    normalizationContext: ["groups" => ["serialization:etudiant:read", "serialization:groupe:read"]],
-)]
-#[GetCollection]
-#[Post]
-#[Patch]
-class Etudiant {
-    ...
-}
-```
-
-Si vous avez bien compris ce mécanisme, à vous de jouer !
-
-<div class="exercise">
-
-1. En utilisant les groupes de sérialisation, faites en sorte que quand on lit une publication (avec toutes les opérations qui renvoient la ressource), on obtienne aussi les détails de l'utilisateur (id, login, adresse email, premium).
-
-2. Videz le cache.
-
-3. Testez en appelant la méthode `GET` générale, mais aussi en ciblant une publication en particulier.
-
-</div>
-
-Nous avons défini `normalizationContext` de manière globale (pour toutes les opérations de la ressource) mais il est aussi possible de le définir pour une opération précise (dans les paramètres de `new Get()`, `new Post()`, etc...)
 
 ### Publications d'un utilisateur
 
@@ -1700,19 +1700,11 @@ Par exemple :
 
 Ici, la route utilisant la méthode `POST` sur cette ressource est uniquement accessible aux utilisateurs avec le rôle `ROLE_USER` (donc, tous les utilisateurs authentifiés). La méthode `DELETE` elle par contre n'est accessible qu'aux utilisateurs ayant le rôle `ROLE_ADMIN`.
 
-Il est également possible d'utiliser l'attribut `securityPostDenormalize` qui active la vérification **après** le traitement des données envoyées par la requête (après l'étape de dénormalisation) ce qui est notamment utile dans le cas d'opérations d'écritures. Dans le cas d'une mise à jour, on peut alors aussi accéder à "l'ancien" objet (avant modification).
-
-Enfin, une troisième variante du paramètre est `securityPostValidation` qui permet d'appliquer des vérifications après que la phase de validation (avec les contraintes placées sur les propriétés) est terminée.
-
-On a aussi accès à certaines variables :
+On a aussi accès à certaines variables dans l'expression du paramètre `security` :
 
 * `user` : représente l'instance de l'utilisateur connecté.
 
-* `object` : représente l'instance de la ressource en cours d'accès ou de modification (on a donc accès à ses méthodes). Attention toutefois, si on utilise la méthode `POST`, l'objet n'existe pas encore ! Pour y avoir accès, il ne faut alors pas passer par `securty` (qui vérifie les droits avant), mais plutôt par `securityPostDenormalize`.
-
-* `previous_object` : uniquement accessible quand on utilise `securityPostDenormalize`. Représente l'instance de la ressource avant d'être modifiée (dans le cas d'opération `PUT` ou `PATCH` par exemple).
-
-* `request` : contient les données de la requête.
+* `object` : représente l'instance de la ressource en cours d'accès ou de modification (on a donc accès à ses méthodes).
 
 Si l'objet ciblé a un lien avec l'utilisateur, il est alors possible de comparer un attribut de l'objet avec l'utilisateur, par exemple.
 
@@ -1722,8 +1714,6 @@ Si l'objet ciblé a un lien avec l'utilisateur, il est alors possible de compare
 #[Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user")]
 
 #[Get(security: "!object.isPrivate() or (is_granted('ROLE_USER') and object.getOwner() == user) or is_granted('ROLE_ADMIN')")]
-
-#[Patch(security:"is_granted('ROLE_ADMIN')", securityPostDenormalize: "previous_object.getOwner() == user and (object.getOwner() == user or !object.isPrivate())")]
 ```
 
 Dans cet exemple :
@@ -1733,16 +1723,6 @@ Dans cet exemple :
 * L'utilisateur peut supprimer l'objet s'il est connecté et qu'il en est le propriétaire
 
 * L'utilisateur ne peut consulter l'objet que si celui n'est pas privé, ou s'il en est le propriétaire, ou s'il est admin.
-
-* L'utilisateur peut mettre à jour l'objet seulement s'il est admin, et il devait être propriétaire de l'objet avant modification (mais il a pu éventuellement pu effectuer un changement de propriétaire). Cependant, le changement de propriétaire n'est possible que si l'objet n'est pas privé.
-
-Le paramètre `securityMessage` permet de customiser le message d'erreur lié au paramètre `security` et `securityPostDenormalizeMessage ` celui relatif au paramètre `securityPostDenormalize`.
-
-```php
-#[Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user", securityMessage: "...")]
-```
-
-Il est aussi possible d'appliquer la règle de sécurité sur `#[ApiRessource]` si l'on souhaite que la règle s'applique par défaut à toutes les opérations.
 
 <div class="exercise">
 
@@ -1763,6 +1743,30 @@ Il est aussi possible d'appliquer la règle de sécurité sur `#[ApiRessource]` 
 8. Essayer de supprimer une publication qui ne vous appartient pas et un compte qui ne vous appartient pas (cela ne doit pas fonctionner). Et vérifiez qu'à l'inverse, vous pouvez effectivement supprimer vos propres publications (celles du compte auquel vous êtes connectés), et que vous pouvez aussi modifier vos propres informations...
 
 </div>
+
+Le paramètre `security` n'est pas le seul moyen de contrôler les droits sur une opération :
+
+* L'attribut `securityPostDenormalize` active la vérification **après** le traitement des données envoyées par la requête (après l'étape de dénormalisation), ce qui est notamment utile dans le cas d'opérations d'écriture. On a alors accès à deux variables supplémentaires : `object`, qui désigne cette fois la ressource même pour une opération `POST` (puisqu'elle vient d'être construite à partir du payload, contrairement à `security` qui est évalué trop tôt pour y avoir accès), et `previous_object`, qui représente l'instance de la ressource avant modification (dans le cas d'une opération `PUT` ou `PATCH`, par exemple).
+
+* `securityPostValidation` permet quant à lui d'appliquer des vérifications une fois la phase de validation (avec les contraintes placées sur les propriétés) terminée.
+
+* La variable `request`, qui contient les données de la requête, est également accessible dans ces trois paramètres.
+
+Reprenons notre exemple précédent en lui ajoutant une règle de mise à jour :
+
+```php
+#[Patch(security:"is_granted('ROLE_ADMIN')", securityPostDenormalize: "previous_object.getOwner() == user and (object.getOwner() == user or !object.isPrivate())")]
+```
+
+Dans cet exemple, l'utilisateur peut mettre à jour l'objet seulement s'il est admin, et il devait être propriétaire de l'objet avant modification (mais il a éventuellement pu effectuer un changement de propriétaire). Cependant, le changement de propriétaire n'est possible que si l'objet n'est pas privé.
+
+Le paramètre `securityMessage` permet de customiser le message d'erreur lié au paramètre `security` et `securityPostDenormalizeMessage` celui relatif au paramètre `securityPostDenormalize`.
+
+```php
+#[Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user", securityMessage: "...")]
+```
+
+Il est aussi possible d'appliquer la règle de sécurité sur `#[ApiRessource]` si l'on souhaite que la règle s'applique par défaut à toutes les opérations.
 
 Il est aussi possible d'utiliser les paramètres `security` et `securityPostDenormalize` dans un attribut `#[ApiProperty]` au niveau de chaque propriété de l'entité afin de contrôler les droits de lecture et d'écriture par propriété :
 
