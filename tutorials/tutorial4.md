@@ -479,7 +479,7 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
    private ?Utilisateur $auteur = null;
    ```
 
-3. Ajoutez les attributs (assertions) nécessaires pour "forcer" l'utilisateur à préciser l'auteur lorsqu'il crée une publication. Il faut que l'auteur ne soit pas absent du payload de la requête (not blank).
+3. Ajoutez les assertions (contraintes) nécessaires pour "forcer" l'utilisateur à préciser l'auteur lorsqu'il crée une publication. Il faut que l'auteur ne soit pas absent du payload de la requête (not blank).
 
 4. Dans votre base de données, supprimez toutes vos publications (un champ non null va être ajouté ce qui va causer des problèmes si on laisse les publications actuelles, sans auteur).
 
@@ -498,7 +498,9 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
    }
    ```
 
-9. La valeur à préciser pour faire référence à une autre ressource est appelée `IRI` (International Resource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. Attention selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/the_feed_api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veut pas créer un utilisateur lorsqu'on crée une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TD (mais il sera détaillé dans des notes complémentaires).
+9. La valeur à préciser pour faire référence à une autre ressource est appelée `IRI` (International Resource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. 
+
+   Attention, selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/the_feed_api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veut pas créer un utilisateur lorsqu'on crée une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TD (mais il sera détaillé dans des notes complémentaires).
 
 10. Une fois le mécanisme des `IRI` compris, retentez de créer une publication en affectant un utilisateur.
 
@@ -897,7 +899,7 @@ De nos jours, les **API** utilisent un système d'authentification par `token` c
 
 * Quand le serveur reçoit le `JWT`, il vérifie qu'il n'a pas été falsifié (avec la clé publique) et peut donc le décoder en toute confiance et récupérer les informations de l'utilisateur à partir de son identifiant stocké dans le `JWT` (en faisant une requête sur la base pour obtenir le reste des informations, par exemple) et ainsi vérifier s'il a le droit d'effectuer cette requête.
 
-Bien que le `JWT` soit décodable côté client, il est impossible le falsifier pour changer l'id de l'utilisateur contenu, car le serveur le détectera. Il est aussi impossible de simplement créer un `JWT` avec l'identifiant d'un autre utilisateur, car le client ne peut pas générer la signature adéquate (car il ne possède pas la clé privée).
+Bien que le `JWT` soit décodable côté client, il est impossible de le falsifier pour changer l'id de l'utilisateur contenu, car le serveur le détectera. Il est aussi impossible de simplement créer un `JWT` avec l'identifiant d'un autre utilisateur, car le client ne peut pas générer la signature adéquate (car il ne possède pas la clé privée).
 
 On respecte la notion de **stateless** car le serveur ne garde aucune information sur l'utilisateur dans une session ou en mémoire vive. Le `JWT` est transmis à chaque requête par le client, quand on en a besoin, ce qui permet de vérifier sa légitimité.
 
@@ -1038,7 +1040,11 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
    +            provider: app_user_provider
    ```
 
-3. Dans votre classe `Utilisateur`, décommentez toutes les propriétés et méthodes commentées ainsi que la déclaration d'implémentation des interfaces `UserInterface` et `PasswordAuthenticatedUserInterface`. N'oubliez pas de décommenter les attributs `[ORM\Column]` au-dessus des propriétés `roles` et `password`. Faites en sorte qu'il soit impossible de lire et d'écrire ces deux propriétés (au niveau de l'API). Il faut aussi décommenter dans `UtilisateurRepository` la déclaration de l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la méthode `upgradePassword`.
+3. Dans votre classe `Utilisateur`, décommentez toutes les propriétés et méthodes commentées ainsi que la déclaration d'implémentation des interfaces `UserInterface` et `PasswordAuthenticatedUserInterface`. 
+
+   N'oubliez pas de décommenter les attributs `[ORM\Column]` au-dessus des propriétés `roles` et `password`. Faites en sorte qu'il soit impossible de lire et d'écrire ces deux propriétés (au niveau de l'API). 
+
+   Il faut aussi décommenter dans `UtilisateurRepository` la déclaration de l'implémentation de l'interface `PasswordUpgraderInterface` ainsi que la méthode `upgradePassword`.
 
 4. Ajoutez une propriété `$plainPassword` de type `?string` à la classe `Utilisateur` initialisée à **null** (ainsi que ses getters/setters). Pour le `getter`, précisez bien le type de retour `?string` (pour autoriser les valeurs nulles). Cet attribut ne doit pas être stocké dans la base ! En utilisant un attribut (provenant d'API Platform), faites en sorte que cette propriété ne puisse jamais être lue par les utilisateurs (jamais affichée/normalisée quand on renvoie une ressource type utilisateur).
 
@@ -1059,17 +1065,22 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
    private ?string $plainPassword = null;
    ```
 
-6. Créez un **state processor** nommé `UtilisateurProcessor` qui devra hacher le mot de passe de l'utilisateur (`plainPassword`), puis l'affecter à `password`. Il faut ensuite passer `plainPassword` à **null** (via son setter) afin de supprimer les informations sensibles. Enfin, il faut reprendre le traitement normal d'API Platform pour sauvegarder l'entité en base. 
+6. Créez un **state processor** nommé `UtilisateurProcessor` qui 
+   1. devra hacher le mot de passe de l'utilisateur (`plainPassword`), 
+   2. puis l'affecter à `password`,
+   3. ensuite passer `plainPassword` à **null** (via son setter) afin de supprimer les informations sensibles,
+   4. enfin, il faut reprendre le traitement normal d'API Platform pour sauvegarder l'entité en base. 
 
-    * Vous pouvez réutiliser le bout de code (voir la méthode complète) définie dans la classe `UtilisateurManager` du projet précédent. Il vous faudra donc aussi injecter et utiliser le service `UserPasswordHasherInterface`.
+   **Remarques :**
+   * Vous pouvez réutiliser le bout de code (voir la méthode complète) définie dans la classe `UtilisateurManager` du projet précédent. Il vous faudra donc aussi injecter et utiliser le service `UserPasswordHasherInterface`.
 
-    * `process` ne sait pas que `data` est de type `Utilisateur`. Pour pouvoir utiliser l'auto-complétion de votre IDE avec cette variable, vous pouvez ajouter la documentation suivante à l'intérieur de la fonction :
+   * `process` ne sait pas que `data` est de type `Utilisateur`. Pour pouvoir utiliser l'auto-complétion de votre IDE avec cette variable, vous pouvez ajouter la documentation suivante à l'intérieur de la fonction :
 
-   ```php
-   /** @var Utilisateur $data **/
-   ```
+     ```php
+     /** @var Utilisateur $data **/
+     ```
 
-    * **Attention** : lorsque vous utilisez la commande `make:state-processor`, le type de retour de la fonction `process` est `void`. Changez plutôt cela en `mixed`.
+   * **Attention** : lorsque vous utilisez la commande `make:state-processor`, le type de retour de la fonction `process` est `void`. Changez plutôt cela en `mixed`.
 
 7. Utilisez votre `UtilisateurProcessor` comme processeur de l'opération `POST` sur l'entité `Utilisateur`.
 
@@ -1089,7 +1100,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 Actuellement, si on essaye de faire un `PATCH` sur l'utilisateur, on nous obligera toujours à rentrer le mot de passe, car nous utilisons l'attribut `#[Assert\NotBlank]` sur ce dernier. Or, dans un `PATCH`, on doit pouvoir mettre à jour seulement les attributs que l'on souhaite.
 
-Par défaut, `API Platform` applique un système qui nous arrange bien : pour les propriétés stockées en base de données (par exemple l'adresse email), même si l'attribut `#[Assert\NotBlank]` est associé à la propriété, dans le cadre d'une opération `PATCH`, si la valeur n'est pas donnée, cela ne provoquera pas d'erreur. En effet, **API Platform** va d'abord charger les données de l'entité modifiée puis appliquer les changements, et vérifier les contraintes ensuite. Ainsi, si la propriété avait déjà une valeur et qu'elle n'est pas changée par le `PATCH`, cela ne provoquera pas d'erreur, vu qu'il y aura bien une valeur à la fin du traitement. C'est exactement le comportement désiré pour une opération `PATCH` qui effectue une mise à jour partielle.
+Par défaut, `API Platform` applique un système qui nous arrange bien : pour les propriétés stockées en base de données (par exemple l'adresse email), même si l'attribut `#[Assert\NotBlank]` est associé à la propriété, dans le cadre d'une opération `PATCH`, si la valeur n'est pas donnée, cela ne provoquera pas d'erreur. En effet, **API Platform** va d'abord charger les données de l'entité à modifier puis appliquer les changements, et vérifier les contraintes ensuite. Ainsi, si la propriété avait déjà une valeur et qu'elle n'est pas changée par le `PATCH`, cela ne provoquera pas d'erreur, vu qu'il y aura bien une valeur à la fin du traitement. C'est exactement le comportement désiré pour une opération `PATCH` qui effectue une mise à jour partielle.
 
 Mais alors, pourquoi cela ne fonctionne pas avec `plainPassword` ? Tout simplement car cette valeur n'est (heureusement) pas stockée en base ! Donc, quand API Platform charge les données d'un utilisateur, cette propriété vaut **null**, et si elle n'est pas fournie dans le **payload** de la requête `PATCH`, elle restera donc à **null** et la contrainte `#[NotBlank]` échouera.
 
@@ -1189,6 +1200,7 @@ Les utilisateurs enverront un `paylaod` contenant le login et le mot de passe su
 Pour prendre en charge tout cela, il faut simplement éditer le fichier `security.yaml` :
 
 ```yaml
+#config/packages/security.yaml
 security:
     ...
     firewalls:
@@ -1264,7 +1276,7 @@ Ce système est assez standard et est utilisé dans de nombreuses APIs. Cependan
 
 Cette fois, le problème vient du client, et plus précisément des applications qui tournent sur un navigateur web (avec un framework JavaScript par exemple, comme nous le ferons dans les prochains TDs). Le problème est de savoir où et comment stocker le JWT. Il y a plusieurs options :
 
-* Dans une **variable** simple. Mais celle-ci sera supprimée si la page est rechargée, ce n'est donc pas idéal du tout (l'utilisateur devra se reconnecter...)
+* Dans une **variable JavaScript** simple. Mais celle-ci sera supprimée si la page est rechargée, ce n'est donc pas idéal du tout (l'utilisateur devra se reconnecter...)
 
 * Dans le `sessionStorage` qui est un objet qui permet d'enregistrer des couples clé/valeurs qui persistent si la page est rechargée (mais pas si le navigateur est redémarré).
 
@@ -1292,7 +1304,7 @@ Une attaque **CSRF** (Cross-site Request Forgery) consiste à faire envoyer une 
 
 Pour contrer cela, on paramètre l'attribut `Same-Site` du cookie, avec une des deux valeurs suivantes :
 
-* `Same-Site: Strict` : le cookie n'est envoyé que si l'adresse du serveur de destination est la même que celle du site depuis lequel est émise la requête. Et cela pour toutes les opérations (**GET**, **POST**, etc...). Par exemple, si je me trouve sur le site `https://monsite.fr/home` que je possède un cookie lié au site `monsite.fr` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie sera envoyé. Par contre, si je me trouve sur le site `https://pas-un-site-suspect-du-tout.arnaque/home` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie ne sera pas envoyé.
+* `Same-Site: Strict` : le cookie n'est envoyé que si l'adresse du serveur de destination est la même que celle du site depuis lequel est émise la requête. Et cela pour toutes les opérations (**GET**, **POST**, etc...). Par exemple, si je me trouve sur le site `https://monsite.fr/home` que je possède un cookie lié au site `monsite.fr` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie sera envoyé. Par contre, si je me trouve sur le site `https://un-site-pas-suspect-du-tout.arnaque/home` et que je fais une requête vers `https://monsite.fr/api/utilisateurs`, le cookie ne sera pas envoyé.
 
 * `Same-Site: Lax` : même chose sauf pour les opérations type `GET` si la requête mène vers le même site que celui associé au cookie. Par exemple, si on clique sur un lien depuis un site externe. Imaginons le scénario suivant : vous êtes connecté sur le site `https://monsite.fr/`. Sur la page d'accueil, vous vous attendez donc à avoir un rendu en mode "connecté", avec un bouton "profil", "déconnexion", etc. Avec le mode `Strict`, si vous cliquez sur le lien `https://monsite.fr/` depuis un autre site (par exemple, depuis un mail), la page apparaîtra comme si vous étiez déconnecté. Avec le mode `Lax`, le cookie sera envoyé et vous verrez la page comme si vous étiez connecté. Le mode `Lax` est le mode choisi par défaut.
 
