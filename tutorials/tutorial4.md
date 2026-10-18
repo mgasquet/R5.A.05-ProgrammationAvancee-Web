@@ -1433,76 +1433,76 @@ Pour mettre en place tout cela, nous allons nous servir du bundle `JWTRefreshTok
 
 * Tout d'abord, le bundle va automatiquement créer l'entité suivante, qui correspond à l'entité gérant les tokens de rafraîchissement (car ils sont stockés dans notre BDD) :
 
-```php
-namespace App\Entity;
-
-use Doctrine\ORM\Mapping as ORM;
-use Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken as BaseRefreshToken;
-
-#[ORM\Entity]
-#[ORM\Table(name: 'refresh_tokens')]
-class RefreshToken extends BaseRefreshToken
-{
-    //Pas besoin de propriété(s) particulière(s), elles sont héritées.
-    //On pourra éventuellement ajouter des propriétés dans le futur...
-}
-```
+  ```php
+  namespace App\Entity;
+  
+  use Doctrine\ORM\Mapping as ORM;
+  use Gesdinet\JWTRefreshTokenBundle\Entity\RefreshToken as BaseRefreshToken;
+  
+  #[ORM\Entity]
+  #[ORM\Table(name: 'refresh_tokens')]
+  class RefreshToken extends BaseRefreshToken
+  {
+      //Pas besoin de propriété(s) particulière(s), elles sont héritées.
+      //On pourra éventuellement ajouter des propriétés dans le futur...
+  }
+  ```
 
 * Il va ensuite (automatiquement, encore une fois) mettre en place la route liée au rafraîchissement, dans le fichier `config/routes/gesdinet_jwt_refresh_token.yaml`. Par contre, on doit compléter cette route si on veut la limiter au verbe `POST`, par exemple :
 
-```yaml
-# Dans config/routes/gesdinet_jwt_refresh_token.yaml
-
-# Route pour rafraîchir notre JWT (on limite en POST)
-gesdinet_jwt_refresh_token:
-    path: /api/token/refresh
-    methods: ['POST']
-```
+  ```yaml
+  # Dans config/routes/gesdinet_jwt_refresh_token.yaml
+  
+  # Route pour rafraîchir notre JWT (on limite en POST)
+  gesdinet_jwt_refresh_token:
+      path: /api/token/refresh
+      methods: ['POST']
+  ```
 
 * Après, on édite le fichier `security.yaml` afin de paramétrer notre système de rafraîchissement et notre nouvelle route :
 
-```yaml
-# Dans config/packages/security.yaml
-security:
-    ...
-    firewalls:
-        ...
-        main:
-            ...
-            entry_point: jwt
-            refresh_jwt:
-                check_path: /api/token/refresh
-            ...
-```
+  ```yaml
+  # Dans config/packages/security.yaml
+  security:
+      ...
+      firewalls:
+          ...
+          main:
+              ...
+              entry_point: jwt
+              refresh_jwt:
+                  check_path: /api/token/refresh
+              ...
+  ```
 
 * Enfin, dans `config/packages`, on édite le fichier `gesdinet_jwt_refresh_token.yaml` pour configurer le bundle et indiquer quelle classe correspond au token de rafraîchissement et d'autres paramètres :
 
-```yaml
-# Dans config/packages/gesdinet_jwt_refresh_token.yaml
-gesdinet_jwt_refresh_token:
-    # Permet d'ajouter de la documentation vis-à-vis des routes gérées par le bundle sur la page de documentation de l'api.
-    api_platform:
-        enabled: true
-
-    # Classe représentant le token de rafraîchissement (option déjà paramétrée, par défaut)
-    refresh_token_class: App\Entity\RefreshToken
-
-    # Pour que le token soit invalidé et supprimé après rafraîchissement, et qu'un nouveau soit fourni
-    single_use: true
-
-    # Cette option permet de hacher les tokens en base (un peu comme les mots de passe). Ainsi, en cas de fuite de la base de données, les tokens ne seront pas compromis et ne pourront pas être utilisés pour obtenir des JWT d'authentification en usurpant l'identité d'un utilisateur.
-    hash_tokens:
-        enabled: true
-
-    # Cette option permet de limiter le nombre de tokens de rafraîchissement actifs pour un utilisateur. Par exemple, pour limiter le nombre d'appareils depuis lesquels il effectue une connexion. Si l'utilisateur tente de se connecter alors qu'il a déjà atteint la limite, le token le plus ancien est remplacé. Par défaut, si cette option n'est pas activée, le nombre de tokens est illimité (ce qui peut être souhaitable dans certains contextes, mais dans ce cas il faut combiner cela avec un système de rate limiting pour éviter qu'un utilisateur malveillant crée des tokens en boucle). 
-    max_tokens_per_user: 5
-    
-    # Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de le renvoyer dans le corps de la réponse.
-    cookie:
-        enabled: true
-        #Afin que le token ne soit envoyé que sur les sous-routes /the_feed_api/public/api/token...
-        path: /the_feed_api/public/api/token
-```
+  ```yaml
+  # Dans config/packages/gesdinet_jwt_refresh_token.yaml
+  gesdinet_jwt_refresh_token:
+      # Permet d'ajouter de la documentation vis-à-vis des routes gérées par le bundle sur la page de documentation de l'api.
+      api_platform:
+          enabled: true
+  
+      # Classe représentant le token de rafraîchissement (option déjà paramétrée, par défaut)
+      refresh_token_class: App\Entity\RefreshToken
+  
+      # Pour que le token soit invalidé et supprimé après rafraîchissement, et qu'un nouveau soit fourni
+      single_use: true
+  
+      # Cette option permet de hacher les tokens en base (un peu comme les mots de passe). Ainsi, en cas de fuite de la base de données, les tokens ne seront pas compromis et ne pourront pas être utilisés pour obtenir des JWT d'authentification en usurpant l'identité d'un utilisateur.
+      hash_tokens:
+          enabled: true
+  
+      # Cette option permet de limiter le nombre de tokens de rafraîchissement actifs pour un utilisateur. Par exemple, pour limiter le nombre d'appareils depuis lesquels il effectue une connexion. Si l'utilisateur tente de se connecter alors qu'il a déjà atteint la limite, le token le plus ancien est remplacé. Par défaut, si cette option n'est pas activée, le nombre de tokens est illimité (ce qui peut être souhaitable dans certains contextes, mais dans ce cas il faut combiner cela avec un système de rate limiting pour éviter qu'un utilisateur malveillant crée des tokens en boucle). 
+      max_tokens_per_user: 5
+      
+      # Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de le renvoyer dans le corps de la réponse.
+      cookie:
+          enabled: true
+          #Afin que le token ne soit envoyé que sur les sous-routes /the_feed_api/public/api/token...
+          path: /the_feed_api/public/api/token
+  ```
 
 Maintenant, quand vous vous authentifierez avec la route `/api/auth`, vous obtiendrez votre `token` (JWT) habituel ainsi qu'un token `refresh_token`. Celui-ci sera notamment utilisé lors de l'accès à la route suivante :
 
@@ -1512,7 +1512,6 @@ On a aussi accès à cette commande qui permet de supprimer tous les tokens de r
 
 ```bash
 php bin/console gesdinet:jwt:clear
-
 ```
 
 Maintenant, à vous de jouer !
@@ -1527,7 +1526,10 @@ Maintenant, à vous de jouer !
 
     Quand on vous pose la question relative à l'utilisation d'une `recipe` répondez **yes**. Le mécanisme des `recipes` permet de configurer automatiquement certains aspects de l'application quand on ajoute une nouvelle librairie, un bundle... Par exemple, en créant de nouveaux fichiers ou en complétant certains fichiers de configuration. Cela est défini par le développeur du module installé.
 
-2. Complétez les différents fichiers de configurations : `config/routes/gesdinet_jwt_refresh_token.yaml` (pour limiter la route de rafraîchissement à `POST`), `config/packages/security.yaml` (pour paramétrer l'utilisation du système de rafraîchissement) et enfin `config/packages/gesdinet_jwt_refresh_token.yaml` (pour activer l'option `single_use` et utiliser les cookies).
+2. Complétez les différents fichiers de configurations : 
+   * `config/routes/gesdinet_jwt_refresh_token.yaml` (pour limiter la route de rafraîchissement à `POST`), 
+   * `config/packages/security.yaml` (pour paramétrer l'utilisation du système de rafraîchissement),
+   * `config/packages/gesdinet_jwt_refresh_token.yaml` (pour activer l'option `single_use` et utiliser les cookies).
 
 3. Videz le cache.
 
