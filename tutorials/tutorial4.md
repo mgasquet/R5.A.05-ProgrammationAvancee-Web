@@ -2088,17 +2088,17 @@ Un **DTO** (pour **Data Transfer Object**) est un mécanisme utilisé dans diff�
 
 Par exemple, on pourrait avoir un DTO par type d'opération (`GET`, `POST`, `PATCH`, etc.).
 
-Dans le cadre de **l'écriture** le `DTO` décrit tous les attributs qu'il est possible d'envoyer dans la requête, et y associe les fameux attributs de validation que nous utilisons (`#[Assert\...]`).
+Dans le cadre de **l'écriture**, le `DTO` décrit tous les attributs qu'il est possible d'envoyer dans la requête, et y associe les fameux attributs de validation que nous utilisons (`#[Assert\...]`).
 
 Dans le cadre de la **lecture** d'une entité, le `DTO` décrit tous les attributs qui sont renvoyés au client, dans la réponse de la requête.
 
-Cette approche a l'avantage de mieux séparer les responsabilités, et d'éviter d'utiliser un grand nombre de groupes de validation et de sérialisation, notamment dans le process d'écriture. Chaque classe DTO représente l'entrée ou la sortie d'une opération. Ainsi, tous les attributs liés à la validation ainsi que la plupart des groupes de sérialisation sont déplacés hors de l'entité doctrine.
+Cette approche a l'avantage de mieux séparer les responsabilités, et d'éviter d'utiliser un grand nombre de groupes de validation et de sérialisation, notamment dans le processus d'écriture. Chaque classe DTO représente l'entrée ou la sortie d'une opération. Ainsi, tous les attributs liés à la validation ainsi que la plupart des groupes de sérialisation sont déplacés hors de l'entité Doctrine.
 
 Cela est notamment pertinent quand ce qui est demandé ou rendu par l'API diffère des données stockées en base. Par exemple, dans notre cas, il y a deux attributs qui "traînent" dans notre entité `Utilisateur` : `plainPassword` et `currentPlainPassword`, qui ne sont pas sauvegardés en base, et ne sont liés qu'à l'API.
 
-Historiquement, mettre en place des DTO avec API Platform était assez fastidieux, car il fallait obligatoirement créer un **processor** ou un **provider** pour "mapper" les données de l'objet DTO vers l'entité ou inversement. Cependant, depuis la version 7.3 de Symfony, un composant nommé [Object Mapper](https://symfony.com/doc/current/object_mapper.html) permet de considérablement automatiser ce travail et se passer (en partie) des processors et providers pour la plupart des opérations. La [documentation officielle d'API Platform](https://api-platform.com/docs/core/dto/) pousse d'ailleurs de plus en plus vers l'utilisation systématique d'une ressource externe rattachée à l'entité et d'un DTO pour chaque opération.
+Historiquement, mettre en place des DTO avec API Platform était assez fastidieux, car il fallait obligatoirement créer un **processor** ou un **provider** pour "mapper" les données de l'objet DTO vers l'entité ou inversement. Cependant, depuis la version 7.3 de Symfony, un composant nommé [Object Mapper](https://symfony.com/doc/current/object_mapper.html) permet de considérablement automatiser ce travail et de se passer (en partie) des processors et providers pour la plupart des opérations. La [documentation officielle d'API Platform](https://api-platform.com/docs/core/dto/) pousse d'ailleurs de plus en plus vers l'utilisation systématique d'une ressource externe rattachée à l'entité et d'un DTO pour chaque opération.
 
-Cependant, bien que prometteur, ce système n'est pas encore stable. Quelques bugs et anomalies demeurent, qui devraient être réglées dans les prochaines versions de Symfony (future 8.4, puis probablement les versions 9.x) et d'API Platform. Utiliser ce système demande aussi de mettre en place plus de code et plus de classes, ce qui peut être fastidieux en début de projet (mais fait gagner du temps sur le long terme).
+Cependant, bien que prometteur, ce système n'est pas encore stable. Quelques bugs et anomalies demeurent, qui devraient être réglés dans les prochaines versions de Symfony (future 8.4, puis probablement les versions 9.x) et d'API Platform. Utiliser ce système demande aussi de mettre en place plus de code et plus de classes, ce qui peut être fastidieux en début de projet (mais fait gagner du temps sur le long terme).
 
 Dans le cadre de cette section, nous vous proposons une approche hybride : nous allons utiliser des DTOs pour les opérations `POST` et `PATCH` de l'utilisateur.
 
@@ -2113,7 +2113,7 @@ use App\Entity\Etudiant;
 use Symfony\Component\ObjectMapper\Attribute\Map;
 use Symfony\Component\Validator\Constraints as Assert;
 
-//Les données seront mappées vers la classe étudiant
+//Les données seront mappées vers la classe Etudiant
 #[Map(target: Etudiant::class)]
 class CreateEtudiant
 {
@@ -2136,7 +2136,7 @@ class CreateEtudiant
     public string $prenom;
 
     #[Assert\NotBlank]
-    #[Assert\GreaterThanOrEqual(value : 18, message : "L'étudiant doit au moins avoir 18 ans!")]
+    #[Assert\GreaterThanOrEqual(value: 18, message: "L'étudiant doit au moins avoir 18 ans!")]
     public int $age;
 }
 ```
@@ -2159,7 +2159,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: EtudiantRepository::class)]
 #[ApiResource]
 #[Post(
-    input : CreateEtudiant::class
+    input: CreateEtudiant::class
 )]
 class Etudiant
 {
@@ -2179,12 +2179,12 @@ class Etudiant
 
     //...Getters et setters habituels
 
-    public function setId(?int $id): self
+    public function setId(?int $id): Etudiant
     {
         $this->id = $id;
         return $this;
     }
-} 
+}
 ```
 
 Et le tour est joué ! Pas de processor à écrire, et plus aucune contrainte de validation du côté de l'entité.
@@ -2231,7 +2231,6 @@ Par exemple, imaginons qu'à la place de l'âge, le payload envoie une date de n
 namespace App\ObjectMapper;
 
 use DateTime;
-use App\Entity\Etudiant;
 use Symfony\Component\ObjectMapper\TransformCallableInterface;
 
 class TransformBirthDateToAge implements TransformCallableInterface
@@ -2244,7 +2243,7 @@ class TransformBirthDateToAge implements TransformCallableInterface
      * @param $value La valeur de la propriété dans le payload
      * @param $source L'objet DTO, contenant le payload envoyé par le client
      * @param $target L'entité cible (ici, un objet Etudiant)
-     * 
+     *
      * @return int La valeur transformée
      */
     public function __invoke(mixed $value, object $source, ?object $target): mixed
@@ -2261,6 +2260,7 @@ class TransformBirthDateToAge implements TransformCallableInterface
 <?php
 namespace App\Dto\Etudiant;
 
+use DateTime;
 use App\Entity\Etudiant;
 use App\ObjectMapper\TransformBirthDateToAge;
 use Symfony\Component\ObjectMapper\Attribute\Map;
@@ -2285,20 +2285,25 @@ Quand on souhaite avoir un `DTO` pour les opérations de lecture, le processus e
 
 Vous pourrez retrouver plus d'informations sur [la documentation officielle du composant](https://symfony.com/doc/current/object_mapper.html).
 
-Nous vous proposons donc maintenant de mettre en place deux DTOs : un pour l'écriture d'un utilisateur, l'autre pour la mise à jour. Pour la mise à jour, il faudra tout de même écrire un petit processeur (autrement, un bug peut survenir, dû au fait que ce composant et son intégration dans API Platform soient encore récents, comme expliqué plus tôt).
+Nous vous proposons donc maintenant de mettre en place deux DTOs : un pour la création d'un utilisateur, l'autre pour sa mise à jour. Pour la mise à jour, il faudra tout de même écrire un petit processeur (autrement, un bug peut survenir, dû au fait que ce composant et son intégration dans API Platform soient encore récents, comme expliqué plus tôt).
 
 Comme il va y avoir beaucoup de changements dans la classe `Utilisateur`, il est conseillé de sauvegarder la version de cette classe quelque part, si vous souhaitez garder une trace de ce que vous aviez fait jusqu'ici.
 
 <div class="exercise">
 
-1. Dans la classe `Utilisateur` :
+1. Dans le terminal du conteneur Docker, installez le composant ObjectMapper :
+    ```bash
+    composer require symfony/object-mapper
+    ```
+
+2. Dans la classe `Utilisateur` :
     * Supprimez les propriétés `plainPassword` et `currentPlainPassword` et les getters/setters associés.
     * Supprimez tous les attributs de validation `#[Assert\...]`.
     * Dans les opérations `POST` et `PATCH`, retirez les paramètres `processor`, `denormalizationContext` et `validationContext`.
     * Retirez les groupes `serialization:utilisateur:create` et `serialization:utilisateur:update` des propriétés de la classe.
     * Ajoutez un setter `setId`.
 
-2. Créez la classe `CreateUtilisateur` suivant, dans un nouveau dossier `src/Dto/Utilisateur` :
+3. Créez la classe `CreateUtilisateur` suivante, dans un nouveau dossier `src/Dto/Utilisateur` :
 
    {% raw %}
    ```php
@@ -2342,7 +2347,7 @@ Comme il va y avoir beaucoup de changements dans la classe `Utilisateur`, il est
    ```
    {% endraw %}
 
-3. Créez et complétez la classe `TransformPlainPasswordToHashedPassword` suivante dans un nouveau dossier `src/ObjectMapper` :
+4. Créez et complétez la classe `TransformPlainPasswordToHashedPassword` suivante dans un nouveau dossier `src/ObjectMapper` :
 
    ```php
    <?php
@@ -2363,9 +2368,9 @@ Comme il va y avoir beaucoup de changements dans la classe `Utilisateur`, il est
 
        public function __invoke(mixed $value, object $source, ?object $target): mixed
        {
-           /* 
+           /*
            On se sert du service pour hacher le mot de passe.
-           Pour rappel : 
+           Pour rappel :
            $value : le mot de passe en clair.
            $target : l'entité Utilisateur vers laquelle on mappe le mot de passe.
            On retourne le mot de passe haché.
@@ -2376,13 +2381,14 @@ Comme il va y avoir beaucoup de changements dans la classe `Utilisateur`, il est
    }
    ```
 
-4. Dans `CreateUtilisateur`, servez-vous de l'attribut `#[Map]` afin de :
-    * Déclarer que le DTO sera mappé dans la classe `Utilisateur::class`.
+5. Dans `CreateUtilisateur`, servez-vous de l'attribut `#[Map]` afin de :
+    * Déclarer que le DTO sera mappé vers la classe `Utilisateur`.
     * Faire en sorte que `$plainPassword` soit mappé vers `password` en appliquant la transformation via votre classe `TransformPlainPasswordToHashedPassword`.
 
-5. Enfin, dans `Utilisateur`, faites en sorte que `CreateUtilisateur` soit utilisé comme `DTO` de l'opération `POST`.
+6. Enfin, dans `Utilisateur`, faites en sorte que `CreateUtilisateur` soit utilisé comme `DTO` de l'opération `POST`.
 
 6. Testez que la création d'un nouvel utilisateur fonctionne toujours.
+
 </div>
 
 Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, il faudra quand même utiliser un petit processeur et désactiver le mapping automatique, car autrement, un bug peut survenir quand l'entité visée est en relation avec d'autres entités (comme dans notre cas où l'utilisateur peut être auteur de publications). C'est assez vicieux, car le bug ne survient que si l'utilisateur a une propriété collection de l'entité en relation (ici, `publications`) et que cette collection n'est pas vide (donc, dans notre cas, si l'utilisateur est auteur d'au moins une publication). Cependant, pas de panique, le travail est quand même bien simplifié par l'object mapper.
@@ -2417,22 +2423,22 @@ Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, i
            message: "Le mot de passe doit comporter au moins 8 caractères, une lettre minuscule, une lettre majuscule et un chiffre"
        )]
        #[Map(target: 'password', transform: TransformPlainPasswordToHashedPassword::class)]
-       public string $newPassword;
+       public string $plainPassword;
 
        #[Assert\NotBlank]
        #[UserPassword]
-       public string $currentPassword;
+       public string $currentPlainPassword;
    }
    ```
    {% endraw %}
 
-    On notera qu'il n'y a pas besoin de préciser `#[NotBlank]` sur l'adresse email et le nouveau mot de passe : ils peuvent ne pas être transmis (par contre, on veut que le mot de passe de l'utilisateur courant soit transmis).
+   On notera qu'il n'y a pas besoin de préciser `#[NotBlank]` sur l'adresse email et le nouveau mot de passe : ils peuvent ne pas être transmis (par contre, on veut que le mot de passe de l'utilisateur courant soit transmis).
 
-    Comme le login n'est pas présent dans le `DTO`, il ne pourra pas être transmis et modifié (c'est ce que l'on veut !).
+   Comme le login n'est pas présent dans le `DTO`, il ne pourra pas être transmis et modifié (c'est ce que l'on veut !).
 
-    **Pas de mapping déclaré au niveau de la classe** : nous allons nous en charger avec un processeur custom.
+   **Pas de mapping déclaré au niveau de la classe** : nous allons nous en charger avec un processeur personnalisé.
 
-3. Créez le processeur `UtilisateurUpdateProcessor` dans `src/State` :
+2. Créez le processeur `UtilisateurUpdateProcessor` dans `src/State` :
 
    ```php
    <?php
@@ -2460,7 +2466,7 @@ Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, i
            //Cette ligne permet de récupérer l'objet utilisateur stocké en BD (avant modification, donc).
            $utilisateur = $context['request']->attributes->get('read_data');
 
-           //On mappe "$data" qui est notre DTO de type UpdateUtilisateur, dans l'objet $utilisateur récupéré. C'est à ce moment-là que newPassword est transformé en password.
+           //On mappe "$data" qui est notre DTO de type UpdateUtilisateur, dans l'objet $utilisateur récupéré. C'est à ce moment-là que plainPassword est transformé en password.
            $utilisateur = $this->objectMapper->map($data, $utilisateur);
 
            //On valide l'utilisateur final, après modification (permet de vérifier les contraintes UniqueEntity placées sur l'utilisateur : s'il n'y en a pas, on peut sauter cette étape, car le DTO valide déjà ses propriétés).
@@ -2472,18 +2478,19 @@ Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, i
    }
    ```
 
-4. Dans votre `UtilisateurVoter`, si vous vérifiez la permission `UTILISATEUR_EDIT` ainsi : `$user == $subject` cela ne fonctionnera plus. En effet, quand on utilise un DTO, l'objet récupéré (`$subject`) ne passe plus ce test. À la place, il faut comparer la valeur de l'id : `$user->getId() == $subject->getId()` (c'est d'ailleurs généralement une meilleure pratique).
+3. Dans votre `UtilisateurVoter`, si vous vérifiez la permission `UTILISATEUR_EDIT` ainsi : `$user == $subject` cela ne fonctionnera plus. En effet, quand on utilise un DTO, l'objet récupéré (`$subject`) ne passe plus ce test. À la place, il faut comparer la valeur de l'id : `$user->getId() == $subject->getId()` (c'est d'ailleurs généralement une meilleure pratique).
 
-5. Enfin, affectez les paramètres `input` et `processor` de l'opération `PATCH` dans la classe `Utilisateur`.
+4. Enfin, affectez les paramètres `input` et `processor` de l'opération `PATCH` dans la classe `Utilisateur`.
 
-6. Vérifiez que la modification de votre profil fonctionne bien.
+5. Vérifiez que la modification de votre profil fonctionne bien.
+
 </div>
 
-Comme vous pouvez le constater, nous avons déplacé toute notre logique de validation en dehors de `Utilisateur`. Aussi, nous n'avons plus de groupe de **dénormalisation** et de **validation** dans la classe. Comme mentionné plus tôt, il est possible de faire de même pour la **normalisation** avec des DTO de "sortie" et le paramètre `output` des opérations. Cependant, cela ne veut pas dire que les groupes disparaissent complètement :
+Comme vous pouvez le constater, nous avons déplacé toute notre logique de validation en dehors de `Utilisateur`. Aussi, nous n'avons plus de groupe de **dénormalisation** et de **validation** dans la classe. Comme mentionné plus tôt, il est possible de faire de même pour la **normalisation** avec des DTO de "sortie" et le paramètre `output` des opérations. Cependant, cela ne veut pas dire que les groupes disparaissent complètement. Ils restent nécessaires :
 
-* Obligatoire quand on veut inclure les données d'une entité dans une autre entité (comme nous le faisons avec l'auteur d'une publication).
-* Obligatoire quand on veut appliquer différentes contraintes selon le contexte (par exemple, si nous faisions un `DTO` pour écrire les publications, on devrait quand même avoir les groupes pour différencier les assertions qui vérifient la longueur du message en fonction du statut premium de l'utilisateur).
-* Obligatoire si on veut créer une entité imbriquée quand on crée une autre entité (système détaillé dans les notes complémentaires).
+* quand on veut inclure les données d'une entité dans une autre entité (comme nous le faisons avec l'auteur d'une publication).
+* quand on veut appliquer différentes contraintes selon le contexte (par exemple, si nous faisions un `DTO` pour écrire les publications, on devrait quand même avoir les groupes pour différencier les assertions qui vérifient la longueur du message en fonction du statut premium de l'utilisateur).
+* si on veut créer une entité imbriquée quand on crée une autre entité (système détaillé dans les notes complémentaires).
 
 Bref, si le système de `DTO` est appliqué judicieusement, cela permet de mieux répartir les responsabilités dans l'application, en échange d'une mise en place un peu plus volumineuse, avec plus de classes.
 
