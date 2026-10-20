@@ -279,7 +279,7 @@ class Exemple {
 
 Quand on va effectuer une requête, la propriété n’apparaîtra jamais quand on va lire les données d'une entité `Exemple`. Cependant, il faut impérativement qu'elle soit envoyée dans le `payload` dans le cas d'une requête d'écriture. La description permet d'enrichir la page de documentation automatique générée par API Platform.
 
-Les attributs `write` et `read` sont utiles quand on souhaite appliquer la même logique dans n'importe quel contexte. Cependant, pour pouvoir autoriser la lecture ou l'écriture d'une propriété (ou d'une ressource) selon le contexte (droits d'accès, groupe, type de requête...) on utilisera plutôt les **groupes de validation** et les **groupes de sérialisation**.
+Les paramètres `writable` et `readable` sont utiles quand on souhaite appliquer la même logique dans n'importe quel contexte. Cependant, pour pouvoir autoriser la lecture ou l'écriture d'une propriété (ou d'une ressource) selon le contexte (droits d'accès, groupe, type de requête...) on utilisera plutôt les **groupes de sérialisation** (et, pour les règles de validation, les **groupes de validation**).
 
 Concernant la **génération automatique** d'une propriété (dans notre cas, la date) nous avons déjà vu cela dans le premier TD. Il vous suffit d'ajouter l'attribut `#[ORM\HasLifecycleCallbacks]` au niveau de la classe puis créer une méthode initialisant la date, annotée avec l'attribut `#[ORM\PrePersist]`.
 
@@ -303,6 +303,7 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
 
 2. Nous allons reprendre les **assertions** de notre ancienne classe `Publication` pour la propriété `message`. Concernant l'assertion `Length`, nous allons en garder qu'une seule pour le moment, et sans son groupe de validation (nous ajouterons le premium plus tard...).
 
+   {% raw %}
    ```php
    use Symfony\Component\Validator\Constraints as Assert;
 
@@ -319,6 +320,7 @@ Concernant la **génération automatique** d'une propriété (dans notre cas, la
        private ?string $message = null;
    }
    ```
+   {% endraw %}
 
 3. Videz le cache.
 
@@ -430,7 +432,7 @@ Parfait, vous avez configuré votre première ressource ! Comme vous l'avez cons
 
 Il est temps de nous attaquer à la création de nos **utilisateurs** qui vont, eux aussi, être des **ressources** de l'application.
 
-Pour créer la ressource `Utilisateur`, nous n'allons pas nous embêter et reprendre la classe `Utilisateur` (et son repository) que vous avez déjà développé dans le projet précédent et l'adapter légèrement. En fait, pour spécifier que notre entité est une ressource de l'API, il suffit de rajouter l'attribut `ApiRessource` au-dessus de la classe.
+Pour créer la ressource `Utilisateur`, nous n'allons pas nous embêter et reprendre la classe `Utilisateur` (et son repository) que vous avez déjà développé dans le projet précédent et l'adapter légèrement. En fait, pour spécifier que notre entité est une ressource de l'API, il suffit de rajouter l'attribut `#[ApiResource]` au-dessus de la classe.
 
 <div class="exercise">
 
@@ -498,7 +500,7 @@ Pour faire en sorte qu'une publication possède un auteur, nous allons utiliser 
    }
    ```
 
-9. La valeur à préciser pour faire référence à une autre ressource est appelée `IRI` (International Resource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. 
+9. La valeur à préciser pour faire référence à une autre ressource est appelée `IRI` (Internationalized Resource Identifier) qui est une référence (un "lien") interne à l'application. Pour le trouver, récupérez (avec une requête `GET`) les détails d'un de vos utilisateurs. Il faut regarder au niveau de la propriété `@id`. 
 
    Attention, selon l'installation du projet sur votre serveur web, la route décrite dans `@id` n'est pas forcément la même. L'`IRI` correspond au chemin qui débute par `/the_feed_api/...`. Dans certains cas, il est aussi possible de directement créer la ressource liée en précisant ses informations dans un sous-document, mais ce n'est pas ce que nous souhaitons faire ici (on ne veut pas créer un utilisateur lorsqu'on crée une publication) et nous ne verrons pas ce mécanisme dans le cadre de ce TD (mais il sera détaillé dans des notes complémentaires).
 
@@ -804,17 +806,17 @@ use ApiPlatform\Metadata\Link;
     /* Template avec nom de variables intégrées entre accolades. Il est possible d'en indiquer plusieurs */
     uriTemplate: '/chemin/{identifiant1}/ressource',
     uriVariables: [
-        /* On indique comment accèder à la sous-ressource (dont l'identifiant correspondant à celui passé dans la route) */
+        /* On indique, pour chaque variable de la route, à quelle ressource correspond l'identifiant passé dans la route */
         'identifiant1' => new Link(
-            /* La propriété qui contient la ressource ciblée dans la classe cible */
+            /* La propriété de la classe cible qui contient les ressources à renvoyer */
             fromProperty: 'nom_propriete',
-            /* La classe cible dont on veut récupérer une instance à partir de l'identifiant  */
+            /* La classe cible, dont on récupère une instance à partir de l'identifiant */
             fromClass: Cible::class
         )
     ]
 )]
 ```
-Pour mieux illustrer cela, reprenons notre exemple d'étudiants et de groupe. On souhaite avoir une route `/groupe/{id}/etudiants` pour obtenir tous les étudiants d'un groupe précis :
+Pour mieux illustrer cela, reprenons notre exemple d'étudiants et de groupe. On souhaite avoir une route `/groupes/{idGroupe}/etudiants` pour obtenir tous les étudiants d'un groupe précis :
 
 ```php
 #[ApiResource]
@@ -1023,7 +1025,7 @@ class Etudiant {
 }
 ```
 
-Pour les providers, l'interface à implémenter est `StateProvider` (la commande `make:state-provider`) et le paramètre à préciser dans l'opération : `provider`. Nous n'aurons malheureusement pas l'occasion de traiter un cas de **state provider** dans ce TD, mais c'est globalement la même chose (on utilise un service pour récupérer l'information puis on applique nos modifications). Les **state providers** sont plus amplement présentés dans [cette note complémentaire]({{site.baseurl}}/complements/state-provider) que vous pourrez aller consulter à la fin du TD.
+Pour les providers, l'interface à implémenter est `ProviderInterface` (la commande `make:state-provider`) et le paramètre à préciser dans l'opération : `provider`. Nous n'aurons malheureusement pas l'occasion de traiter un cas de **state provider** dans ce TD, mais c'est globalement la même chose (on utilise un service pour récupérer l'information puis on applique nos modifications). Les **state providers** sont plus amplement présentés dans [cette note complémentaire]({{site.baseurl}}/complements/state-provider) que vous pourrez aller consulter à la fin du TD.
 
 <div class="exercise">
 
@@ -1050,6 +1052,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
 
 5. Reprenez les contraintes que vous utilisiez dans la classe `InscrireUtilisateurType` du projet précédent pour les appliquer sur cette propriété (sous forme d'attributs) :
 
+   {% raw %}
    ```php
    #[Assert\NotBlank]
    #[Assert\Length(
@@ -1064,6 +1067,7 @@ Pour les providers, l'interface à implémenter est `StateProvider` (la commande
    )]
    private ?string $plainPassword = null;
    ```
+   {% endraw %}
 
 6. Créez un **state processor** nommé `UtilisateurProcessor` qui 
    1. devra hacher le mot de passe de l'utilisateur (`plainPassword`), 
@@ -1210,9 +1214,9 @@ security:
             json_login:
                 #Le nom de la route d'authentification
                 check_path: /api/auth
-                #La propriété correspondant au login dans notre entité
+                #La clé contenant le login dans le JSON envoyé par le client
                 username_path: login
-                #La propriété correspondant au mot de passe (haché) dans notre entité
+                #La clé contenant le mot de passe (en clair) dans le JSON envoyé par le client
                 password_path: password
                 #Les services qui gèrent le succès ou l'échec d'authentification
                 success_handler: lexik_jwt_authentication.handler.authentication_success
@@ -1587,7 +1591,7 @@ Pour mettre en place tout cela, nous allons nous servir du bundle `JWTRefreshTok
       hash_tokens:
           enabled: true
   
-      # Cette option permet de limiter le nombre de tokens de rafraîchissement actifs pour un utilisateur. Par exemple, pour limiter le nombre d'appareils depuis lesquels il effectue une connexion. Si l'utilisateur tente de se connecter alors qu'il a déjà atteint la limite, le token le plus ancien est remplacé. Par défaut, si cette option n'est pas activée, le nombre de tokens est illimité (ce qui peut être souhaitable dans certains contextes, mais dans ce cas il faut combiner cela avec un système de rate limiting pour éviter qu'un utilisateur malveillant crée des tokens en boucle). 
+      # Cette option permet de limiter le nombre de tokens de rafraîchissement actifs pour un utilisateur. Par exemple, pour limiter le nombre d'appareils depuis lesquels il effectue une connexion. Si l'utilisateur tente de se connecter alors qu'il a déjà atteint la limite, la session qui n'a pas été rafraîchie depuis le plus longtemps est révoquée. Par défaut, si cette option n'est pas activée, le nombre de tokens est illimité (ce qui peut être souhaitable dans certains contextes, mais dans ce cas il faut combiner cela avec un système de rate limiting pour éviter qu'un utilisateur malveillant crée des tokens en boucle). 
       max_tokens_per_user: 5
       
       # Cette option permet de stocker le token de rafraîchissement dans un cookie (sécurisé, comme pour le JWT) au lieu de le renvoyer dans le corps de la réponse.
@@ -1640,7 +1644,7 @@ Maintenant, à vous de jouer !
 
 Nous pourrions aussi inclure (lors de l'authentification ou du rafraîchissement) des informations sur le token de rafraîchissement (notamment, sa date d'expiration). Cependant, dans l'absolu, le client n'en a pas vraiment besoin. S'il essaye de rafraîchir le `JWT` alors que le token de rafraîchissement a expiré, le serveur renverra une erreur `401` (Unauthorized) et le client sera alors au courant que le token a expiré. À l'inverse, pour le `JWT` d'authentification, il semble utile que le client connaisse la date d'expiration afin d'utiliser le token de rafraîchissement au moment opportun.
 
-Si toutefois on a vraiment besoin de donner certaines informations du JWT au client (dans le corps de la réponse `JSON`), on peut alors adapter la classe `AuthenticationSuccessListener` et décoder le token de rafraîchissement qui est associé à la clé `refresh_token` dans `$data`.
+Si toutefois on a vraiment besoin de donner certaines informations du JWT au client (dans le corps de la réponse `JSON`), on peut alors adapter la classe `AuthenticationSuccessListener` pour ajouter ces informations dans `$data`.
 
 ### Suppression du cookie et invalidation du token (déconnexion)
 
@@ -1869,7 +1873,7 @@ Le paramètre `securityMessage` permet de customiser le message d'erreur lié au
 #[Delete(security: "is_granted('ROLE_USER') and object.getOwner() == user", securityMessage: "...")]
 ```
 
-Il est aussi possible d'appliquer la règle de sécurité sur `#[ApiRessource]` si l'on souhaite que la règle s'applique par défaut à toutes les opérations.
+Il est aussi possible d'appliquer la règle de sécurité sur `#[ApiResource]` si l'on souhaite que la règle s'applique par défaut à toutes les opérations.
 
 Il est aussi possible d'utiliser les paramètres `security` et `securityPostDenormalize` dans un attribut `#[ApiProperty]` au niveau de chaque propriété de l'entité afin de contrôler les droits de lecture et d'écriture par propriété :
 
@@ -2092,7 +2096,7 @@ Cette approche a l'avantage de mieux séparer les responsabilités, et d'éviter
 
 Cela est notamment pertinent quand ce qui est demandé ou rendu par l'API diffère des données stockées en base. Par exemple, dans notre cas, il y a deux attributs qui "traînent" dans notre entité `Utilisateur` : `plainPassword` et `currentPlainPassword`, qui ne sont pas sauvegardés en base, et ne sont liés qu'à l'API.
 
-Historiquement, mettre en place des DTO avec API Platform était assez fastidieux, car il fallait obligatoirement créer un **processor** ou un **provider** pour "mapper" les données de l'objet DTO vers l'entité ou inversement. Cependant, depuis la version 7 de Symfony, un composant nommé [Object Mapper](https://symfony.com/doc/current/object_mapper.html) permet de considérablement automatiser ce travail et se passer (en partie) des processors et providers pour la plupart des opéations. La [documentation officielle d'API Platform](https://api-platform.com/docs/core/dto/) pousse d'ailleurs de plus en plus vers l'utilisation systématique d'une ressource externe rattachée à l'entité et d'un DTO pour chaque opération.
+Historiquement, mettre en place des DTO avec API Platform était assez fastidieux, car il fallait obligatoirement créer un **processor** ou un **provider** pour "mapper" les données de l'objet DTO vers l'entité ou inversement. Cependant, depuis la version 7.3 de Symfony, un composant nommé [Object Mapper](https://symfony.com/doc/current/object_mapper.html) permet de considérablement automatiser ce travail et se passer (en partie) des processors et providers pour la plupart des opérations. La [documentation officielle d'API Platform](https://api-platform.com/docs/core/dto/) pousse d'ailleurs de plus en plus vers l'utilisation systématique d'une ressource externe rattachée à l'entité et d'un DTO pour chaque opération.
 
 Cependant, bien que prometteur, ce système n'est pas encore stable. Quelques bugs et anomalies demeurent, qui devraient être réglées dans les prochaines versions de Symfony (future 8.4, puis probablement les versions 9.x) et d'API Platform. Utiliser ce système demande aussi de mettre en place plus de code et plus de classes, ce qui peut être fastidieux en début de projet (mais fait gagner du temps sur le long terme).
 
@@ -2100,6 +2104,7 @@ Dans le cadre de cette section, nous vous proposons une approche hybride : nous 
 
 Une classe `DTO` d'écriture contient les propriétés autorisées pour l'opération (avec le même nom que dans l'entité), avec la visibilité **public**, ainsi que d'éventuelles contraintes de validation. On doit aussi déclarer vers quelle entité seront mappées les données envoyées par le client :
 
+{% raw %}
 ```php
 <?php
 namespace App\Dto\Etudiant;
@@ -2135,6 +2140,7 @@ class CreateEtudiant
     public int $age;
 }
 ```
+{% endraw %}
 
 Ensuite, il faut :
 * Ajouter un `setter` pour l'id dans l'entité cible (ici, `Etudiant`).
@@ -2185,6 +2191,7 @@ Et le tour est joué ! Pas de processor à écrire, et plus aucune contraintes d
 
 Il est aussi possible de nommer les propriétés du `DTO` autrement et d'indiquer ensuite vers quelles propriétés celles-ci sont mappées :
 
+{% raw %}
 ```php
 <?php
 namespace App\Dto\Etudiant;
@@ -2210,6 +2217,7 @@ class CreateEtudiant
     ...
 }
 ```
+{% endraw %}
 
 Il arrive parfois qu'un champ envoyé dans le payload doive subir une transformation complexe (par exemple, nécessitant un algo ou des services) avant d'être mappé. Par exemple, afin de transformer un mot de passe en clair en mot de passe haché ! Il est possible d'écrire une classe qui traite la valeur en la transformant avant qu'elle soit mappée dans l'entité correspondante.
 
@@ -2273,7 +2281,7 @@ Il existe aussi un paramètre `if` pour conditionner le mapping d'une propriét�
 
 Quand on souhaite avoir un `DTO` pour les opérations de lecture, le processus est similaire, mais on utilise alors :
 * `source` à la place de `target` dans les attributs `#[Map]` du `DTO` (pour celle au-dessus de la classe et celles qui se trouvent éventuellement sur les propriétés).
-* `output` dans l'attribut qui correspond à l'opération (ou sur `#[ApiRessource]`, si on veut que cela soit fait globalement). À noter qu'il faut aussi le préciser sur les opérations d'écriture (type `POST`, `PATCH` et `PUT`), car ces opérations retournent un résultat.
+* `output` dans l'attribut qui correspond à l'opération (ou sur `#[ApiResource]`, si on veut que cela soit fait globalement). À noter qu'il faut aussi le préciser sur les opérations d'écriture (type `POST`, `PATCH` et `PUT`), car ces opérations retournent un résultat.
 
 Vous pourrez retrouver plus d'informations sur [la documentation officielle du composant](https://symfony.com/doc/current/object_mapper.html).
 
@@ -2292,6 +2300,7 @@ Comme il va y avoir beaucoup de changements dans la classe `Utilisateur`, il est
 
 2. Créez la classe `CreateUtilisateur` suivant, dans un nouveau dossier `src/Dto/Utilisateur` :
 
+   {% raw %}
    ```php
    <?php
 
@@ -2331,6 +2340,7 @@ Comme il va y avoir beaucoup de changements dans la classe `Utilisateur`, il est
        public string $plainPassword;
    }
    ```
+   {% endraw %}
 
 3. Créez et complétez la classe `TransformPlainPasswordToHashedPassword` suivante dans un nouveau dossier `src/ObjectMapper` :
 
@@ -2381,6 +2391,7 @@ Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, i
 
 1. Créez la classe `UpdateUtilisateur` dans `src/Dto/Utilisateur` :
 
+   {% raw %}
    ```php
    <?php
 
@@ -2413,6 +2424,7 @@ Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, i
        public string $currentPassword;
    }
    ```
+   {% endraw %}
 
     On notera qu'il n'y a pas besoin de préciser `#[NotBlank]` sur l'adresse email et le nouveau mot de passe : ils peuvent ne pas être transmis (par contre, on veut que le mot de passe de l'utilisateur courant soit transmis).
 
@@ -2467,7 +2479,7 @@ Pour finir, nous allons mettre en place le `DTO` de l'opération `PATCH`. Ici, i
 6. Vérifiez que la modification de votre profil fonctionne bien.
 </div>
 
-Comme vous pouvez le constater, nous avons déplacé toute notre logique de validation en dehors de `Utilisateur`. Aussi, nous n'avons plus de groupe de **dénormalisation** et de **validation** dans la classe. Comme mentionné plus tôt, il est possible de faire de pour la **normalisation** avec des DTO de "sortie" et le paramètre `output` des opérations. Cependant, cela ne veut pas dire que les groupes disparaissent complètement :
+Comme vous pouvez le constater, nous avons déplacé toute notre logique de validation en dehors de `Utilisateur`. Aussi, nous n'avons plus de groupe de **dénormalisation** et de **validation** dans la classe. Comme mentionné plus tôt, il est possible de faire de même pour la **normalisation** avec des DTO de "sortie" et le paramètre `output` des opérations. Cependant, cela ne veut pas dire que les groupes disparaissent complètement :
 
 * Obligatoire quand on veut inclure les données d'une entité dans une autre entité (comme nous le faisons avec l'auteur d'une publication).
 * Obligatoire quand on veut appliquer différentes contraintes selon le contexte (par exemple, si nous faisions un `DTO` pour écrire les publications, on devrait quand même avoir les groupes pour différencier les assertions qui vérifient la longueur du message en fonction du statut premium de l'utilisateur).
