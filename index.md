@@ -40,7 +40,7 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
 
 ## Projets
 
-1. Projet 1 (Symfony) : [Annuaire](tutorials/projet1)
+1. Projet 1 (Symfony) : [Annuaire](tutorials/projet1), deadline le **dimanche 25 octobre 2026, 23h59**.
 
 {% comment %}
 2. Projet 2 (API Platform, Symfony, Vue.Js) : [Site de critiques](tutorials/projet2)
