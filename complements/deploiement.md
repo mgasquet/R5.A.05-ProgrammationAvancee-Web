@@ -102,11 +102,11 @@ php bin/console asset-map:compile
 # Nettoyage du cache
 php bin/console c:c
 
-# On modifie (-m) récursivement (-R) les droits r-x de l'utilisateur (u:) www-data
-setfacl -R -m u:www-data:r-x ~/public_html
+# On modifie (-m) récursivement (-R) les droits rwx de l'utilisateur (u:) www-data
+setfacl -R -m u:www-data:rwx ~/public_html
 
-# On fait de même avec des droits par défaut (d:) (les nouveaux fichiers prendront ces droits)
-setfacl -R -m d:u:www-data:r-x ~/public_html
+# On fait de même avec des droits par défaut (-d) (les nouveaux fichiers prendront ces droits)
+setfacl -R -d -m u:www-data:rwx ~/public_html
 ```
 
 Petite précision : on n'exécute pas la commande pour créer la base de données ici, car elle existe déjà (elle est nommée d'après votre login, sur le serveur du département). Cela est vrai pour les deux types de SGBD mis à disposition au département (MySQL ou PostgreSQL). Bien entendu, dans un contexte réel, pour un premier déploiement sur un serveur, il faudrait créer cette base.
