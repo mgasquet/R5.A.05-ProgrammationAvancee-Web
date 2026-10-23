@@ -104,7 +104,7 @@ Vous pouvez consulter [cette note complémentaire]({{site.baseurl}}/complements/
 
 La **deadline** du projet est le **dimanche 25 octobre 2026, 23h59**.
 
-Le projet sera à rendre sur **Moodle** (adresse communiquée prochainement). Un seul membre du groupe projet dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3.zip`.
+Le projet sera à rendre sur **Moodle** à [cette adresse](https://moodle.umontpellier.fr/course/section.php?id=217431). Un seul membre du groupe projet dépose une archive **zip** nommée selon le format : `NomPrenomMembre1-NomPrenomMembre2-NomPrenomMembre3.zip`.
 
 Cette archive devra contenir :
 
