@@ -355,6 +355,8 @@ class MonEntite {
 }
 ```
 
+> **Attention :** l'**ordre** des attributs compte ! API Platform les lit de haut en bas : `#[ApiResource]` déclare une ressource, et chaque opération qui suit (`#[Get]`, `#[Post]`...) est rattachée à la ressource déclarée juste au-dessus. Il faut donc toujours placer `#[ApiResource]` **avant** les opérations. Sinon, une seconde ressource apparaît (par exemple `Utilisateur2`, sur la route `/api/utilisateur2s`).
+
 Petite note à part, par défaut, `#[GetCollection]` utilise un système de pagination afin de limiter le nombre de ressources renvoyées (par défaut, 30). Il est alors possible de préciser un paramètre `page` dans le **query string** de la route, pour naviguer. Par exemple, `/api/publications` renvoie les publications de 1 à 30. Et `/api/publications?page=3` renvoie les publications de 61 à 90.
 
 Ce système est nécessaire afin de limiter les données lues côté client et ainsi charger le contenu au fur et à mesure (imaginez si vous deviez charger tout **Twitter/X** à chaque accès !!!). Il est possible d'augmenter le nombre de ressources renvoyées par page ou bien simplement désactiver ce système (et donc tout renvoyer à chaque fois). Par convenance dans le cadre de ce TD, nous allons donc désactiver ce système, mais retenez bien que dans un contexte réel, il faudrait le conserver et charger le contenu petit à petit, au fil du parcours de l'utilisateur.
