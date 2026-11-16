@@ -26,17 +26,15 @@ Parcours IAMSI -- Cours *R5.D.04 -- Développement pour progiciels*
     1. Séance 1 : [TD 4](tutorials/tutorial4) -- Création d'une API REST.
     2. Séance 2 : Suite du [TD 4](tutorials/tutorial4).
 5. Semaine du 9 novembre 2026 : -- Suite et fin du [TD 4](tutorials/tutorial4).
-6. Semaine du 16 novembre 2026 : -- Début des TDs de Vue.Js.
+6. Semaine du 16 novembre 2026 : -- Début des [TDs de Vue.Js](https://matthieu-rosenfeld.github.io/).
 
 ## TP Bonus
 
 [TP Bonus](tutorials/tutorial_bonus1) -- Mise en place d'un système de paiement (**Stripe**)
 
-{% comment %}
 ## TDs de Vue.js
 
 [Page des TDs de Vue.Js](https://matthieu-rosenfeld.github.io/)
-{% endcomment %}
 
 ## Projets
 
